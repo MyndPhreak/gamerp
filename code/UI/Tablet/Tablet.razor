@@ -1,0 +1,101 @@
+@using Sandbox.UI.Common;
+@using Sandbox.UI.Tablet.Apps;
+@using System;
+@using System.Collections.Generic;
+
+@inherits PanelComponent
+
+<root class="@(IsOpen ? "open" : "")">
+    <div class="tablet-frame">
+        <div class="tablet-screen">
+            <div class="status-bar">
+                <div class="time">@DateTime.Now.ToString("HH:mm")</div>
+                <div class="icons">
+                    <MyIcon Name="wifi" Size=@(16) />
+                    <MyIcon Name="battery_full" Size=@(16) />
+                </div>
+            </div>
+
+            @if (ActiveApp == null)
+            {
+                <div class="home-screen">
+                    <div class="app-grid">
+                        @foreach (var app in Apps)
+                        {
+                            <div class="app-icon-container" onclick="@(() => OpenApp(app))">
+                                <div class="app-icon" style="background-color: @app.AppColor.Hex">
+                                    <MyIcon Name="@app.AppIcon" Size=@(32) />
+                                </div>
+                                <div class="app-label">@app.AppName</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="app-container">
+                    <div class="app-header">
+                        <div class="back-button" onclick="@CloseApp">
+                            <MyIcon Name="chevron_left" Size=@(28) Color="@(Color.FromBytes(0, 122, 255))" />
+                        </div>
+                        <div class="app-title">@ActiveApp.AppName</div>
+                    </div>
+                    <div class="app-content">
+                        @if (ActiveApp.AppName == "Bank")
+                        {
+                            <BankApp />
+                        }
+                        else
+                        {
+                            <div class="placeholder">
+                                <icon>construction</icon>
+                                <label>Under Construction</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="home-indicator" onclick="@CloseApp"></div>
+        </div>
+    </div>
+</root>
+
+@code
+{
+    [Property] public bool IsOpen { get; set; } = false;
+
+    private List<ITabletApp> Apps = new()
+    {
+        new BankAppData()
+    };
+
+    private ITabletApp ActiveApp { get; set; }
+
+    protected override void OnUpdate()
+    {
+        if (Input.Pressed("Score")) // Tab
+        {
+            IsOpen = !IsOpen;
+            
+            if (IsOpen)
+                Mouse.Visible = true;
+            else
+                Mouse.Visible = false;
+        }
+    }
+
+    private void OpenApp(ITabletApp app) => ActiveApp = app;
+    private void CloseApp() => ActiveApp = null;
+
+    protected override int BuildHash() => System.HashCode.Combine(IsOpen, ActiveApp, DateTime.Now.Minute);
+
+    // Mock data structures for the app registry
+    public class BankAppData : ITabletApp
+    {
+        public string AppName => "Bank";
+        public string AppIcon => "account_balance";
+        public Color AppColor => Color.FromBytes(33, 150, 243);
+    }
+}

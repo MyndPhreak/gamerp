@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>package.alex.iconify</name>
+    </assembly>
+    <members>
+        <member name="T:Iconify.IconifyOptions">
+            <summary>
+            Contains all configurable options in the Iconify library.
+            </summary>
+        </member>
+        <member name="P:Iconify.IconifyOptions.Current">
+            <summary>
+            The instance of <see cref="T:Iconify.IconifyOptions"/> that the library will use.
+            </summary>
+        </member>
+        <member name="P:Iconify.IconifyOptions.CacheFileSystem">
+            <summary>
+            The file system that cached icons will be written to. 
+            </summary>
+        </member>
+        <member name="M:Iconify.IconifyOptions.WithCacheFileSystem(Sandbox.BaseFileSystem)">
+            <summary>
+            Sets the <see cref="P:Iconify.IconifyOptions.CacheFileSystem"/> property.
+            </summary>
+            <param name="fs">The file system that cached icons will be written to.</param>
+            <returns>The same instance of <see cref="T:Iconify.IconifyOptions"/>.</returns>
+        </member>
+    </members>
+</doc>

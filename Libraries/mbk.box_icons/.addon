@@ -1,0 +1,31 @@
+{
+  "Title": "Box Icons",
+  "Type": "library",
+  "Org": "mbk",
+  "Ident": "box_icons",
+  "Tags": null,
+  "Schema": 1,
+  "HasAssets": true,
+  "AssetsPath": "",
+  "Resources": null,
+  "MenuResources": null,
+  "HasCode": true,
+  "CodePath": ".",
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Metadata": {
+    "ProjectTemplate": null,
+    "CsProjName": "",
+    "Compiler": {
+      "RootNamespace": "BoxIcons",
+      "DefineConstants": "SANDBOX;ADDON;DEBUG",
+      "NoWarn": "1701;1702;1591;",
+      "ReleaseMode": "Release",
+      "References": [],
+      "DistinctReferences": []
+    },
+    "Summary": "",
+    "Description": "",
+    "Public": true
+  }
+}

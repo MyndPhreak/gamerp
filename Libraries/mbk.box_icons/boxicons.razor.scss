@@ -1,0 +1,12 @@
+﻿CoolIcons {
+    svg {
+        height: 64px;
+        width: 64px;
+        transition: all .2s ease-in;
+
+        &:hover {
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+    }
+}

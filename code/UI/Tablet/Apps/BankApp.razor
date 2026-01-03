@@ -1,0 +1,65 @@
+@using Sandbox.UI.Common;
+@using Sandbox.UI.Tablet;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+
+<root>
+    <div class="bank-top">
+        <label class="balance-label">Total Balance</label>
+        <label class="balance-value">$@Player?.Money.ToString("N0")</label>
+    </div>
+
+    <div class="bank-actions">
+        <div class="action-btn">
+            <div class="circle blue"><MyIcon Name="send" Size=@(24) /></div>
+            <label>Transfer</label>
+        </div>
+        <div class="action-btn">
+            <div class="circle green"><MyIcon Name="payments" Size=@(24) /></div>
+            <label>Pay Bill</label>
+        </div>
+        <div class="action-btn">
+            <div class="circle orange"><MyIcon Name="history" Size=@(24) /></div>
+            <label>History</label>
+        </div>
+    </div>
+
+    <div class="bank-logs">
+        <label class="section-title">Recent Transactions</label>
+        <div class="logs-list">
+            @if (Player != null && Player.BankLogs.Any())
+            {
+                @foreach (var log in Player.BankLogs)
+                {
+                    <div class="log-entry">
+                        <div class="log-icon @(log.IsIncome ? "plus" : "minus")">
+                            <MyIcon Name="@(log.IsIncome ? "add" : "remove")" Size=@(20) Color="@(log.IsIncome ? Color.Green : Color.Red)" />
+                        </div>
+                        <div class="log-info">
+                            <label class="log-title">@log.Title</label>
+                            <label class="log-time">@log.Time</label>
+                        </div>
+                        <label class="log-amount @(log.IsIncome ? "green" : "red")">
+                            @(log.IsIncome ? "+" : "-")$@Math.Abs(log.Amount)
+                        </label>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <icon>sentiment_neutral</icon>
+                    <label>No transactions yet</label>
+                </div>
+            }
+        </div>
+    </div>
+</root>
+
+@code
+{
+    private RPPlayer Player => Scene.GetAll<RPPlayer>().FirstOrDefault();
+
+    protected override int BuildHash() => System.HashCode.Combine(Player?.Money, Player?.BankLogs?.Count);
+}
