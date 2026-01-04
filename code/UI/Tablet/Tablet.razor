@@ -19,6 +19,10 @@
             @if (ActiveApp == null)
             {
                 <div class="home-screen">
+                    <div class="time-widget">
+                        <div class="widget-time">@DateTime.Now.ToString("HH:mm")</div>
+                        <div class="widget-date">@DateTime.Now.ToString("dddd, MMMM dd")</div>
+                    </div>
                     <div class="app-grid">
                         @foreach (var app in Apps)
                         {
@@ -68,7 +72,8 @@
 
     private List<ITabletApp> Apps = new()
     {
-        new BankAppData()
+        new BankAppData(),
+        new SettingsAppData()
     };
 
     private ITabletApp ActiveApp { get; set; }
@@ -80,9 +85,9 @@
             IsOpen = !IsOpen;
             
             if (IsOpen)
-                Mouse.Visible = true;
+                Mouse.Visibility = MouseVisibility.Visible;
             else
-                Mouse.Visible = false;
+                Mouse.Visibility = MouseVisibility.Auto;
         }
     }
 
@@ -97,5 +102,12 @@
         public string AppName => "Bank";
         public string AppIcon => "account_balance";
         public Color AppColor => Color.FromBytes(33, 150, 243);
+    }
+
+    public class SettingsAppData : ITabletApp
+    {
+        public string AppName => "Settings";
+        public string AppIcon => "settings";
+        public Color AppColor => Color.FromBytes(158, 158, 158);
     }
 }

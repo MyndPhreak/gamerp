@@ -6,13 +6,13 @@
 <root>
 	<div class="hud-container">
 		<div class="stat-box money">
-			<MyIcon Name="attach_money" Color="@Color.White" Size=@(24) />
+			<MyIcon Name="attach_money" Color="@Color.Green" Size=@(24) />
 			<span class="label">Money:</span>
 			<span class="value">$@Player?.Money</span>
 		</div>
 		
 		<div class="stat-box job" style="border-left: 4px solid @PlayerColor">
-			<MyIcon Name="work" Color="@(Player?.JobColor ?? Color.Gray)" Size=@(24) />
+			<MyIcon Name="work" Color="@(Player?.JobColor ?? Color.White)" Size=@(24) />
 			<span class="label">Job:</span>
 			<span class="value" style="color: @PlayerColor">@Player?.JobTitle</span>
 		</div>
@@ -22,7 +22,7 @@
 @code
 {
 	private RPPlayer Player => Scene.GetAll<RPPlayer>().FirstOrDefault();
-	private string PlayerColor => Player?.JobColor.Hex ?? "#888";
+	private string PlayerColor => Player?.JobColor.Hex ?? "#fff";
 
 	protected override int BuildHash() => System.HashCode.Combine( Player, Player?.Money, Player?.JobTitle, PlayerColor );
 }

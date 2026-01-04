@@ -140,6 +140,25 @@
           "OnComponentUpdate": null,
           "PaydayAmount": 50,
           "PaydayInterval": 60
+        },
+        {
+          "__type": "DatabaseService",
+          "__guid": "e52e9402-6707-4b72-a198-66e80b2519f1",
+          "__enabled": true,
+          "AppwriteApiKey": null,
+          "AppwriteCollectionId": null,
+          "AppwriteDatabaseId": null,
+          "AppwriteEndpoint": "https://cloud.appwrite.io/v1",
+          "AppwriteProjectId": null,
+          "DatabaseFileName": "gamerp.json",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Provider": "Local",
+          "ServiceVersion": "3.0.0 (Consolidated)"
         }
       ],
       "Children": []
@@ -189,10 +208,16 @@
           "OnComponentUpdate": null
         },
         {
-          "__type": "Tablet",
+          "__type": "Sandbox.UI.Tablet.Tablet",
           "__guid": "a82b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
           "__enabled": true,
-          "IsOpen": false
+          "IsOpen": false,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ],
       "Children": []
@@ -325,10 +350,10 @@
           "__enabled": true,
           "AngularDamping": 1,
           "EnableImpactDamage": true,
-          "Gravity": false,
+          "Gravity": true,
           "GravityScale": 1,
           "ImpactDamage": 0,
-          "LinearDamping": 10,
+          "LinearDamping": 0.1,
           "Locking": {
             "X": false,
             "Y": false,
@@ -337,7 +362,7 @@
             "Yaw": true,
             "Roll": true
           },
-          "MassCenterOverride": "0,0,0",
+          "MassCenterOverride": "0,0,36",
           "MassOverride": 500,
           "MinImpactDamageSpeed": 500,
           "MotionEnabled": true,
@@ -468,7 +493,7 @@
               "Center": "0,0,18",
               "ColliderFlags": 0,
               "Elasticity": null,
-              "Friction": 81,
+              "Friction": 0,
               "IsTrigger": false,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -509,8 +534,13 @@
               "__type": "RPPlayer",
               "__guid": "dd4abb63-b08e-4752-868a-37afe94b702a",
               "__enabled": true,
+              "Body": null,
+              "Camera": null,
+              "CrouchSpeed": 80,
+              "Eye": null,
               "JobColor": "0,0,0,0",
               "JobTitle": "Civillian",
+              "JumpStrength": 300,
               "Money": 100,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -519,11 +549,7 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "RunSpeed": 300,
-              "WalkSpeed": 150,
-              "BankLogs": [
-                { "Title": "Starter Bonus", "Amount": 500, "Time": "22:15" },
-                { "Title": "Bank Fee", "Amount": -10, "Time": "22:10" }
-              ]
+              "WalkSpeed": 150
             },
             {
               "__type": "Sandbox.CharacterController",
@@ -545,14 +571,77 @@
               "UseCollisionRules": false
             }
           ],
+          "Children": []
+        },
+        {
+          "__guid": "e7a2b3a0-d96c-44af-b4b6-4f6e172c3cb6",
+          "__version": 1,
+          "Flags": 0,
+          "Name": "Body",
+          "Position": "-28.43619,1.849308,-0.01009916",
+          "Rotation": "0.000000007450581,-0.00000001490116,0.5336148,0.8457276",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkInterpolation": true,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "244f5dd9-5887-44b7-8ee0-da7af8dfec7c",
+              "__enabled": true,
+              "AnimationGraph": null,
+              "BodyGroups": 341,
+              "BoneMergeTarget": null,
+              "CreateAttachments": false,
+              "CreateBoneObjects": false,
+              "LodOverride": null,
+              "MaterialGroup": "default",
+              "MaterialOverride": null,
+              "Materials": null,
+              "Model": "models/citizen/citizen.vmdl",
+              "Morphs": {},
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Parameters": {
+                "bools": {},
+                "ints": {},
+                "floats": {},
+                "vectors": {},
+                "rotations": {}
+              },
+              "PlaybackRate": 1,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Sequence": {
+                "Name": null,
+                "Looping": true,
+                "Blending": false
+              },
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
+            }
+          ],
           "Children": [
             {
-              "__guid": "e7a2b3a0-d96c-44af-b4b6-4f6e172c3cb6",
+              "__guid": "e3974b7b-e618-41c8-b245-23a561ff47ae",
               "__version": 1,
               "Flags": 0,
-              "Name": "Body",
-              "Position": "0,0,0",
-              "Rotation": "0,0,0,1",
+              "Name": "Camera",
+              "Position": "-150,-0.000007629395,80",
+              "Rotation": "-0.000000007450581,0.1968018,0.00000002980232,0.9804434",
               "Scale": "1,1,1",
               "Tags": "",
               "Enabled": true,
@@ -563,99 +652,35 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "244f5dd9-5887-44b7-8ee0-da7af8dfec7c",
+                  "__type": "Sandbox.CameraComponent",
+                  "__guid": "fd0a7076-5218-4209-9202-d4a7aded39a2",
                   "__enabled": true,
-                  "AnimationGraph": null,
-                  "BodyGroups": 341,
-                  "BoneMergeTarget": null,
-                  "CreateAttachments": false,
-                  "CreateBoneObjects": false,
-                  "LodOverride": null,
-                  "MaterialGroup": "default",
-                  "MaterialOverride": null,
-                  "Materials": null,
-                  "Model": "models/citizen/citizen.vmdl",
-                  "Morphs": {},
+                  "BackgroundColor": "0.33333,0.46275,0.52157,1",
+                  "ClearFlags": "All",
+                  "EnablePostProcessing": true,
+                  "FieldOfView": 90,
+                  "FovAxis": "Horizontal",
+                  "IsMainCamera": true,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "Parameters": {
-                    "bools": {},
-                    "ints": {},
-                    "floats": {},
-                    "vectors": {},
-                    "rotations": {}
-                  },
-                  "PlaybackRate": 1,
-                  "RenderOptions": {
-                    "GameLayer": true,
-                    "OverlayLayer": false,
-                    "BloomLayer": false,
-                    "AfterUILayer": false
-                  },
-                  "RenderType": "On",
-                  "Sequence": {
-                    "Name": null,
-                    "Looping": true,
-                    "Blending": false
-                  },
-                  "Tint": "1,1,1,1",
-                  "UseAnimGraph": true
+                  "Orthographic": false,
+                  "OrthographicHeight": 1204,
+                  "PostProcessAnchor": null,
+                  "Priority": 1,
+                  "RenderExcludeTags": "viewer",
+                  "RenderTags": "",
+                  "RenderTexture": null,
+                  "TargetEye": "None",
+                  "Viewport": "0,0,1,1",
+                  "ZFar": 10000,
+                  "ZNear": 10
                 }
               ],
-              "Children": [
-                {
-                  "__guid": "e3974b7b-e618-41c8-b245-23a561ff47ae",
-                  "__version": 1,
-                  "Flags": 0,
-                  "Name": "Camera",
-                  "Position": "-150,0,80",
-                  "Rotation": "0,0.1968018,0,0.9804433",
-                  "Scale": "1,1,1",
-                  "Tags": "",
-                  "Enabled": true,
-                  "NetworkMode": 2,
-                  "NetworkInterpolation": true,
-                  "NetworkOrphaned": 0,
-                  "NetworkTransmit": true,
-                  "OwnerTransfer": 1,
-                  "Components": [
-                    {
-                      "__type": "Sandbox.CameraComponent",
-                      "__guid": "fd0a7076-5218-4209-9202-d4a7aded39a2",
-                      "__enabled": true,
-                      "BackgroundColor": "0.33333,0.46275,0.52157,1",
-                      "ClearFlags": "All",
-                      "EnablePostProcessing": true,
-                      "FieldOfView": 90,
-                      "FovAxis": "Horizontal",
-                      "IsMainCamera": true,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "Orthographic": false,
-                      "OrthographicHeight": 1204,
-                      "PostProcessAnchor": null,
-                      "Priority": 1,
-                      "RenderExcludeTags": "viewer",
-                      "RenderTags": "",
-                      "RenderTexture": null,
-                      "TargetEye": "None",
-                      "Viewport": "0,0,1,1",
-                      "ZFar": 10000,
-                      "ZNear": 10
-                    }
-                  ],
-                  "Children": []
-                }
-              ]
+              "Children": []
             }
           ]
         }

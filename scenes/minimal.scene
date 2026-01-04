@@ -1,0 +1,97 @@
+{
+  "Id": "f7e8b693-0e8c-4a1e-8e3b-1b9c8d7e6f5a",
+  "GameObjects": [
+    {
+      "Id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "Name": "Scene Information",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.SceneInformation",
+          "SceneName": "Minimal RP Scene",
+          "Author": null,
+          "Description": "",
+          "Group": null
+        }
+      ]
+    },
+    {
+      "Id": "1e2d3c4b-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "Name": "Main Camera",
+      "Enabled": true,
+      "Position": "-300,0,150",
+      "Rotation": "0,0.1,0,1",
+      "Components": [
+        {
+          "__type": "Sandbox.CameraComponent",
+          "IsMainCamera": true
+        }
+      ]
+    },
+    {
+      "Id": "2f3e4d5c-6b7a-8d9e-0f1a-2b3c4d5e6f7a",
+      "Name": "RP Manager",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "RPManager",
+          "PaydayInterval": 60,
+          "PaydayAmount": 50
+        }
+      ]
+    },
+    {
+      "Id": "3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d",
+      "Name": "Player",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "RPPlayer",
+          "Money": 100,
+          "JobTitle": "Civillian",
+          "JobColor": "0.1,0.6,0.1,1"
+        }
+      ]
+    },
+    {
+      "Id": "4b5c6d7e-8f9a-0b1c-2d3e-4f5a6b7c8d9e",
+      "Name": "HUD",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.ScreenPanel"
+        },
+        {
+          "__type": "Hud"
+        }
+      ]
+    },
+    {
+      "Id": "5c6d7e8f-9a0b-1c2d-3e4f-5a6b7c8d9e0f",
+      "Name": "Sun",
+      "Enabled": true,
+      "Rotation": "-0.2,0.4,0.3,0.8",
+      "Components": [
+        {
+          "__type": "Sandbox.DirectionalLight",
+          "LightColor": "1,1,1,1",
+          "ShadowsEnabled": true
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 50,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 30,
+    "NetworkInterpolation": true,
+    "PhysicsSubSteps": 1,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true
+  },
+  "Title": "minimal",
+  "Description": "",
+  "LastSaved": "2024-01-01T00:00:00Z",
+  "__references": []
+}

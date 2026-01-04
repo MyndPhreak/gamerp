@@ -24,7 +24,7 @@ Tablet {
     background-color: #111;
     border-radius: 40px;
     padding: 12px;
-    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 50px 100px #000000cc;
     border: 2px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -53,6 +53,7 @@ Tablet {
         display: flex;
         gap: 8px;
         .icon {
+            font-family: 'Material Icons';
             font-size: 16px;
             opacity: 0.8;
         }
@@ -66,14 +67,45 @@ Tablet {
     flex-direction: column;
 }
 
+.time-widget {
+    padding: 30px 20px;
+    background-color: #00000066;
+    border: 1px solid #ffffff26;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px #00000033;
+
+    .widget-time {
+        font-size: 48px;
+        font-weight: 800;
+        color: white;
+        font-family: 'Outfit', sans-serif;
+        text-shadow: 0 4px 10px #0000004d;
+    }
+
+    .widget-date {
+        font-size: 14px;
+        color: #ffffff99;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+}
+
 .app-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    padding-top: 10px;
+    justify-content: flex-start;
 }
 
 .app-icon-container {
+    width: 78px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -98,8 +130,13 @@ Tablet {
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         
         .icon {
+            font-family: 'Material Icons';
             width: 35px;
             height: 35px;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     }
 
@@ -107,7 +144,7 @@ Tablet {
         color: white;
         font-size: 12px;
         font-weight: 500;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        text-shadow: 0 2px 4px #00000080;
     }
 }
 
@@ -143,6 +180,7 @@ Tablet {
         }
 
         .icon {
+            font-family: 'Material Icons';
             font-size: 28px;
         }
     }
@@ -159,7 +197,9 @@ Tablet {
 
 .app-content {
     flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
     color: #1d1d1f;
 }
 
@@ -190,6 +230,7 @@ Tablet {
     opacity: 0.3;
 
     icon {
+        font-family: 'Material Icons';
         font-size: 64px;
     }
 

@@ -14,7 +14,7 @@ BankApp {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 10px 30px #007aff4d;
     margin-bottom: 25px;
 
     .balance-label {
@@ -57,13 +57,14 @@ BankApp {
             justify-content: center;
             color: white;
             transition: transform 0.2s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px #0000001a;
 
             &.blue { background-color: #007aff; }
             &.green { background-color: #34c759; }
             &.orange { background-color: #ff9500; }
 
             .icon {
+                font-family: 'Material Icons';
                 font-size: 24px;
             }
         }
@@ -103,7 +104,7 @@ BankApp {
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px #0000000d;
 
     .log-icon {
         width: 40px;
@@ -114,16 +115,19 @@ BankApp {
         justify-content: center;
 
         &.plus {
-            background-color: rgba(52, 199, 89, 0.1);
+            background-color: #34c7591a;
             color: #34c759;
         }
 
         &.minus {
-            background-color: rgba(255, 59, 48, 0.1);
+            background-color: #ff3b301a;
             color: #ff3b30;
         }
 
-        .icon { font-size: 20px; }
+        .icon {
+            font-family: 'Material Icons';
+            font-size: 20px;
+        }
     }
 
     .log-info {
@@ -161,6 +165,9 @@ BankApp {
     opacity: 0.3;
     gap: 10px;
 
-    icon { font-size: 48px; }
+    icon {
+        font-family: 'Material Icons';
+        font-size: 48px;
+    }
     label { font-size: 16px; font-weight: 500; }
 }

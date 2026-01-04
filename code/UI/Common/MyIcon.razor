@@ -1,88 +1,23 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using System;
 @inherits Panel
 
-<root class="icon" style="width: @(Size)px; height: @(Size)px; min-width: @(Size)px; min-height: @(Size)px; display: flex; align-items: center; justify-content: center; color: @(Color.Hex);">
-    @if ( !string.IsNullOrEmpty( Name ) )
-    {
-        @switch ( Name.ToLower() )
-        {
-            case "attach_money":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M14.25 19h1.5c2.317-.005 3.558-.062 4.472-.674a4 4 0 0 0 1.104-1.103C22 16.213 22 14.809 22 12s0-4.213-.674-5.222a4 4 0 0 0-1.104-1.103c-.915-.612-2.155-.669-4.472-.674h-1.5V9H15a3 3 0 1 1 0 6h-.75zm-4.5 0v-4H9a3 3 0 1 1 0-6h.75V5.001h-1.5c-2.317.005-3.557.062-4.472.674a4 4 0 0 0-1.104-1.103C2 7.787 2 9.192 2 12c0 2.81 0 4.214.674 5.223a4 4 0 0 0 1.104 1.103c.915.612 2.155.669 4.472.674z"/><path fill="currentColor" d="M9.75 19h4.5V5h-4.5z" opacity=".5"/>
-                </svg>
-                break;
-
-            case "work":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M18.61 20H5.39a3 3 0 0 1-3-3V9.5a3 3 0 0 1 3-3h13.22a3 3 0 0 1 3 3V17a3 3 0 0 1-3 3M5.39 8a1.5 1.5 0 0 0-1.5 1.5V17a1.5 1.5 0 0 0 1.5 1.5h13.22a1.5 1.5 0 0 0 1.5-1.5V9.5a1.5 1.5 0 0 0-1.5-1.5z"/><path fill="currentColor" d="M15 8H9V5.5a2.5 2.5 0 0 1 5 0z" opacity=".5"/><path fill="currentColor" d="M15.75 9h-7.5V7a3.25 3.25 0 0 1 7.5 0zM10.113 7.5h3.774a1.75 1.75 0 0 0-3.774 0" opacity=".5"/>
-                </svg>
-                break;
-
-            case "wifi":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M12 18a2 2 0 1 0 2 2a2 2 0 0 0-2-2"/><path fill="currentColor" d="M17.657 14.343a8 8 0 0 0-11.314 0l-1.414-1.414a10 10 0 0 1 14.142 0z" opacity=".5"/><path fill="currentColor" d="M20.485 11.515a12 12 0 0 0-16.97 0l-1.415-1.415a14 14 0 0 1 19.8 0z" opacity=".2"/>
-                </svg>
-                break;
-
-            case "battery_full":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M3.172 5.172C2 6.343 2 8.229 2 12s0 5.657 1.172 6.828S6.229 20 10 20h1.5c3.771 0 5.657 0 6.828-1.172S19.5 15.771 19.5 12s0-5.657-1.172-6.828S15.271 4 11.5 4H10C6.229 4 4.343 4 3.172 5.172" opacity=".5"/><path fill="currentColor" d="M21.25 14a.75.75 0 0 0 1.5 0v-4a.75.75 0 0 0-1.5 0zM6.636 8.345a.75.75 0 0 1 1.02.29L7 9l.656-.363l.001.002l.002.003l.004.007l.01.018l.026.053q.03.064.076.175c.058.147.131.356.202.631c.14.551.273 1.364.273 2.474s-.132 1.923-.273 2.474a5 5 0 0 1-.202.631a3 3 0 0 1-.103.228l-.01.018l-.003.008l-.002.003v.001l-.001.001a.75.75 0 0 1-1.317-.719l.005-.01.038-.087a4 4 0 0 0 .142-.447c.108-.424.226-1.111.226-2.1s-.118-1.678-.226-2.102a4 4 0 0 0-.18-.534l-.005-.01a.75.75 0 0 1 .297-1.01m4.52.291a.75.75 0 0 0-1.317.72l.005.01q.01.02.038.086c.035.087.087.235.142.447c.108.424.226-1.111.226-2.101s-.118 1.677-.226 2.101a4 4 0 0 1-.18.534l-.005.01a.75.75 0 0 0 1.317.72L10.5 15l.656.363l.001-.001l.002-.003l.004-.008l.01-.018l.026-.053q.03-.064.076-.175a5 5 0 0 0 .202-.631c.14-.551.273-1.364.273-2.474s-.132-1.923-.273-2.474a5 5 0 0 0-.202-.631a3 3 0 0 0-.103-.228l-.01-.018l-.003-.007l-.002-.003zm2.48-.291a.75.75 0 0 1 1.02.29L14 9l.656-.363l.001.002l.002.003l.004.007l.01.018l.026.053q.03.064.076.175a5 5 0 0 1 .202.631c.14.551.273 1.364.273 2.474s-.132 1.923-.273 2.474c-.07.275-.143.484-.202.631a3 3 0 0 1-.103.228l-.01.018l-.003.008l-.002.003v.001l-.001.001a.75.75 0 0 1-1.317-.719l.005-.01l.038-.087a4 4 0 0 0 .142-.447c.108-.424.226-1.111.226-2.1s-.118-1.678-.226-2.102a4 4 0 0 0-.18-.534l-.005-.01a.75.75 0 0 1 .297-1.01"/></svg>
-                break;
-
-            case "account_balance":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M12 3L2 8v2h20V8zm0 13c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2m0-9c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2m0 13c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2"/><path fill="currentColor" d="M4 10h2v7H4zm14 0h2v7h-2zM9 10h6v7H9z" opacity=".5"/><path fill="currentColor" d="M2 17h20v2H2z"/>
-                </svg>
-                break;
-
-            case "chevron_left":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-6-6l6-6"/>
-                </svg>
-                break;
-
-            case "send":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M21.433 3.93a.75.75 0 0 0-1.054-.108L3.43 13.252a.75.75 0 0 0 .15 1.353l6.45 2.253a.75.75 0 0 0 .866-.34L15 10.353l.354.353a.75.75 0 1 0 1.06-1.06L14 7.293l2.252-4.137Z"/><path fill="currentColor" d="M16.5 13.5L11 19l-4-4l10-10l10 10l-10 10l-10-10l5-5" opacity=".5"/>
-                </svg>
-                break;
-
-            case "payments":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M19 6H5c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2m-7 9c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2"/><path fill="currentColor" d="M7 8h10v2H7z" opacity=".5"/>
-                </svg>
-                break;
-
-            case "history":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89l.07.14L9 12H6a7 7 0 1 1 7 7a7.07 7.07 0 0 1-6-3.37L5.46 17.11A8.92 8.92 0 1 0 13 3m-1 5v5l4.28 2.54l.72-1.21l-3.5-2.08V8z"/>
-                </svg>
-                break;
-
-            case "add":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M19 12.998h-6v6h-2v-6H5v-2h6v-6h2v6h6z"/>
-                </svg>
-                break;
-
-            case "remove":
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%">
-                    <path fill="currentColor" d="M19 12.998H5v-2h14z"/>
-                </svg>
-                break;
-
-            default:
-                <icon style="font-size: @(Size)px;">@Name</icon>
-                break;
-        }
-    }
+<root class="icon" style="width: @(Size)px; height: @(Size)px; min-width: @(Size)px; min-height: @(Size)px; display: flex; align-items: center; justify-content: center; text-transform: none;">
+	@if ( !string.IsNullOrEmpty( Name ) && Name.EndsWith( ".svg", StringComparison.OrdinalIgnoreCase ) )
+	{
+		<img src="@Name" style="width: 100%; height: 100%; object-fit: contain; image-tint: @Color.Hex;" />
+	}
+	else
+	{
+		<icon style="font-family: 'Material Icons'; font-size: @(Size)px; color: @Color.Hex; text-transform: none;">@(Name?.ToLower())</icon>
+	}
 </root>
 
 @code {
-    [Property] public string Name { get; set; }
-    [Property] public Color Color { get; set; } = Color.White;
-    [Property] public float Size { get; set; } = 24f;
+	[Property] public string Name { get; set; }
+	[Property] public Color Color { get; set; } = Color.White;
+	[Property] public float Size { get; set; } = 24f;
 
-    protected override int BuildHash() => System.HashCode.Combine( Name, Color.Hex, Size );
+	protected override int BuildHash() => System.HashCode.Combine( Name, Color.Hex, Size );
 }

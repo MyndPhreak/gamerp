@@ -1,14 +1,13 @@
 {
-  "Title": "Iconify",
+  "Title": "Linux Fix",
   "Type": "library",
-  "Org": "alex",
-  "Ident": "iconify",
+  "Org": "tux",
+  "Ident": "linuxfix",
   "Schema": 1,
-  "IncludeSourceFiles": false,
+  "IncludeSourceFiles": true,
   "Resources": null,
   "PackageReferences": [],
   "EditorReferences": null,
-  "IsWhitelistDisabled": false,
   "Metadata": {
     "CsProjName": ""
   }
