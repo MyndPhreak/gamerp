@@ -3,6 +3,7 @@
 @using Sandbox.UI;
 @using System;
 @using System.Linq;
+@using System.Threading.Tasks;
 @using GameRP.Systems;
 @using GameRP.Economy;
 
@@ -89,11 +90,17 @@
     private bool IsLoading { get; set; } = true;
     private bool HasError { get; set; } = false;
     private string ErrorMessage { get; set; } = "";
+    private bool _hasLoaded = false;
 
-    protected override void OnEnabled()
+    protected override void OnAfterTreeRender(bool firstTime)
     {
-        base.OnEnabled();
-        _ = LoadWalletData();
+        base.OnAfterTreeRender(firstTime);
+
+        if (firstTime && !_hasLoaded)
+        {
+            _hasLoaded = true;
+            _ = LoadWalletData();
+        } 
     }
 
     private async Task LoadWalletData()
