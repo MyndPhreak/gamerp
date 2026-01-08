@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "GameRP.Api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:18172;http://localhost:18173"
+    }
+  }
+}
