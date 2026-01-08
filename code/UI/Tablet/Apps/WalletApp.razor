@@ -1,0 +1,147 @@
+@using Sandbox.UI.Common;
+@using Sandbox.UI.Tablet;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@using GameRP.Systems;
+@using GameRP.Economy;
+
+<root>
+    @if (IsLoading)
+    {
+        <div class="wallet-loading">
+            <div class="spinner"></div>
+            <label>Loading wallet data...</label>
+        </div>
+    }
+    else if (WalletData != null)
+    {
+        <div class="wallet-top">
+            <label class="balance-label">Wallet Balance</label>
+            <label class="balance-value">$@WalletData.Balance.ToString("N0")</label>
+            <label class="steam-id">Steam ID: @WalletData.SteamId</label>
+        </div>
+
+        <div class="wallet-stats">
+            <div class="stat-card green">
+                <div class="stat-icon">
+                    <MyIcon Name="trending_up" Size=@(24) />
+                </div>
+                <div class="stat-info">
+                    <label class="stat-label">Total Earned</label>
+                    <label class="stat-value">$@WalletData.TotalEarned.ToString("N0")</label>
+                </div>
+            </div>
+
+            <div class="stat-card red">
+                <div class="stat-icon">
+                    <MyIcon Name="trending_down" Size=@(24) />
+                </div>
+                <div class="stat-info">
+                    <label class="stat-label">Total Spent</label>
+                    <label class="stat-value">$@WalletData.TotalSpent.ToString("N0")</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="wallet-info">
+            <label class="section-title">Account Information</label>
+            <div class="info-list">
+                <div class="info-row">
+                    <label class="info-label">Account Created</label>
+                    <label class="info-value">@WalletData.CreatedAt.ToString("MMM dd, yyyy")</label>
+                </div>
+                <div class="info-row">
+                    <label class="info-label">Last Updated</label>
+                    <label class="info-value">@WalletData.LastUpdated.ToString("MMM dd, yyyy HH:mm")</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="wallet-actions">
+            <div class="action-btn" @onclick=@RefreshWallet>
+                <div class="circle blue">
+                    <MyIcon Name="refresh" Size=@(24) />
+                </div>
+                <label>Refresh</label>
+            </div>
+        </div>
+    }
+    else if (HasError)
+    {
+        <div class="wallet-error">
+            <MyIcon Name="error_outline" Size=@(48) Color="@Color.Red" />
+            <label class="error-title">Failed to Load Wallet</label>
+            <label class="error-message">@ErrorMessage</label>
+            <div class="action-btn" @onclick=@LoadWalletData>
+                <div class="circle blue">
+                    <MyIcon Name="refresh" Size=@(24) />
+                </div>
+                <label>Try Again</label>
+            </div>
+        </div>
+    }
+</root>
+
+@code
+{
+    private WalletData WalletData { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private bool HasError { get; set; } = false;
+    private string ErrorMessage { get; set; } = "";
+
+    protected override void OnEnabled()
+    {
+        base.OnEnabled();
+        _ = LoadWalletData();
+    }
+
+    private async Task LoadWalletData()
+    {
+        IsLoading = true;
+        HasError = false;
+        StateHasChanged();
+
+        try
+        {
+            // Get the player's Steam ID
+            var steamId = Game.SteamId;
+
+            Log.Info($"[WalletApp] Fetching wallet for Steam ID: {steamId}");
+
+            // Fetch wallet data from the economy API
+            var wallet = await EconomySystem.Api.GetWalletAsync(steamId);
+
+            if (wallet != null)
+            {
+                WalletData = wallet;
+                Log.Info($"[WalletApp] Wallet loaded successfully. Balance: ${wallet.Balance}");
+            }
+            else
+            {
+                HasError = true;
+                ErrorMessage = "Could not retrieve wallet data from server.";
+                Log.Warning("[WalletApp] Failed to load wallet data - returned null");
+            }
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            ErrorMessage = $"Error: {ex.Message}";
+            Log.Error($"[WalletApp] Exception loading wallet: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshWallet()
+    {
+        Log.Info("[WalletApp] Refreshing wallet data...");
+        await LoadWalletData();
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(WalletData?.Balance, WalletData?.LastUpdated, IsLoading, HasError);
+}

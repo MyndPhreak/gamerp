@@ -1,0 +1,230 @@
+WalletApp {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    background-color: #f5f5f7;
+}
+
+.wallet-loading,
+.wallet-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 15px;
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e0e0e0;
+        border-top-color: #34c759;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    label {
+        font-size: 16px;
+        font-weight: 500;
+        color: #3a3a3c;
+    }
+
+    .error-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1d1d1f;
+    }
+
+    .error-message {
+        font-size: 14px;
+        color: #8e8e93;
+        text-align: center;
+        max-width: 300px;
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.wallet-top {
+    background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+    padding: 30px 20px;
+    border-radius: 20px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 10px 30px rgba(52, 199, 89, 0.3);
+    margin-bottom: 20px;
+
+    .balance-label {
+        font-size: 13px;
+        opacity: 0.9;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .balance-value {
+        font-size: 36px;
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .steam-id {
+        font-size: 11px;
+        opacity: 0.7;
+        font-family: monospace;
+        margin-top: 5px;
+    }
+}
+
+.wallet-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    .stat-card {
+        flex: 1;
+        background-color: white;
+        padding: 16px;
+        border-radius: 16px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+
+            .icon {
+                font-family: 'Material Icons';
+                font-size: 24px;
+            }
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .stat-label {
+                font-size: 11px;
+                color: #8e8e93;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+                font-weight: 700;
+                color: #1d1d1f;
+            }
+        }
+
+        &.green .stat-icon {
+            background-color: #34c759;
+        }
+
+        &.red .stat-icon {
+            background-color: #ff3b30;
+        }
+    }
+}
+
+.wallet-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1d1d1f;
+        padding-left: 5px;
+    }
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-row {
+    background-color: white;
+    padding: 16px 18px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .info-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #3a3a3c;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: #8e8e93;
+        font-family: 'Outfit', sans-serif;
+    }
+}
+
+.wallet-actions {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+
+        &:hover .circle {
+            transform: scale(1.1);
+        }
+
+        .circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+            &.blue {
+                background-color: #007aff;
+            }
+
+            .icon {
+                font-family: 'Material Icons';
+                font-size: 24px;
+            }
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3a3a3c;
+        }
+    }
+}

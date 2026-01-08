@@ -50,6 +50,10 @@
                         {
                             <BankApp />
                         }
+                        else if (ActiveApp.AppName == "Wallet")
+                        {
+                            <WalletApp />
+                        }
                         else
                         {
                             <div class="placeholder">
@@ -73,6 +77,7 @@
     private List<ITabletApp> Apps = new()
     {
         new BankAppData(),
+        new WalletAppData(),
         new SettingsAppData()
     };
 
@@ -102,6 +107,13 @@
         public string AppName => "Bank";
         public string AppIcon => "account_balance";
         public Color AppColor => Color.FromBytes(33, 150, 243);
+    }
+
+    public class WalletAppData : ITabletApp
+    {
+        public string AppName => "Wallet";
+        public string AppIcon => "account_balance_wallet";
+        public Color AppColor => Color.FromBytes(52, 199, 89);
     }
 
     public class SettingsAppData : ITabletApp
