@@ -17,11 +17,13 @@
                         <div class="circle-background"></div>
                         @{
                             var progress = Interactable.HoldProgress;
-                            var isFirstHalf = progress <= 0.5f;
-                            var isComplete = progress >= 0.5f;
+                            // First half (0-50%): right half rotates 0-180°
+                            var rightRotation = Math.Min(progress * 2, 1) * 180;
+                            // Second half (50-100%): left half rotates 0-180°
+                            var leftRotation = Math.Max((progress - 0.5f) * 2, 0) * 180;
                         }
-                        <div class="progress-left" style="transform: rotate(@(isComplete ? 180 : 0)deg)"></div>
-                        <div class="progress-right" style="transform: rotate(@(Math.Min(progress * 2, 1) * 180)deg)"></div>
+                        <div class="progress-left" style="transform: rotate(@leftRotation deg)"></div>
+                        <div class="progress-right" style="transform: rotate(@rightRotation deg)"></div>
                         <div class="circle-cover">
                             <div class="key-text">E</div>
                         </div>

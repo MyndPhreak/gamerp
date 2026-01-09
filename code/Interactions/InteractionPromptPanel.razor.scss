@@ -24,7 +24,8 @@ InteractionPromptPanel {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    min-height: 180px;
+    min-height: 200px;
+    overflow: visible;
 }
 
 .key-display {
@@ -60,6 +61,7 @@ InteractionPromptPanel {
     height: 100%;
     border-radius: 50%;
     border: 8px solid rgba(255, 255, 255, 0.2);
+    z-index: 1;
 }
 
 .progress-right {
@@ -71,6 +73,7 @@ InteractionPromptPanel {
     background-color: #34c759;
     transform-origin: left center;
     transition: transform 0.1s linear;
+    z-index: 2;
 }
 
 .progress-left {
@@ -82,6 +85,7 @@ InteractionPromptPanel {
     background-color: #34c759;
     transform-origin: right center;
     transition: transform 0.1s linear;
+    z-index: 2;
 }
 
 .circle-cover {
@@ -95,6 +99,7 @@ InteractionPromptPanel {
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 10;
 }
 
 .key-text {
