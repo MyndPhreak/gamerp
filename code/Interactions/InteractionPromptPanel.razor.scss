@@ -45,15 +45,30 @@ InteractionPromptPanel {
 
 .progress-ring-fill {
     position: absolute;
-    width: 80px;
-    height: 80px;
+    width: 68px;
+    height: 68px;
+    top: 6px;
+    left: 6px;
     border-radius: 50%;
-    border: 6px solid transparent;
-    border-top-color: #34c759;
-    border-right-color: #34c759;
+    background: conic-gradient(
+        #34c759 0deg 0deg,
+        transparent 0deg 360deg
+    );
     transform-origin: center center;
-    transform: rotate(-90deg);
-    transition: transform 0.1s linear;
+    mask-image: radial-gradient(
+        circle,
+        transparent 0%,
+        transparent 60%,
+        black 60%,
+        black 100%
+    );
+    -webkit-mask-image: radial-gradient(
+        circle,
+        transparent 0%,
+        transparent 60%,
+        black 60%,
+        black 100%
+    );
 }
 
 .progress-key {

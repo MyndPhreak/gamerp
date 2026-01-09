@@ -15,7 +15,7 @@
                 {
                     <div class="progress-ring">
                         <div class="progress-ring-bg"></div>
-                        <div class="progress-ring-fill" style="transform: rotate(@GetRotationDegrees()deg)"></div>
+                        <div class="progress-ring-fill" style="background: conic-gradient(#34c759 0deg @(GetProgressDegrees())deg, transparent @(GetProgressDegrees())deg 360deg)"></div>
                         <label class="progress-key">E</label>
                     </div>
                 }
@@ -47,10 +47,10 @@
         _worldPanel.PanelSize = PanelSize;
     }
 
-    private float GetRotationDegrees()
+    private float GetProgressDegrees()
     {
-        if (Interactable == null) return -90f;
-        return -90f + (Interactable.HoldProgress * 360f);
+        if (Interactable == null) return 0f;
+        return Interactable.HoldProgress * 360f;
     }
 
     protected override int BuildHash()
