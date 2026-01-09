@@ -11,17 +11,22 @@
     {
         <div class="interaction-container">
             <div class="interaction-content">
-                <div class="key-display">E</div>
-
                 @if (Interactable.HoldDuration > 0)
                 {
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-bg"></div>
-                        <div class="progress-bar-fill" style="width: @(Interactable.HoldProgress * 100)%"></div>
+                    <div class="progress-circle">
+                        <div class="progress-circle-bg"></div>
+                        <div class="progress-circle-fill" style="transform: rotate(@(Interactable.HoldProgress * 360)deg)"></div>
+                        <div class="progress-circle-inner">
+                            <label class="progress-key">E</label>
+                        </div>
                     </div>
                 }
+                else
+                {
+                    <div class="key-display">E</div>
+                }
 
-                <div class="interaction-text">@Interactable.InteractionText</div>
+                <label class="interaction-text">@Interactable.InteractionText</label>
             </div>
         </div>
     }

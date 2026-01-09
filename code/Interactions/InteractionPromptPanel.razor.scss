@@ -27,8 +27,8 @@ InteractionPromptPanel {
 }
 
 .key-display {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,28 +44,52 @@ InteractionPromptPanel {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.progress-bar-container {
+.progress-circle {
     position: relative;
-    width: 200px;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
 }
 
-.progress-bar-bg {
+.progress-circle-bg {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.progress-bar-fill {
+.progress-circle-fill {
     position: absolute;
+    width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #34c759 0%, #30d158 100%);
-    border-radius: 4px;
-    transition: width 0.1s linear;
+    border-radius: 50%;
+    background: linear-gradient(90deg, transparent 50%, #34c759 50%);
+    transform-origin: center;
+    transition: transform 0.1s linear;
+}
+
+.progress-circle-inner {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.progress-key {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .interaction-text {
