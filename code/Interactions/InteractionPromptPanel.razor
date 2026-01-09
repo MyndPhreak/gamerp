@@ -1,4 +1,6 @@
+@using Sandbox;
 @using Sandbox.UI;
+@using GameRP.Interactions;
 @using System;
 
 @namespace GameRP.Interactions
@@ -32,6 +34,18 @@
 @code
 {
     [Property] public Interactable Interactable { get; set; }
+    [Property] public Vector2 PanelSize { get; set; } = new Vector2(400, 150);
+
+    private Sandbox.WorldPanel _worldPanel;
+
+    protected override void OnEnabled()
+    {
+        base.OnEnabled();
+
+        // Create WorldPanel component on the same GameObject
+        _worldPanel = Components.GetOrCreate<Sandbox.WorldPanel>();
+        _worldPanel.PanelSize = PanelSize;
+    }
 
     private float GetRotationDegrees()
     {
