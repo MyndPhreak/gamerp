@@ -82,21 +82,6 @@ public sealed class Interactable : Component
 		if ( _promptPanel == null || _promptPanel.GameObject == null )
 			return;
 
-		// Get the WorldPanel component
-		var worldPanel = _promptPanel.GameObject.Components.Get<Sandbox.WorldPanel>();
-		if ( worldPanel != null )
-		{
-			// When billboarding, render in front of everything
-			if ( Billboard )
-			{
-				worldPanel.RenderAsForeground = true;
-			}
-			else
-			{
-				worldPanel.RenderAsForeground = false;
-			}
-		}
-
 		// Update panel position
 		var worldPos = WorldPosition + WorldRotation * PanelOffset;
 		_promptPanel.GameObject.WorldPosition = worldPos;
