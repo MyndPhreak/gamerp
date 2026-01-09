@@ -14,8 +14,20 @@
                 @if (Interactable.HoldDuration > 0)
                 {
                     <div class="progress-ring">
-                        <div class="progress-ring-bg"></div>
-                        <div class="progress-ring-fill" style="transform: rotate(@(GetProgressDegrees())deg)"></div>
+                        <svg width="80" height="80" style="position: absolute; top: 0; left: 0; transform: rotate(-90deg);">
+                            <circle cx="40" cy="40" r="34"
+                                    fill="none"
+                                    stroke="rgba(255, 255, 255, 0.1)"
+                                    stroke-width="6" />
+                            <circle cx="40" cy="40" r="34"
+                                    fill="none"
+                                    stroke="#34c759"
+                                    stroke-width="6"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="213.6"
+                                    stroke-dashoffset="@(213.6f * (1f - Interactable.HoldProgress))"
+                                    style="transition: stroke-dashoffset 0.1s linear;" />
+                        </svg>
                         <label class="progress-key">E</label>
                     </div>
                 }
@@ -45,14 +57,6 @@
         // Create WorldPanel component on the same GameObject
         _worldPanel = Components.GetOrCreate<Sandbox.WorldPanel>();
         _worldPanel.PanelSize = PanelSize;
-    }
-
-    private float GetProgressDegrees()
-    {
-        if (Interactable == null) return -90f;
-        // Start at -90deg (top) and rotate 1.8 turns (648 degrees) for full progress
-        // This makes the half-circle sweep around twice to complete the full circle
-        return -90f + (Interactable.HoldProgress * 720f);
     }
 
     protected override int BuildHash()
