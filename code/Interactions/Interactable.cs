@@ -40,6 +40,11 @@ public sealed class Interactable : Component
 	[Property] public bool Billboard { get; set; } = true;
 
 	/// <summary>
+	/// Rotation of the panel when not in billboard mode (Pitch, Yaw, Roll)
+	/// </summary>
+	[Property] public Angles PanelRotation { get; set; } = new Angles( 0, 0, 0 );
+
+	/// <summary>
 	/// Color tint for the interaction prompt
 	/// </summary>
 	[Property] public Color PromptColor { get; set; } = Color.White;
@@ -77,6 +82,21 @@ public sealed class Interactable : Component
 		if ( _promptPanel == null || _promptPanel.GameObject == null )
 			return;
 
+		// Get the WorldPanel component
+		var worldPanel = _promptPanel.GameObject.Components.Get<Sandbox.WorldPanel>();
+		if ( worldPanel != null )
+		{
+			// When billboarding, render in front of everything
+			if ( Billboard )
+			{
+				worldPanel.RenderAsForeground = true;
+			}
+			else
+			{
+				worldPanel.RenderAsForeground = false;
+			}
+		}
+
 		// Update panel position
 		var worldPos = WorldPosition + WorldRotation * PanelOffset;
 		_promptPanel.GameObject.WorldPosition = worldPos;
@@ -88,7 +108,8 @@ public sealed class Interactable : Component
 		}
 		else
 		{
-			_promptPanel.GameObject.WorldRotation = WorldRotation;
+			// Use custom rotation when not billboarding
+			_promptPanel.GameObject.WorldRotation = WorldRotation * Rotation.From( PanelRotation );
 		}
 
 		_promptPanel.GameObject.WorldScale = PanelScale;
