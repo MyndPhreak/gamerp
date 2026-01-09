@@ -11,33 +11,17 @@
     {
         <div class="interaction-container">
             <div class="interaction-content">
+                <div class="key-display">E</div>
+
                 @if (Interactable.HoldDuration > 0)
                 {
-                    <div class="progress-ring">
-                        <svg width="80" height="80" style="position: absolute; top: 0; left: 0; transform: rotate(-90deg);">
-                            <circle cx="40" cy="40" r="34"
-                                    fill="none"
-                                    stroke="rgba(255, 255, 255, 0.1)"
-                                    stroke-width="6" />
-                            <circle cx="40" cy="40" r="34"
-                                    fill="none"
-                                    stroke="#34c759"
-                                    stroke-width="6"
-                                    stroke-linecap="round"
-                                    stroke-dasharray="213.6"
-                                    stroke-dashoffset="@(213.6f * (1f - Interactable.HoldProgress))"
-                                    style="transition: stroke-dashoffset 0.1s linear;" />
-                        </svg>
-                        <label class="progress-key">E</label>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg"></div>
+                        <div class="progress-bar-fill" style="width: @(Interactable.HoldProgress * 100)%"></div>
                     </div>
                 }
-                else
-                {
-                    <div class="instant-key">
-                        <label>E</label>
-                    </div>
-                }
-                <label class="interaction-text">@Interactable.InteractionText</label>
+
+                <div class="interaction-text">@Interactable.InteractionText</div>
             </div>
         </div>
     }
