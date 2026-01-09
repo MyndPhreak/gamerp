@@ -44,39 +44,51 @@ InteractionPromptPanel {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.progress-circle {
+.progress-wrapper {
     position: relative;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+    width: 90px;
+    height: 90px;
 }
 
-.progress-circle-bg {
+.progress-circle-outer {
     position: absolute;
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
+    overflow: hidden;
 }
 
-.progress-circle-fill {
+.progress-left-half {
     position: absolute;
-    width: 100%;
+    top: 0;
+    left: 0;
+    width: 50%;
     height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(90deg, transparent 50%, #34c759 50%);
-    transform-origin: center;
+    background-color: #34c759;
+    transform-origin: right center;
     transition: transform 0.1s linear;
 }
 
-.progress-circle-inner {
+.progress-right-half {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: 68px;
-    height: 68px;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: #34c759;
+    transform-origin: left center;
+    transition: transform 0.1s linear;
+}
+
+.progress-circle-center {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,20 +96,24 @@ InteractionPromptPanel {
 }
 
 .progress-key {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 800;
     color: white;
     text-transform: uppercase;
     font-family: 'Outfit', sans-serif;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+    display: block;
 }
 
 .interaction-text {
-    font-size: 18px;
-    font-weight: 600;
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
     color: white;
     text-align: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
     max-width: 300px;
-    line-height: 1.3;
+    line-height: 1.4;
+    margin-top: 8px;
+    font-family: 'Outfit', sans-serif;
 }
