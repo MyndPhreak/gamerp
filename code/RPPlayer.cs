@@ -14,6 +14,11 @@ public sealed class RPPlayer : Component
     [Property, Group( "Movement" )] public float RunSpeed { get; set; } = 300.0f;
     [Property, Group( "Movement" )] public float CrouchSpeed { get; set; } = 80.0f;
     [Property, Group( "Movement" )] public float JumpStrength { get; set; } = 300.0f;
+    [Property, Group( "Movement" )] public float EyeHeight { get; set; } = 64.0f;
+
+    [Property, Group( "Camera" )] public bool FirstPerson { get; set; } = true;
+    [Property, Group( "Camera" )] public float MouseSensitivity { get; set; } = 0.1f;
+    [Property, Group( "Camera" )] public float ThirdPersonDistance { get; set; } = 150.0f;
 
     [Property, Group( "References" )] public GameObject Body { get; set; }
     [Property, Group( "References" )] public GameObject Eye { get; set; }
@@ -78,10 +83,39 @@ public sealed class RPPlayer : Component
 
     protected override void OnAwake()
     {
-        _controller = Components.Get<CharacterController>();
+        // Ensure we have a CharacterController
+        _controller = Components.GetOrCreate<CharacterController>();
+        _controller.Height = 72;
+        _controller.Radius = 16;
+
+        // Get body renderer if we have a body
         if ( Body != null )
         {
             _bodyRenderer = Body.Components.Get<SkinnedModelRenderer>();
+        }
+
+        // Auto-create camera if not assigned
+        if ( Camera == null )
+        {
+            var cameraGO = Scene.CreateObject();
+            cameraGO.Name = "Player Camera";
+            cameraGO.SetParent( GameObject );
+
+            Camera = cameraGO.Components.Create<CameraComponent>();
+            Camera.IsMainCamera = true;
+
+            Log.Info( "[RPPlayer] Auto-created camera" );
+        }
+
+        // Auto-add InteractionManager for interacting with objects
+        var interactionManager = Components.Get<GameRP.Interactions.InteractionManager>();
+        if ( interactionManager == null )
+        {
+            interactionManager = Components.Create<GameRP.Interactions.InteractionManager>();
+            interactionManager.Camera = Camera;
+            interactionManager.ShowDebug = false;
+
+            Log.Info( "[RPPlayer] Auto-created InteractionManager" );
         }
     }
 
@@ -113,22 +147,14 @@ public sealed class RPPlayer : Component
 
         if ( Mouse.Visibility == MouseVisibility.Hidden )
         {
-            _eyeAngles.pitch += Input.MouseDelta.y * 0.1f;
-            _eyeAngles.yaw -= Input.MouseDelta.x * 0.1f;
+            _eyeAngles.pitch += Input.MouseDelta.y * MouseSensitivity;
+            _eyeAngles.yaw -= Input.MouseDelta.x * MouseSensitivity;
             _eyeAngles.pitch = _eyeAngles.pitch.Clamp( -89, 89 );
         }
 
         WorldRotation = Rotation.FromYaw( _eyeAngles.yaw );
 
-        if ( Camera != null )
-        {
-            // Position camera at eye height or slightly behind for TP
-            var targetPos = Eye != null ? Eye.WorldPosition : WorldPosition + Vector3.Up * 64;
-            
-            // Basic third person offset for now
-            Camera.WorldPosition = targetPos + WorldRotation.Backward * 150 + WorldRotation.Up * 10;
-            Camera.WorldRotation = Rotation.From( _eyeAngles.pitch, _eyeAngles.yaw, 0 );
-        }
+        UpdateCamera();
 
         UpdateAnimation();
         
@@ -172,6 +198,36 @@ public sealed class RPPlayer : Component
         }
 
         _controller.Move();
+    }
+
+    private void UpdateCamera()
+    {
+        if ( Camera == null ) return;
+
+        // Get eye position - use Eye GameObject if available, otherwise offset from player position
+        var eyePosition = Eye != null ? Eye.WorldPosition : WorldPosition + Vector3.Up * EyeHeight;
+
+        if ( FirstPerson )
+        {
+            // First person - camera at eye position
+            Camera.WorldPosition = eyePosition;
+            Camera.WorldRotation = Rotation.From( _eyeAngles.pitch, _eyeAngles.yaw, 0 );
+
+            // Hide body in first person if we have one
+            if ( Body != null )
+                Body.Enabled = false;
+        }
+        else
+        {
+            // Third person - camera behind player
+            var targetPos = eyePosition;
+            Camera.WorldPosition = targetPos + WorldRotation.Backward * ThirdPersonDistance + WorldRotation.Up * 10;
+            Camera.WorldRotation = Rotation.From( _eyeAngles.pitch, _eyeAngles.yaw, 0 );
+
+            // Show body in third person
+            if ( Body != null )
+                Body.Enabled = true;
+        }
     }
 
     private void UpdateAnimation()
