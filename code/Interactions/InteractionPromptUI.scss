@@ -1,6 +1,6 @@
-InteractionPrompt {
-    width: 400px;
-    height: 150px;
+.interaction-ui {
+    width: 100%;
+    height: 100%;
     justify-content: center;
     align-items: center;
 }
@@ -34,36 +34,45 @@ InteractionPrompt {
     align-items: center;
     justify-content: center;
 
-    svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        transform: rotate(-90deg);
+    &.hidden {
+        display: none;
     }
+}
 
-    .progress-ring-bg {
-        fill: none;
-        stroke: rgba(255, 255, 255, 0.1);
-        stroke-width: 6px;
-    }
+.svg-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
-    .progress-ring-fill {
-        fill: none;
-        stroke: #34c759;
-        stroke-width: 6px;
-        stroke-linecap: round;
-        stroke-dasharray: 213.6; /* 2 * pi * 34 */
-        transition: stroke-dashoffset 0.1s linear;
-    }
+.progress-ring-bg {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.1);
+}
 
-    .progress-key {
-        font-size: 32px;
-        font-weight: 800;
-        color: white;
-        text-transform: uppercase;
-        font-family: 'Outfit', sans-serif;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
+.progress-ring-fill {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 6px solid #34c759;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    transform: rotate(-90deg);
+    transition: transform 0.1s linear;
+}
+
+.progress-key {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    z-index: 10;
 }
 
 .instant-key {
@@ -81,6 +90,16 @@ InteractionPrompt {
     font-family: 'Outfit', sans-serif;
     box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
     border: 2px solid rgba(255, 255, 255, 0.2);
+
+    &.hidden {
+        display: none;
+    }
+
+    label {
+        color: white;
+        font-size: 28px;
+        font-weight: 800;
+    }
 }
 
 .interaction-text {

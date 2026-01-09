@@ -74,24 +74,24 @@ public sealed class Interactable : Component
 
 	protected override void OnUpdate()
 	{
-		if ( _promptPanel == null )
+		if ( _promptPanel == null || _promptPanel.GameObject == null )
 			return;
 
 		// Update panel position
 		var worldPos = WorldPosition + WorldRotation * PanelOffset;
-		_promptPanel.WorldPosition = worldPos;
+		_promptPanel.GameObject.WorldPosition = worldPos;
 
 		// Billboard behavior - face the camera
 		if ( Billboard && Scene.Camera != null )
 		{
-			_promptPanel.WorldRotation = Rotation.LookAt( Scene.Camera.WorldPosition - worldPos );
+			_promptPanel.GameObject.WorldRotation = Rotation.LookAt( Scene.Camera.WorldPosition - worldPos );
 		}
 		else
 		{
-			_promptPanel.WorldRotation = WorldRotation;
+			_promptPanel.GameObject.WorldRotation = WorldRotation;
 		}
 
-		_promptPanel.WorldScale = PanelScale;
+		_promptPanel.GameObject.WorldScale = PanelScale;
 
 		// Update hold progress
 		if ( IsHolding && HoldDuration > 0 )
