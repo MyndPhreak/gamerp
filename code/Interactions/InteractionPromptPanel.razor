@@ -15,7 +15,7 @@
                 {
                     <div class="progress-ring">
                         <div class="progress-ring-bg"></div>
-                        <div class="progress-ring-fill" style="background: conic-gradient(#34c759 0deg @(GetProgressDegrees())deg, transparent @(GetProgressDegrees())deg 360deg)"></div>
+                        <div class="progress-ring-fill" style="transform: rotate(@(GetProgressDegrees())deg)"></div>
                         <label class="progress-key">E</label>
                     </div>
                 }
@@ -49,8 +49,10 @@
 
     private float GetProgressDegrees()
     {
-        if (Interactable == null) return 0f;
-        return Interactable.HoldProgress * 360f;
+        if (Interactable == null) return -90f;
+        // Start at -90deg (top) and rotate 1.8 turns (648 degrees) for full progress
+        // This makes the half-circle sweep around twice to complete the full circle
+        return -90f + (Interactable.HoldProgress * 720f);
     }
 
     protected override int BuildHash()
