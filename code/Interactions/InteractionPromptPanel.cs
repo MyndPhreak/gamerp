@@ -19,19 +19,9 @@ public sealed class InteractionPromptPanel : Component
 		// Create WorldPanel component
 		_worldPanel = Components.GetOrCreate<Sandbox.WorldPanel>();
 		_worldPanel.PanelSize = PanelSize;
-	}
 
-	protected override void OnStart()
-	{
-		// Create and configure the UI component
-		var uiGO = Scene.CreateObject();
-		uiGO.Name = "InteractionPromptUI";
-		uiGO.SetParent( GameObject );
-
-		_ui = uiGO.Components.Create<InteractionPromptWorldPanel>();
+		// Create the UI component on the same GameObject
+		_ui = Components.GetOrCreate<InteractionPromptWorldPanel>();
 		_ui.Interactable = Interactable;
-
-		// Attach UI to GameObject
-		uiGO.SetParent( GameObject );
 	}
 }
