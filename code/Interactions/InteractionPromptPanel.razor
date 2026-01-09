@@ -11,17 +11,13 @@
     {
         <div class="interaction-container">
             <div class="interaction-content">
-                @if (Interactable.HoldDuration > 0)
-                {
-                    <div class="spinner-container">
-                        <div class="spinner"></div>
-                        <div class="spinner-key">E</div>
-                    </div>
-                }
-                else
-                {
-                    <div class="key-display-hold">E</div>
-                }
+                <div class="key-container">
+                    @if (Interactable.HoldDuration > 0)
+                    {
+                        <div class="progress-circle" style="background: conic-gradient(#34c759 0% @(Interactable.HoldProgress * 100)%, rgba(255,255,255,0.2) @(Interactable.HoldProgress * 100)% 100%)"></div>
+                    }
+                    <div class="key-letter">E</div>
+                </div>
 
                 <div class="text-label">@Interactable.InteractionText</div>
             </div>
@@ -32,7 +28,7 @@
 @code
 {
     [Property] public Interactable Interactable { get; set; }
-    [Property] public Vector2 PanelSize { get; set; } = new Vector2(500, 300);
+    [Property] public Vector2 PanelSize { get; set; } = new Vector2(600, 400);
 
     private Sandbox.WorldPanel _worldPanel;
 
