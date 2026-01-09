@@ -11,27 +11,14 @@
     {
         <div class="interaction-container">
             <div class="interaction-content">
+                <div class="key-display-hold">E</div>
+
                 @if (Interactable.HoldDuration > 0)
                 {
-                    <div class="circular-progress">
-                        <div class="circle-background"></div>
-                        @{
-                            var progress = Interactable.HoldProgress;
-                            // First half (0-50%): right half rotates 0-180°
-                            var rightRotation = Math.Min(progress * 2, 1) * 180;
-                            // Second half (50-100%): left half rotates 0-180°
-                            var leftRotation = Math.Max((progress - 0.5f) * 2, 0) * 180;
-                        }
-                        <div class="progress-left" style="transform: rotate(@leftRotation deg)"></div>
-                        <div class="progress-right" style="transform: rotate(@rightRotation deg)"></div>
-                        <div class="circle-cover">
-                            <div class="key-text">E</div>
-                        </div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-bg"></div>
+                        <div class="progress-bar-fill" style="width: @(Interactable.HoldProgress * 100)%"></div>
                     </div>
-                }
-                else
-                {
-                    <div class="key-display">E</div>
                 }
 
                 <div class="text-label">@Interactable.InteractionText</div>
