@@ -13,13 +13,11 @@
             <div class="interaction-content">
                 @if (Interactable.HoldDuration > 0)
                 {
-                    <div class="progress-wrapper">
-                        <div class="progress-circle-outer">
-                            <div class="progress-left-half" style="transform: rotate(@(Math.Min(Interactable.HoldProgress * 2, 1) * 180)deg)"></div>
-                            <div class="progress-right-half" style="transform: rotate(@(Math.Max((Interactable.HoldProgress - 0.5f) * 2, 0) * 180)deg)"></div>
-                        </div>
-                        <div class="progress-circle-center">
-                            <span class="progress-key">E</span>
+                    <div class="circular-progress">
+                        <div class="circle-background"></div>
+                        <div class="circle-progress" style="--progress: @(Interactable.HoldProgress * 100)"></div>
+                        <div class="circle-cover">
+                            <div class="key-text">E</div>
                         </div>
                     </div>
                 }
@@ -28,7 +26,7 @@
                     <div class="key-display">E</div>
                 }
 
-                <span class="interaction-text">@Interactable.InteractionText</span>
+                <div class="text-label">@Interactable.InteractionText</div>
             </div>
         </div>
     }

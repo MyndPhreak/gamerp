@@ -17,101 +17,102 @@ InteractionPromptPanel {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 20px 30px;
+    gap: 16px;
+    background-color: rgba(0, 0, 0, 0.85);
+    padding: 24px 36px;
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .key-display {
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
     border-radius: 12px;
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 800;
     color: white;
     text-transform: uppercase;
     font-family: 'Outfit', sans-serif;
-    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.5);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
-.progress-wrapper {
+/* Circular Progress Loader */
+.circular-progress {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
 }
 
-.progress-circle-outer {
+.circle-background {
     position: absolute;
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.15);
-    overflow: hidden;
+    border: 8px solid rgba(255, 255, 255, 0.2);
 }
 
-.progress-left-half {
+.circle-progress {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
+    width: 100%;
     height: 100%;
-    background-color: #34c759;
-    transform-origin: right center;
-    transition: transform 0.1s linear;
-}
-
-.progress-right-half {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    background-color: #34c759;
-    transform-origin: left center;
-    transition: transform 0.1s linear;
-}
-
-.progress-circle-center {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 74px;
-    height: 74px;
     border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.9);
+    border: 8px solid transparent;
+    border-top-color: #34c759;
+    border-right-color: #34c759;
+    transform: rotate(calc(var(--progress) * 3.6deg));
+    transition: transform 0.1s linear;
+}
+
+.circle-progress[style*="--progress: 0"],
+.circle-progress[style*="--progress: 1"],
+.circle-progress[style*="--progress: 2"],
+.circle-progress[style*="--progress: 3"],
+.circle-progress[style*="--progress: 4"],
+.circle-progress[style*="--progress: 5"] {
+    border-right-color: transparent;
+}
+
+.circle-cover {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.95);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
 }
 
-.progress-key {
-    font-size: 36px;
-    font-weight: 800;
+.key-text {
+    font-size: 42px;
+    font-weight: 900;
     color: white;
     text-transform: uppercase;
     font-family: 'Outfit', sans-serif;
-    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
 }
 
-.interaction-text {
-    font-size: 20px;
+/* Interaction Text */
+.text-label {
+    width: 100%;
+    padding: 4px 12px;
+    font-size: 22px;
     font-weight: 700;
     color: white;
     text-align: center;
-    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
-    max-width: 300px;
-    line-height: 1.4;
-    margin-top: 8px;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
     font-family: 'Outfit', sans-serif;
+    line-height: 1.3;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
 }
