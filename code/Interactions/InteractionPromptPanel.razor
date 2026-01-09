@@ -11,14 +11,16 @@
     {
         <div class="interaction-container">
             <div class="interaction-content">
-                <div class="key-display-hold">E</div>
-
                 @if (Interactable.HoldDuration > 0)
                 {
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar-bg"></div>
-                        <div class="progress-bar-fill" style="width: @(Interactable.HoldProgress * 100)%"></div>
+                    <div class="spinner-container">
+                        <div class="spinner"></div>
+                        <div class="spinner-key">E</div>
                     </div>
+                }
+                else
+                {
+                    <div class="key-display-hold">E</div>
                 }
 
                 <div class="text-label">@Interactable.InteractionText</div>
@@ -30,7 +32,7 @@
 @code
 {
     [Property] public Interactable Interactable { get; set; }
-    [Property] public Vector2 PanelSize { get; set; } = new Vector2(400, 150);
+    [Property] public Vector2 PanelSize { get; set; } = new Vector2(500, 300);
 
     private Sandbox.WorldPanel _worldPanel;
 
