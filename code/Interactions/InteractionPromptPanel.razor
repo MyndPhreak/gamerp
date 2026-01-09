@@ -15,7 +15,13 @@
                 {
                     <div class="circular-progress">
                         <div class="circle-background"></div>
-                        <div class="circle-progress" style="--progress: @(Interactable.HoldProgress * 100)"></div>
+                        @{
+                            var progress = Interactable.HoldProgress;
+                            var isFirstHalf = progress <= 0.5f;
+                            var isComplete = progress >= 0.5f;
+                        }
+                        <div class="progress-left" style="transform: rotate(@(isComplete ? 180 : 0)deg)"></div>
+                        <div class="progress-right" style="transform: rotate(@(Math.Min(progress * 2, 1) * 180)deg)"></div>
                         <div class="circle-cover">
                             <div class="key-text">E</div>
                         </div>
