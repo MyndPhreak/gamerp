@@ -15,7 +15,9 @@ public class InteractionPromptUI : Panel
 	private Panel _progressRing;
 	private Panel _instantKey;
 	private Label _keyLabel;
+	private Label _instantKeyLabel;
 	private Label _textLabel;
+	private Panel _progressFill;
 
 	public InteractionPromptUI( InteractionPromptPanel promptPanel )
 	{
@@ -30,29 +32,49 @@ public class InteractionPromptUI : Panel
 
 	private void BuildUI()
 	{
-		_container = Add.Panel( "interaction-container" );
-		_content = _container.Add.Panel( "interaction-content" );
+		// Main container
+		_container = new Panel();
+		_container.AddClass( "interaction-container" );
+		AddChild( _container );
+
+		// Content panel
+		_content = new Panel();
+		_content.AddClass( "interaction-content" );
+		_container.AddChild( _content );
 
 		// Progress ring (for hold-to-interact)
-		_progressRing = _content.Add.Panel( "progress-ring" );
+		_progressRing = new Panel();
+		_progressRing.AddClass( "progress-ring" );
 		_progressRing.AddClass( "hidden" );
+		_content.AddChild( _progressRing );
 
-		var svg = _progressRing.Add.Panel( "svg-container" );
-		svg.Style.Width = 80;
-		svg.Style.Height = 80;
+		// Progress ring background
+		var progressBg = new Panel();
+		progressBg.AddClass( "progress-ring-bg" );
+		_progressRing.AddChild( progressBg );
 
-		// We'll draw the progress using CSS instead of SVG for simplicity
-		var progressBg = _progressRing.Add.Panel( "progress-ring-bg" );
-		var progressFill = _progressRing.Add.Panel( "progress-ring-fill" );
+		// Progress ring fill (animated)
+		_progressFill = new Panel();
+		_progressFill.AddClass( "progress-ring-fill" );
+		_progressRing.AddChild( _progressFill );
 
-		_keyLabel = _progressRing.Add.Label( "E", "progress-key" );
+		// Key label in center of ring
+		_keyLabel = new Label( "E" );
+		_keyLabel.AddClass( "progress-key" );
+		_progressRing.AddChild( _keyLabel );
 
 		// Instant key (for instant interact)
-		_instantKey = _content.Add.Panel( "instant-key" );
-		_instantKey.Add.Label( "E" );
+		_instantKey = new Panel();
+		_instantKey.AddClass( "instant-key" );
+		_content.AddChild( _instantKey );
+
+		_instantKeyLabel = new Label( "E" );
+		_instantKey.AddChild( _instantKeyLabel );
 
 		// Text label
-		_textLabel = _content.Add.Label( "Interact", "interaction-text" );
+		_textLabel = new Label( "Interact" );
+		_textLabel.AddClass( "interaction-text" );
+		_content.AddChild( _textLabel );
 	}
 
 	public override void Tick()
@@ -71,18 +93,12 @@ public class InteractionPromptUI : Panel
 			_progressRing.SetClass( "hidden", false );
 			_instantKey.SetClass( "hidden", true );
 
-			// Update progress ring
+			// Update progress ring rotation
 			var progress = _promptPanel.HoldProgress;
-			var progressFill = _progressRing.GetChild( 2 ); // progress-ring-fill
+			var degrees = -90f + (progress * 360f); // Start at -90deg (top) and rotate clockwise
 
-			if ( progressFill != null )
-			{
-				// Calculate stroke-dashoffset for circular progress
-				var circumference = 2f * MathF.PI * 34f;
-				var offset = circumference * (1f - progress);
-
-				progressFill.Style.Set( "stroke-dashoffset", $"{offset}px" );
-			}
+			// Rotate the progress fill
+			_progressFill.Style.Set( "transform", $"rotate({degrees}deg)" );
 		}
 		else
 		{

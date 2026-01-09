@@ -1,10 +1,11 @@
 using Sandbox;
+using Sandbox.UI;
 
 namespace GameRP.Interactions;
 
 /// <summary>
 /// Component that manages a WorldPanel for rendering interaction prompts in 3D space.
-/// This wraps the S&Box WorldPanel component and provides a custom UI.
+/// This creates a simple WorldPanel with a custom RootPanel UI.
 /// </summary>
 public sealed class InteractionPromptPanel : Component
 {
@@ -20,7 +21,7 @@ public sealed class InteractionPromptPanel : Component
 	[Property] public Vector2 PanelSize { get; set; } = new Vector2( 400, 150 );
 
 	private Sandbox.WorldPanel _worldPanel;
-	private InteractionPromptUI _ui;
+	private InteractionPromptUI _promptUI;
 
 	protected override void OnAwake()
 	{
@@ -29,22 +30,33 @@ public sealed class InteractionPromptPanel : Component
 		_worldPanel.PanelSize = PanelSize;
 		_worldPanel.InteractionRange = 0; // Don't use WorldPanel's own interaction, we handle it ourselves
 
-		// Create and add the UI
-		_ui = new InteractionPromptUI( this );
-		_worldPanel.Panel.AddChild( _ui );
+		// The WorldPanel will automatically create a RootPanel
+		// We'll add our UI to it in OnStart after it's ready
+	}
+
+	protected override void OnStart()
+	{
+		// Wait one frame for WorldPanel to initialize its RootPanel
+		if ( _worldPanel?.RootPanel != null )
+		{
+			// Create and add our custom UI
+			_promptUI = new InteractionPromptUI( this );
+			_worldPanel.RootPanel.AddChild( _promptUI );
+		}
 	}
 
 	protected override void OnUpdate()
 	{
-		if ( _ui != null )
+		if ( _promptUI != null )
 		{
-			_ui.StateHasChanged();
+			_promptUI.StateHasChanged();
 		}
 
-		if ( _worldPanel != null && _worldPanel.Panel != null )
+		// Update visibility
+		if ( _worldPanel?.RootPanel != null )
 		{
-			_worldPanel.Panel.Style.Opacity = IsVisible ? 1f : 0f;
-			_worldPanel.Panel.Style.PointerEvents = IsVisible ? Sandbox.UI.PointerEvents.None : Sandbox.UI.PointerEvents.None;
+			_worldPanel.RootPanel.Style.Opacity = IsVisible ? 1f : 0f;
+			_worldPanel.RootPanel.Style.PointerEvents = PointerEvents.None; // Never intercept mouse
 		}
 	}
 

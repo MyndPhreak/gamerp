@@ -58,9 +58,10 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    border: 6px solid #34c759;
-    border-top-color: transparent;
-    border-right-color: transparent;
+    border: 6px solid transparent;
+    border-top-color: #34c759;
+    border-right-color: #34c759;
+    transform-origin: center center;
     transform: rotate(-90deg);
     transition: transform 0.1s linear;
 }
