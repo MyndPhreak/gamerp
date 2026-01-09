@@ -1,0 +1,50 @@
+@using Sandbox.UI;
+@using GameRP.Interactions;
+@using System;
+
+@inherits PanelComponent
+
+<root>
+    @if (Interactable != null && Interactable.IsLookingAt)
+    {
+        <div class="interaction-container">
+            <div class="interaction-content">
+                @if (Interactable.HoldDuration > 0)
+                {
+                    <div class="progress-ring">
+                        <div class="progress-ring-bg"></div>
+                        <div class="progress-ring-fill" style="transform: rotate(@GetRotationDegrees()deg)"></div>
+                        <label class="progress-key">E</label>
+                    </div>
+                }
+                else
+                {
+                    <div class="instant-key">
+                        <label>E</label>
+                    </div>
+                }
+                <label class="interaction-text">@Interactable.InteractionText</label>
+            </div>
+        </div>
+    }
+</root>
+
+@code
+{
+    [Property] public Interactable Interactable { get; set; }
+
+    private float GetRotationDegrees()
+    {
+        if (Interactable == null) return -90f;
+        return -90f + (Interactable.HoldProgress * 360f);
+    }
+
+    protected override int BuildHash()
+    {
+        return System.HashCode.Combine(
+            Interactable?.IsLookingAt,
+            Interactable?.HoldProgress,
+            Interactable?.InteractionText
+        );
+    }
+}

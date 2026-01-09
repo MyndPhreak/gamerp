@@ -111,9 +111,7 @@ public sealed class Interactable : Component
 			HoldProgress = Math.Max( 0f, HoldProgress );
 		}
 
-		// Update panel visibility and state
-		_promptPanel.IsVisible = IsLookingAt;
-		_promptPanel.UpdateState( InteractionText, HoldProgress, HoldDuration, PromptColor );
+		// Panel visibility is handled by the Razor component checking IsLookingAt
 	}
 
 	private void CreatePromptPanel()
@@ -126,6 +124,7 @@ public sealed class Interactable : Component
 
 		_promptPanel = panelGO.Components.Create<InteractionPromptPanel>();
 		_promptPanel.PanelSize = new Vector2( 400, 150 );
+		_promptPanel.Interactable = this; // Pass reference to this Interactable
 	}
 
 	private void CompleteInteraction()
