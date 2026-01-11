@@ -3,7 +3,7 @@ using GameRP.Interactions;
 using GameRP.UI;
 using System.Linq;
 
-namespace GameRP.Entities;
+namespace GameRP.Entities; 
  
 /// <summary>
 /// ATM machine that players can use to deposit/withdraw money
