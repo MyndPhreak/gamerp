@@ -63,6 +63,9 @@
         },
         {
           "__type": "Hud"
+        },
+        {
+          "__type": "GameRP.UI.AtmScreen"
         }
       ]
     },
@@ -76,6 +79,19 @@
           "__type": "Sandbox.DirectionalLight",
           "LightColor": "1,1,1,1",
           "ShadowsEnabled": true
+        }
+      ]
+    },
+    {
+      "Id": "6d7e8f9a-0b1c-2d3e-4f5a-6b7c8d9e0f1a",
+      "Name": "ATM",
+      "Enabled": true,
+      "Position": "0,200,0",
+      "Rotation": "0,0,0,1",
+      "Components": [
+        {
+          "__type": "GameRP.Entities.AtmMachine",
+          "AtmModel": "models/dev/box.vmdl"
         }
       ]
     }

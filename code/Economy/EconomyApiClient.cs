@@ -59,6 +59,80 @@ public class EconomyApiClient : IEconomyApi
 	}
 
 	/// <summary>
+	/// Deposit money into a wallet
+	/// </summary>
+	public async Task<WalletData> DepositAsync( long steamId, DepositRequest request )
+	{
+		try
+		{
+			var url = $"{_baseUrl}/wallet/{steamId}/deposit";
+			Log.Info( $"[EconomyAPI] Depositing ${request.Amount} for SteamID: {steamId}" );
+
+			var json = Json.Serialize( request );
+			var content = new System.Net.Http.StringContent( json, System.Text.Encoding.UTF8, "application/json" );
+			var response = await Http.RequestAsync( url, "POST", content );
+
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"[EconomyAPI] Deposit failed. Status: {response.StatusCode}" );
+				return null;
+			}
+
+			var responseJson = await response.Content.ReadAsStringAsync();
+			var wallet = Json.Deserialize<WalletData>( responseJson );
+
+			if ( wallet != null )
+			{
+				Log.Info( $"[EconomyAPI] Deposit successful. New balance: ${wallet.Balance}" );
+			}
+
+			return wallet;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[EconomyAPI] Error depositing: {ex.Message}" );
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Withdraw money from a wallet
+	/// </summary>
+	public async Task<WalletData> WithdrawAsync( long steamId, WithdrawRequest request )
+	{
+		try
+		{
+			var url = $"{_baseUrl}/wallet/{steamId}/withdraw";
+			Log.Info( $"[EconomyAPI] Withdrawing ${request.Amount} for SteamID: {steamId}" );
+
+			var json = Json.Serialize( request );
+			var content = new System.Net.Http.StringContent( json, System.Text.Encoding.UTF8, "application/json" );
+			var response = await Http.RequestAsync( url, "POST", content );
+
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"[EconomyAPI] Withdrawal failed. Status: {response.StatusCode}" );
+				return null;
+			}
+
+			var responseJson = await response.Content.ReadAsStringAsync();
+			var wallet = Json.Deserialize<WalletData>( responseJson );
+
+			if ( wallet != null )
+			{
+				Log.Info( $"[EconomyAPI] Withdrawal successful. New balance: ${wallet.Balance}" );
+			}
+
+			return wallet;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[EconomyAPI] Error withdrawing: {ex.Message}" );
+			return null;
+		}
+	}
+
+	/// <summary>
 	/// Check if the API is healthy
 	/// </summary>
 	public async Task<bool> HealthCheckAsync()

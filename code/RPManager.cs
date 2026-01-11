@@ -12,13 +12,13 @@ public sealed class RPManager : Component
     protected override void OnStart()
     {
         _nextPayday = Time.Now + PaydayInterval;
-    }
+    } 
 
-    protected override void OnUpdate()
-    {
+    protected override void OnUpdate()  
+    {  
         if ( Time.Now >= _nextPayday )
         {
-            GivePayday();
+            GivePayday(); 
             _nextPayday = Time.Now + PaydayInterval;
         }
     }

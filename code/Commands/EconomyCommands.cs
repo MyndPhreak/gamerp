@@ -50,11 +50,11 @@ public static class EconomyCommands
 		if ( wallet != null )
 		{
 			Log.Info( $"Steam ID:      {wallet.SteamId}" );
-			Log.Info( $"Balance:       ${wallet.Balance:N0}" );
-			Log.Info( $"Total Earned:  ${wallet.TotalEarned:N0}" );
-			Log.Info( $"Total Spent:   ${wallet.TotalSpent:N0}" );
+			Log.Info( $"Balance:       ${wallet.Balance:N2}" );
+			Log.Info( $"Total Earned:  ${wallet.TotalEarned:N2}" );
+			Log.Info( $"Total Spent:   ${wallet.TotalSpent:N2}" );
 			Log.Info( $"Created:       {wallet.CreatedAt}" );
-			Log.Info( $"Last Updated:  {wallet.LastUpdated}" );
+			Log.Info( $"Last Updated:  {wallet.UpdatedAt}" );
 		}
 		else
 		{

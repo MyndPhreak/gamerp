@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using GameRP.Api.Models;
+using GameRP.Api.DTOs;
+using GameRP.Api.Services;
 
 namespace GameRP.Api.Controllers;
 
@@ -11,65 +12,126 @@ namespace GameRP.Api.Controllers;
 public class WalletController : ControllerBase
 {
     private readonly ILogger<WalletController> _logger;
+    private readonly WalletService _walletService;
 
-    // In-memory storage for testing (will be replaced with database)
-    private static readonly Dictionary<long, WalletResponse> _wallets = new();
-
-    public WalletController(ILogger<WalletController> logger)
+    public WalletController(ILogger<WalletController> logger, WalletService walletService)
     {
         _logger = logger;
+        _walletService = walletService;
     }
 
     /// <summary>
-    /// Get wallet information for a player
+    /// Get or create wallet for a player
     /// </summary>
     /// <param name="steamId">Player's Steam ID</param>
+    /// <param name="displayName">Optional display name for new players</param>
     /// <returns>Wallet data</returns>
     [HttpGet("{steamId}")]
-    [ProducesResponseType(typeof(WalletResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<WalletResponse> GetWallet(long steamId)
+    [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<WalletDto>> GetWallet(long steamId, [FromQuery] string? displayName = null)
     {
         _logger.LogInformation("GetWallet called for SteamID: {SteamId}", steamId);
 
-        // Check if wallet exists
-        if (_wallets.TryGetValue(steamId, out var wallet))
+        var wallet = await _walletService.GetOrCreateWalletAsync(steamId, displayName);
+
+        if (wallet == null)
         {
-            _logger.LogInformation("Wallet found. Balance: ${Balance}", wallet.Balance);
-            return Ok(wallet);
+            return NotFound(new { message = "Failed to get or create wallet" });
         }
 
-        // Auto-create wallet with starting balance for testing
-        var newWallet = new WalletResponse
-        {
-            SteamId = steamId,
-            Balance = 10000, // Starting balance for testing
-            TotalEarned = 10000,
-            TotalSpent = 100,
-            CreatedAt = DateTime.UtcNow,
-            LastUpdated = DateTime.UtcNow
-        };
-
-        _wallets[steamId] = newWallet;
-
-        _logger.LogInformation("New wallet created for SteamID: {SteamId} with balance ${Balance}",
-            steamId, newWallet.Balance);
-
-        return Ok(newWallet);
+        _logger.LogInformation("Wallet found/created. Balance: ${Balance}", wallet.Balance);
+        return Ok(wallet);
     }
 
     /// <summary>
-    /// Get all wallets (for testing/debugging)
+    /// Deposit money into a wallet
     /// </summary>
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<WalletResponse>), StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<WalletResponse>> GetAllWallets()
+    /// <param name="steamId">Player's Steam ID</param>
+    /// <param name="request">Deposit details</param>
+    /// <returns>Updated wallet data</returns>
+    [HttpPost("{steamId}/deposit")]
+    [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<WalletDto>> Deposit(long steamId, [FromBody] DepositRequestDto request)
     {
-        _logger.LogInformation("GetAllWallets called. Total wallets: {Count}", _wallets.Count);
-        return Ok(_wallets.Values);
+        _logger.LogInformation("Deposit {Amount} for SteamID: {SteamId}", request.Amount, steamId);
+
+        var wallet = await _walletService.DepositAsync(steamId, request);
+
+        if (wallet == null)
+        {
+            return NotFound(new { message = "Wallet not found" });
+        }
+
+        return Ok(wallet);
     }
 
     /// <summary>
+    /// Withdraw money from a wallet
+    /// </summary>
+    /// <param name="steamId">Player's Steam ID</param>
+    /// <param name="request">Withdrawal details</param>
+    /// <returns>Updated wallet data</returns>
+    [HttpPost("{steamId}/withdraw")]
+    [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<WalletDto>> Withdraw(long steamId, [FromBody] WithdrawRequestDto request)
+    {
+        _logger.LogInformation("Withdraw {Amount} for SteamID: {SteamId}", request.Amount, steamId);
+
+        try
+        {
+            var wallet = await _walletService.WithdrawAsync(steamId, request);
+
+            if (wallet == null)
+            {
+                return NotFound(new { message = "Wallet not found" });
+            }
+
+            return Ok(wallet);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning("Withdrawal failed: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Transfer money to another player
+    /// </summary>
+    /// <param name="steamId">Sender's Steam ID</param>
+    /// <param name="request">Transfer details</param>
+    /// <returns>Updated sender wallet data</returns>
+    [HttpPost("{steamId}/transfer")]
+    [ProducesResponseType(typeof(WalletDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<WalletDto>> Transfer(long steamId, [FromBody] TransferRequestDto request)
+    {
+        _logger.LogInformation("Transfer {Amount} from {FromSteamId} to {ToSteamId}",
+            request.Amount, steamId, request.ToSteamId);
+
+        try 
+        {
+            var wallet = await _walletService.TransferAsync(steamId, request);
+
+            if (wallet == null)
+            {
+                return NotFound(new { message = "Sender wallet not found" });
+            }
+
+            return Ok(wallet);
+        } 
+        catch (InvalidOperationException ex) 
+        {
+            _logger.LogWarning("Transfer failed: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary> 
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]
@@ -80,8 +142,7 @@ public class WalletController : ControllerBase
         {
             status = "healthy",
             timestamp = DateTime.UtcNow,
-            totalWallets = _wallets.Count,
-            message = "GameRP Economy API is running"
+            message = "GameRP Economy API is running with database"
         });
     }
 }

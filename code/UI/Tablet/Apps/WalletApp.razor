@@ -54,7 +54,7 @@
                 </div>
                 <div class="info-row">
                     <label class="info-label">Last Updated</label>
-                    <label class="info-value">@WalletData.LastUpdated.ToString("MMM dd, yyyy HH:mm")</label>
+                    <label class="info-value">@WalletData.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</label>
                 </div>
             </div>
         </div>
@@ -150,5 +150,5 @@
         await LoadWalletData();
     }
 
-    protected override int BuildHash() => System.HashCode.Combine(WalletData?.Balance, WalletData?.LastUpdated, IsLoading, HasError);
+    protected override int BuildHash() => System.HashCode.Combine(WalletData?.Balance, WalletData?.UpdatedAt, IsLoading, HasError);
 }

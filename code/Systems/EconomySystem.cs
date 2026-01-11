@@ -59,9 +59,35 @@ public static class EconomySystem
 	/// <summary>
 	/// Get balance for a Steam ID
 	/// </summary>
-	public static async Task<long> GetBalance( long steamId )
+	public static async Task<decimal> GetBalance( long steamId )
 	{
 		var wallet = await Api.GetWalletAsync( steamId );
 		return wallet?.Balance ?? 0;
+	}
+
+	/// <summary>
+	/// Deposit money into a wallet
+	/// </summary>
+	public static async Task<WalletData> Deposit( long steamId, decimal amount, string description = "Deposit" )
+	{
+		var request = new DepositRequest
+		{
+			Amount = amount,
+			Description = description
+		};
+		return await Api.DepositAsync( steamId, request );
+	}
+
+	/// <summary>
+	/// Withdraw money from a wallet
+	/// </summary>
+	public static async Task<WalletData> Withdraw( long steamId, decimal amount, string description = "Withdrawal" )
+	{
+		var request = new WithdrawRequest
+		{
+			Amount = amount,
+			Description = description
+		};
+		return await Api.WithdrawAsync( steamId, request );
 	}
 }

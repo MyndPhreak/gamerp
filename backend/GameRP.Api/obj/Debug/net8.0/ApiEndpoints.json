@@ -1,15 +1,26 @@
 [
   {
     "ContainingType": "GameRP.Api.Controllers.WalletController",
-    "Method": "GetAllWallets",
-    "RelativePath": "api/Wallet",
+    "Method": "GetWallet",
+    "RelativePath": "api/Wallet/{steamId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "steamId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "displayName",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[GameRP.Api.Models.WalletResponse, GameRP.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "GameRP.Api.DTOs.WalletDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -21,9 +32,9 @@
   },
   {
     "ContainingType": "GameRP.Api.Controllers.WalletController",
-    "Method": "GetWallet",
-    "RelativePath": "api/Wallet/{steamId}",
-    "HttpMethod": "GET",
+    "Method": "Deposit",
+    "RelativePath": "api/Wallet/{steamId}/deposit",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -31,11 +42,16 @@
         "Name": "steamId",
         "Type": "System.Int64",
         "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "GameRP.Api.DTOs.DepositRequestDto",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "GameRP.Api.Models.WalletResponse",
+        "Type": "GameRP.Api.DTOs.WalletDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -51,6 +67,104 @@
           "text/json"
         ],
         "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "GameRP.Api.Controllers.WalletController",
+    "Method": "Transfer",
+    "RelativePath": "api/Wallet/{steamId}/transfer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "steamId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "GameRP.Api.DTOs.TransferRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "GameRP.Api.DTOs.WalletDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      }
+    ]
+  },
+  {
+    "ContainingType": "GameRP.Api.Controllers.WalletController",
+    "Method": "Withdraw",
+    "RelativePath": "api/Wallet/{steamId}/withdraw",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "steamId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "GameRP.Api.DTOs.WithdrawRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "GameRP.Api.DTOs.WalletDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
       }
     ]
   },
