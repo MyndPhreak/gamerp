@@ -6,334 +6,68 @@
 @using System.Threading.Tasks;
 
 @namespace GameRP.UI
-@inherits PanelComponent
+@inherits Panel
 
-<root class="atm-screen @(IsOpen ? "open" : "")">
-    <div class="atm-overlay" @onclick=@Close></div>
+<root style="@RootStyle">
+    <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);" @onclick=@Close></div>
 
-    <div class="atm-container">
+    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 800px; background-color: rgba(30,30,40,0.95); border-radius: 16px; padding: 48px; display: flex; flex-direction: column; gap: 24px;">
         @if (IsLoading)
         {
-            <div class="loading">
-                <div class="spinner"></div>
-                <span>Loading...</span>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px;">
+                <div style="width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #667eea; border-radius: 50%;"></div>
+                <div style="font-size: 16px; font-weight: 600; color: white;">Loading...</div>
             </div>
         }
         else if (WalletData != null)
         {
-            <div class="atm-header">
-                <span class="atm-title">ATM</span>
-                <div class="close-btn" @onclick=@Close>×</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 36px; font-weight: 700; color: white;">ATM</div>
+                <div style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; cursor: pointer;" @onclick=@Close>×</div>
             </div>
 
-            <div class="balance-display">
-                <span class="balance-label">Balance</span>
-                <span class="balance-amount">$@WalletData.Balance.ToString("N2")</span>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 12px;">
+                <div style="font-size: 18px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 2px;">Balance</div>
+                <div style="font-size: 56px; font-weight: 800; color: white;">$@WalletData.Balance.ToString("N2")</div>
             </div>
 
             @if (!ShowAmountInput)
             {
-                <div class="atm-actions">
-                    <div class="atm-btn deposit" @onclick=@(() => ShowInput(true))>DEPOSIT</div>
-                    <div class="atm-btn withdraw" @onclick=@(() => ShowInput(false))>WITHDRAW</div>
+                <div style="display: flex; gap: 16px;">
+                    <div style="flex: 1; padding: 28px; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;" @onclick=@(() => ShowInput(true))>DEPOSIT</div>
+                    <div style="flex: 1; padding: 28px; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); text-align: center;" @onclick=@(() => ShowInput(false))>WITHDRAW</div>
                 </div>
             }
             else
             {
-                <div class="amount-input-section">
-                    <span class="input-label">Amount</span>
-                    <input type="number" @bind="Amount" placeholder="0.00" step="0.01" />
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Amount</div>
+                    <input type="number" @bind="Amount" placeholder="0.00" step="0.01" style="background-color: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 24px; font-size: 36px; font-weight: 700; color: white; text-align: center;" />
 
-                    <div class="quick-amounts">
-                        <div class="quick-btn" @onclick=@(() => Amount = 100)>$100</div>
-                        <div class="quick-btn" @onclick=@(() => Amount = 500)>$500</div>
-                        <div class="quick-btn" @onclick=@(() => Amount = 1000)>$1,000</div>
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 100)>$100</div>
+                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 500)>$500</div>
+                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 1000)>$1,000</div>
                     </div>
 
-                    <div class="action-buttons">
-                        <div class="cancel-btn" @onclick=@CancelInput>Cancel</div>
-                        <div class="confirm-btn @(IsDeposit ? "deposit" : "withdraw")" @onclick=@ProcessTransaction>@(IsDeposit ? "Deposit" : "Withdraw")</div>
+                    <div style="display: flex; gap: 16px; margin-top: 8px;">
+                        <div style="flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); text-align: center;" @onclick=@CancelInput>Cancel</div>
+                        <div style="@ConfirmButtonStyle" @onclick=@ProcessTransaction>@(IsDeposit ? "Deposit" : "Withdraw")</div>
                     </div>
                 </div>
             }
 
             @if (!string.IsNullOrEmpty(Message))
             {
-                <div class="message @MessageClass">@Message</div>
+                <div style="@MessageStyle">@Message</div>
             }
         }
     </div>
 </root>
 
-<style>
-    .atm-screen {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 100;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-    }
-
-    .atm-screen.open {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .atm-overlay {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-    }
-
-    .atm-container {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 800px;
-        background-color: rgba(30, 30, 40, 0.95);
-        border-radius: 16px;
-        padding: 48px;
-        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.9);
-    }
-
-    .atm-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-
-    .atm-title {
-        font-size: 36px;
-        font-weight: 700;
-        color: white;
-    }
-
-    .close-btn {
-        width: 48px;
-        height: 48px;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        color: white;
-        cursor: pointer;
-    }
-
-    .close-btn:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        padding: 48px;
-        color: white;
-    }
-
-    .loading span {
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .spinner {
-        width: 48px;
-        height: 48px;
-        border: 4px solid rgba(255, 255, 255, 0.2);
-        border-top-color: #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @@keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .balance-display {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 24px;
-        border-radius: 8px;
-        text-align: center;
-        margin-bottom: 24px;
-    }
-
-    .balance-label {
-        font-size: 18px;
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 12px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-
-    .balance-amount {
-        font-size: 56px;
-        font-weight: 800;
-        color: white;
-    }
-
-    .atm-actions {
-        display: flex;
-        gap: 16px;
-    }
-
-    .atm-btn {
-        flex: 1;
-        padding: 28px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 20px;
-        font-weight: 700;
-        color: white;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        white-space: nowrap;
-    }
-
-    .atm-btn.deposit {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    }
-
-    .atm-btn.withdraw {
-        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-    }
-
-    .atm-btn:hover {
-        transform: translateY(-2px);
-    }
-
-    .amount-input-section {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .input-label {
-        color: white;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .amount-input-section input {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 3px solid rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        padding: 24px;
-        font-size: 36px;
-        font-weight: 700;
-        color: white;
-        text-align: center;
-    }
-
-    .amount-input-section input:focus {
-        border-color: #667eea;
-        background-color: rgba(255, 255, 255, 0.15);
-    }
-
-    .quick-amounts {
-        display: flex;
-        gap: 12px;
-    }
-
-    .quick-btn {
-        flex: 1;
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        padding: 16px;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: 600;
-        color: white;
-        white-space: nowrap;
-    }
-
-    .quick-btn:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 16px;
-        margin-top: 8px;
-    }
-
-    .action-buttons div {
-        flex: 1;
-        padding: 20px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: white;
-        white-space: nowrap;
-    }
-
-    .cancel-btn {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .cancel-btn:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .confirm-btn {
-    }
-
-    .confirm-btn.deposit {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    }
-
-    .confirm-btn.withdraw {
-        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-    }
-
-    .confirm-btn:hover {
-        transform: translateY(-2px);
-    }
-
-    .message {
-        margin-top: 16px;
-        padding: 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .message.success {
-        background-color: rgba(76, 175, 80, 0.2);
-        border: 2px solid #4CAF50;
-        color: #4CAF50;
-    }
-
-    .message.error {
-        background-color: rgba(244, 67, 54, 0.2);
-        border: 2px solid #f44336;
-        color: #f44336;
-    }
-</style>
-
 @code
 {
-    [Property] public bool IsOpen { get; set; } = false;
-
+    private bool IsOpen { get; set; } = false;
     private long SteamId { get; set; }
     private WalletData WalletData { get; set; }
     private bool IsLoading { get; set; } = true;
@@ -342,6 +76,19 @@
     private decimal Amount { get; set; } = 0;
     private string Message { get; set; } = "";
     private string MessageClass { get; set; } = "";
+    private bool _isProcessing = false;
+
+    private string RootStyle => IsOpen
+        ? "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; opacity: 1; pointer-events: all;"
+        : "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; opacity: 0; pointer-events: none;";
+
+    private string ConfirmButtonStyle => IsDeposit
+        ? "flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;"
+        : "flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); text-align: center;";
+
+    private string MessageStyle => MessageClass == "success"
+        ? "margin-top: 16px; padding: 16px; border-radius: 8px; font-size: 14px; font-weight: 600; background-color: rgba(76,175,80,0.2); border: 2px solid #4CAF50; color: #4CAF50; text-align: center;"
+        : "margin-top: 16px; padding: 16px; border-radius: 8px; font-size: 14px; font-weight: 600; background-color: rgba(244,67,54,0.2); border: 2px solid #f44336; color: #f44336; text-align: center;";
 
     public async void Open(long steamId)
     {
@@ -357,9 +104,7 @@
         ShowAmountInput = false;
         Amount = 0;
         Message = "";
-
         Mouse.Visibility = MouseVisibility.Visible;
-
         await LoadWallet();
     }
 
@@ -401,8 +146,6 @@
         Message = "";
     }
 
-    private bool _isProcessing = false;
-
     private async void ProcessTransaction()
     {
         if (Amount <= 0)
@@ -413,7 +156,6 @@
             return;
         }
 
-        // Prevent duplicate transactions
         if (_isProcessing)
         {
             Log.Warning("[AtmScreen] Transaction already in progress, ignoring duplicate");
