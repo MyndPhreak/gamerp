@@ -5,9 +5,11 @@ namespace GameRP.Interactions;
 
 /// <summary>
 /// Manages interaction raycasting and detection.
-/// Attach this to the player or camera GameObject.
+/// Attach this to the player as a sibling of PlayerController.
+/// Hooks into PlayerController.IEvents so the built-in use system
+/// routes through to our Interactable components.
 /// </summary>
-public sealed class InteractionManager : Component
+public sealed class InteractionManager : Component, PlayerController.IEvents
 {
 	/// <summary>
 	/// The camera to raycast from (if null, uses Scene.Camera)
@@ -20,17 +22,13 @@ public sealed class InteractionManager : Component
 	[Property] public float MaxRaycastDistance { get; set; } = 500f;
 
 	/// <summary>
-	/// The input action name for interaction (default: "use")
-	/// </summary>
-	[Property] public string InteractButton { get; set; } = "use";
-
-	/// <summary>
 	/// Debug visualization
 	/// </summary>
 	[Property] public bool ShowDebug { get; set; } = false;
 
 	private Interactable _currentInteractable;
 	private Interactable _previousInteractable;
+	private bool _isPressing;
 
 	protected override void OnUpdate()
 	{
@@ -67,12 +65,10 @@ public sealed class InteractionManager : Component
 
 		if ( trace.Hit && trace.GameObject != null )
 		{
-			// Check if the hit GameObject has an Interactable component
 			var interactable = trace.GameObject.Components.GetInAncestorsOrSelf<Interactable>();
 
 			if ( interactable != null && interactable.Enabled )
 			{
-				// Check if in range
 				if ( interactable.IsInRange( camera.WorldPosition ) )
 				{
 					_currentInteractable = interactable;
@@ -83,20 +79,67 @@ public sealed class InteractionManager : Component
 		// Update interactable states
 		UpdateInteractableStates();
 
-		// Handle input
-		HandleInput();
+		// Update hold state while pressing
+		if ( _isPressing && _currentInteractable != null && _currentInteractable.HoldDuration > 0 )
+		{
+			_currentInteractable.IsHolding = true;
+		}
+	}
+
+	/// <summary>
+	/// Called by PlayerController when it finds a GameObject in its use trace.
+	/// We return the Interactable if one exists, telling PlayerController it's usable.
+	/// </summary>
+	public Component GetUsableComponent( GameObject go )
+	{
+		var interactable = go.Components.GetInAncestorsOrSelf<Interactable>();
+		if ( interactable != null && interactable.Enabled && interactable.IsInRange( (Camera ?? Scene.Camera).WorldPosition ) )
+		{
+			return interactable;
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// PlayerController started pressing use on a target.
+	/// </summary>
+	public void StartPressing( Component target )
+	{
+		if ( target is not Interactable interactable )
+			return;
+
+		_isPressing = true;
+
+		if ( interactable.HoldDuration <= 0 )
+		{
+			// Instant interact
+			interactable.OnInteract?.Invoke();
+			Log.Info( $"[InteractionManager] Instant interact: {interactable.InteractionText}" );
+		}
+	}
+
+	/// <summary>
+	/// PlayerController stopped pressing use.
+	/// </summary>
+	public void StopPressing( Component target )
+	{
+		_isPressing = false;
+
+		if ( target is Interactable interactable )
+		{
+			interactable.IsHolding = false;
+		}
 	}
 
 	private void UpdateInteractableStates()
 	{
-		// Clear previous interactable
 		if ( _previousInteractable != null && _previousInteractable != _currentInteractable )
 		{
 			_previousInteractable.IsLookingAt = false;
 			_previousInteractable.IsHolding = false;
 		}
 
-		// Set current interactable
 		if ( _currentInteractable != null )
 		{
 			_currentInteractable.IsLookingAt = true;
@@ -105,30 +148,8 @@ public sealed class InteractionManager : Component
 		_previousInteractable = _currentInteractable;
 	}
 
-	private void HandleInput()
-	{
-		if ( _currentInteractable == null )
-			return;
-
-		// Check if interact button is pressed
-		bool isInteracting = Input.Down( InteractButton );
-
-		if ( _currentInteractable.HoldDuration > 0 )
-		{
-			// Hold-to-interact
-			_currentInteractable.IsHolding = isInteracting;
-		}
-		else if ( Input.Pressed( InteractButton ) )
-		{
-			// Instant interact
-			_currentInteractable.OnInteract?.Invoke();
-			Log.Info( $"[InteractionManager] Instant interact: {_currentInteractable.InteractionText}" );
-		}
-	}
-
 	protected override void OnDisabled()
 	{
-		// Clear all interactable states when disabled
 		if ( _currentInteractable != null )
 		{
 			_currentInteractable.IsLookingAt = false;

@@ -4,6 +4,71 @@ Layer0
 {
 	shader "skydome.shader"
 
+	//---- Animation ----
+	F_MORPH_SUPPORTED 1
+
 	//---- Fog ----
 	g_bFogEnabled "1"
+
+	"StateHistory"
+	{
+		"State_0000"
+		{
+			"ThumbnailChecksum"		"0x00000000"
+			"Thumbnail"		"/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAgACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5/ooooAKKKKACiiigAooooA//2Q=="
+			"Material"
+			{
+				"Layer0"
+				{
+					"shader"		"shaders/volumetrics/clouds/dynamic_sky.shader"
+					"F_MORPH_SUPPORTED"		"1"
+					"F_AURORA"		"1"
+					"F_MILKYWAY"		"1"
+					"F_MOON"		"1"
+					"F_CLOUDS"		"1"
+					"g_flAuroraHeight"		"0.600000"
+					"g_flAuroraIntensity"		"1.000000"
+					"g_flAuroraSpeed"		"0.060000"
+					"g_vAuroraColor1"		"[0.000000 1.000000 0.301961 0.000000]"
+					"g_vAuroraColor2"		"[0.301961 0.501961 1.000000 0.000000]"
+					"g_flCloudDensity"		"0.300000"
+					"g_flCloudHeight"		"6000.000000"
+					"g_flCloudSpeed"		"0.100000"
+					"g_vCloudColor"		"[1.000000 1.000000 1.000000 0.000000]"
+					"g_flHorizonBlend"		"3.000000"
+					"g_flSkyBrightness"		"1.000000"
+					"g_flSunSize"		"0.010000"
+					"g_vHorizonColor"		"[0.800000 0.701961 0.600000 0.000000]"
+					"g_vSkyTint"		"[1.000000 1.000000 1.000000 0.000000]"
+					"g_vZenithColor"		"[0.200000 0.501961 1.000000 0.000000]"
+					"g_flMilkyWayIntensity"		"1.500000"
+					"g_flMilkyWayIterations"		"4.000000"
+					"g_flMilkyWayRotationSpeed"		"0.300000"
+					"g_flMilkyWaySize"		"1.000000"
+					"g_vMilkyWayCoreColor"		"[0.988235 0.949020 0.901961 0.000000]"
+					"g_vMilkyWayGlowColor"		"[0.988235 0.949020 0.901961 0.000000]"
+					"g_vMilkyWayNebulaAbsorption"		"[0.701961 0.850980 0.949020 0.000000]"
+					"g_vMilkyWayPeripheryColor"		"[0.101961 0.301961 0.988235 0.000000]"
+					"g_flMoonBrightness"		"1.000000"
+					"g_flMoonEnabled"		"0.000000"
+					"g_flMoonPhase"		"0.000000"
+					"g_flMoonSize"		"0.020000"
+					"g_vMoonColor"		"[1.000000 0.980392 0.949020 0.000000]"
+					"g_vMoonDirection"		"[0.000 -1.000 0.000]"
+					"g_flDayNightTransitionOffset"		"0.100000"
+					"g_flDayNightTransitionSharpness"		"2.000000"
+					"g_flMilkyWayFadeEnd"		"-0.100000"
+					"g_flMilkyWayFadeStart"		"0.050000"
+					"g_flNightSkyBrightness"		"0.300000"
+					"g_vNightSkyColor"		"[0.011765 0.019608 0.050980 0.000000]"
+					"g_flStarBrightness"		"1.500000"
+					"g_flStarDensity"		"0.003000"
+					"g_flStarIntensity"		"1.000000"
+					"g_flStarSharpness"		"8.000000"
+					"g_flStarSize"		"0.500000"
+					"g_flStarSizeVariation"		"0.800000"
+				}
+			}
+		}
+	}
 }

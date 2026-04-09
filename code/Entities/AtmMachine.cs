@@ -10,29 +10,20 @@ namespace GameRP.Entities;
 /// </summary>
 public sealed class AtmMachine : Component
 {
-	/// <summary>
-	/// The model to use for the ATM
-	/// </summary>
-	[Property] public Model AtmModel { get; set; }
-
-	private ModelRenderer _modelRenderer;
 	private Interactable _interactable;
 
-	protected override void OnAwake()
+	protected override void OnStart()
 	{
-		// Set up the model renderer
-		_modelRenderer = Components.GetOrCreate<ModelRenderer>();
-		if ( AtmModel != null )
+		// Hook into the sibling Interactable (configured in the editor)
+		_interactable = Components.Get<Interactable>();
+		if ( _interactable != null )
 		{
-			_modelRenderer.Model = AtmModel;
+			_interactable.OnInteract = OnAtmInteract;
 		}
-
-		// Set up the interactable component
-		_interactable = Components.GetOrCreate<Interactable>();
-		_interactable.InteractionText = "Use ATM";
-		_interactable.InteractionDistance = 150f;
-		_interactable.HoldDuration = 0f; // Instant interaction
-		_interactable.OnInteract = OnAtmInteract;
+		else
+		{
+			Log.Warning( "[ATM] No Interactable component found - add one in the editor" );
+		}
 	}
 
 	/// <summary>

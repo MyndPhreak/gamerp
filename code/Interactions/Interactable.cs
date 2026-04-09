@@ -25,26 +25,6 @@ public sealed class Interactable : Component
 	[Property] public float HoldDuration { get; set; } = 0f;
 
 	/// <summary>
-	/// Local offset from the GameObject's position for the UI panel
-	/// </summary>
-	[Property] public Vector3 PanelOffset { get; set; } = new Vector3( 0, 0, 50 );
-
-	/// <summary>
-	/// Scale of the world panel (larger = bigger UI)
-	/// </summary>
-	[Property] public float PanelScale { get; set; } = 0.3f;
-
-	/// <summary>
-	/// Whether the panel should always face the camera
-	/// </summary>
-	[Property] public bool Billboard { get; set; } = true;
-
-	/// <summary>
-	/// Rotation of the panel when not in billboard mode (Pitch, Yaw, Roll)
-	/// </summary>
-	[Property] public Angles PanelRotation { get; set; } = new Angles( 0, 0, 0 );
-
-	/// <summary>
 	/// Color tint for the interaction prompt
 	/// </summary>
 	[Property] public Color PromptColor { get; set; } = Color.White;
@@ -79,26 +59,6 @@ public sealed class Interactable : Component
 
 	protected override void OnUpdate()
 	{
-		if ( _promptPanel == null || _promptPanel.GameObject == null )
-			return;
-
-		// Update panel position
-		var worldPos = WorldPosition + WorldRotation * PanelOffset;
-		_promptPanel.GameObject.WorldPosition = worldPos;
-
-		// Billboard behavior - face the camera
-		if ( Billboard && Scene.Camera != null )
-		{
-			_promptPanel.GameObject.WorldRotation = Rotation.LookAt( Scene.Camera.WorldPosition - worldPos );
-		}
-		else
-		{
-			// Use custom rotation when not billboarding
-			_promptPanel.GameObject.WorldRotation = WorldRotation * Rotation.From( PanelRotation );
-		}
-
-		_promptPanel.GameObject.WorldScale = PanelScale;
-
 		// Update hold progress
 		if ( IsHolding && HoldDuration > 0 )
 		{
@@ -116,8 +76,6 @@ public sealed class Interactable : Component
 			HoldProgress -= Time.Delta * 2f; // Reset faster than fill
 			HoldProgress = Math.Max( 0f, HoldProgress );
 		}
-
-		// Panel visibility is handled by the Razor component checking IsLookingAt
 	}
 
 	private void CreatePromptPanel()
@@ -125,12 +83,20 @@ public sealed class Interactable : Component
 		if ( _promptPanel != null )
 			return;
 
+		// Check if a prompt panel already exists as a child (e.g., saved in the scene file)
+		_promptPanel = Components.GetInChildren<InteractionPromptPanel>();
+		if ( _promptPanel != null )
+		{
+			_promptPanel.Interactable = this;
+			return;
+		}
+
 		var panelGO = new GameObject( true, "InteractionPrompt" );
 		panelGO.SetParent( GameObject );
 
 		_promptPanel = panelGO.Components.Create<InteractionPromptPanel>();
 		_promptPanel.PanelSize = new Vector2( 400, 150 );
-		_promptPanel.Interactable = this; // Pass reference to this Interactable
+		_promptPanel.Interactable = this;
 	}
 
 	private void CompleteInteraction()

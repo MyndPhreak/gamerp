@@ -11,6 +11,9 @@ bin
 Properties/*
 code/obj/*
 code/Properties/*
+.claude
+.superpowers
+docs/superpowers
 
 # Auto-generated asset related files
 .sbox/*
