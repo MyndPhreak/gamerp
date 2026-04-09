@@ -81,7 +81,7 @@ PS
 
 	// --- Utility ---
 
-	float hash( float3 p )
+	float starHash( float3 p )
 	{
 		p = frac( p * float3( 443.8975, 397.2973, 491.1871 ) );
 		p += dot( p, p.yzx + 19.19 );
@@ -97,10 +97,10 @@ PS
 	}
 
 	// Henyey-Greenstein phase function for Mie scattering
-	float phaseMie( float cosTheta, float g )
+	float phaseMie( float cosTheta, float mieG )
 	{
-		float g2 = g * g;
-		float denom = 1.0 + g2 - 2.0 * g * cosTheta;
+		float g2 = mieG * mieG;
+		float denom = 1.0 + g2 - 2.0 * mieG * cosTheta;
 		return (1.0 - g2) / (4.0 * 3.14159265 * pow( denom, 1.5 ));
 	}
 
@@ -157,7 +157,7 @@ PS
 		float3 cellNorm = normalize( cellCenter );
 
 		// Random brightness per cell
-		float h = hash( cell );
+		float h = starHash( cell );
 
 		// Only a small fraction of cells have stars (sparse)
 		float starMask = step( 0.985, h );
