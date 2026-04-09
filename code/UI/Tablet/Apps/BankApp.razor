@@ -3,63 +3,120 @@
 @using Sandbox.UI;
 @using System;
 @using System.Linq;
+@using System.Threading.Tasks;
+@using GameRP.Systems;
+@using GameRP.Economy;
 
 <root>
-    <div class="bank-top">
-        <label class="balance-label">Total Balance</label>
-        <label class="balance-value">$@Player?.Money.ToString("N0")</label>
-    </div>
+    @if (IsLoading)
+    {
+        <div class="bank-loading">
+            <div class="spinner"></div>
+            <label>Loading account...</label>
+        </div>
+    }
+    else
+    {
+        <div class="bank-top">
+            <label class="balance-label">Total Balance</label>
+            <label class="balance-value">$@BankBalance.ToString("N0")</label>
+        </div>
 
-    <div class="bank-actions">
-        <div class="action-btn">
-            <div class="circle blue"><MyIcon Name="send" Size=@(24) /></div>
-            <label>Transfer</label>
+        <div class="bank-actions">
+            <div class="action-btn">
+                <div class="circle blue"><MyIcon Name="send" Size=@(24) /></div>
+                <label>Transfer</label>
+            </div>
+            <div class="action-btn">
+                <div class="circle green"><MyIcon Name="payments" Size=@(24) /></div>
+                <label>Pay Bill</label>
+            </div>
+            <div class="action-btn" @onclick=@RefreshBalance>
+                <div class="circle orange"><MyIcon Name="refresh" Size=@(24) /></div>
+                <label>Refresh</label>
+            </div>
         </div>
-        <div class="action-btn">
-            <div class="circle green"><MyIcon Name="payments" Size=@(24) /></div>
-            <label>Pay Bill</label>
-        </div>
-        <div class="action-btn">
-            <div class="circle orange"><MyIcon Name="history" Size=@(24) /></div>
-            <label>History</label>
-        </div>
-    </div>
 
-    <div class="bank-logs">
-        <label class="section-title">Recent Transactions</label>
-        <div class="logs-list">
-            @if (Player != null && Player.BankLogs.Any())
-            {
-                @foreach (var log in Player.BankLogs)
+        <div class="bank-logs">
+            <label class="section-title">Recent Transactions</label>
+            <div class="logs-list">
+                @if (Player != null && Player.BankLogs.Any())
                 {
-                    <div class="log-entry">
-                        <div class="log-icon @(log.IsIncome ? "plus" : "minus")">
-                            <MyIcon Name="@(log.IsIncome ? "add" : "remove")" Size=@(20) Color="@(log.IsIncome ? Color.Green : Color.Red)" />
+                    @foreach (var log in Player.BankLogs)
+                    {
+                        <div class="log-entry">
+                            <div class="log-icon @(log.IsIncome ? "plus" : "minus")">
+                                <MyIcon Name="@(log.IsIncome ? "add" : "remove")" Size=@(20) Color="@(log.IsIncome ? Color.Green : Color.Red)" />
+                            </div>
+                            <div class="log-info">
+                                <label class="log-title">@log.Title</label>
+                                <label class="log-time">@log.Time</label>
+                            </div>
+                            <label class="log-amount @(log.IsIncome ? "green" : "red")">
+                                @(log.IsIncome ? "+" : "-")$@Math.Abs(log.Amount)
+                            </label>
                         </div>
-                        <div class="log-info">
-                            <label class="log-title">@log.Title</label>
-                            <label class="log-time">@log.Time</label>
-                        </div>
-                        <label class="log-amount @(log.IsIncome ? "green" : "red")">
-                            @(log.IsIncome ? "+" : "-")$@Math.Abs(log.Amount)
-                        </label>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <icon>sentiment_neutral</icon>
+                        <label>No transactions yet</label>
                     </div>
                 }
-            }
-            else
-            {
-                <div class="empty-state">
-                    <icon>sentiment_neutral</icon>
-                    <label>No transactions yet</label>
-                </div>
-            }
+            </div>
         </div>
-    </div>
+    }
 </root>
 
 @code
 {
     private RPPlayer Player => Scene.GetAll<RPPlayer>().FirstOrDefault();
+    private decimal BankBalance { get; set; } = 0;
+    private bool IsLoading { get; set; } = true;
+    private bool _hasLoaded = false;
 
-    protected override int BuildHash() => System.HashCode.Combine(Player?.Money, Player?.BankLogs?.Count);
+    protected override void OnAfterTreeRender(bool firstTime)
+    {
+        base.OnAfterTreeRender(firstTime);
+
+        if (firstTime && !_hasLoaded)
+        {
+            _hasLoaded = true;
+            _ = LoadBankBalance();
+        }
+    }
+
+    private async Task LoadBankBalance()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var steamId = Game.SteamId;
+            var wallet = await EconomySystem.Api.GetWalletAsync(steamId);
+            if (wallet != null)
+            {
+                BankBalance = wallet.Balance;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[BankApp] Failed to load bank balance: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshBalance()
+    {
+        await LoadBankBalance();
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(BankBalance, IsLoading, Player?.BankLogs?.Count);
 }

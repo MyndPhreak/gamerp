@@ -1,4 +1,5 @@
 using Sandbox;
+using GameRP.Systems;
 using System;
 using System.Linq;
 
@@ -12,26 +13,38 @@ public sealed class RPManager : Component
     protected override void OnStart()
     {
         _nextPayday = Time.Now + PaydayInterval;
-    } 
+    }
 
-    protected override void OnUpdate()  
-    {  
+    protected override void OnUpdate()
+    {
         if ( Time.Now >= _nextPayday )
         {
-            GivePayday(); 
+            GivePayday();
             _nextPayday = Time.Now + PaydayInterval;
         }
     }
 
-    private void GivePayday()
+    private async void GivePayday()
     {
-        // For a minimal example, we find the local player and give them money
-        // In a real game, you might iterate over all players or handle this server-side
         var player = Scene.GetAll<RPPlayer>().FirstOrDefault();
-        if ( player != null )
+        if ( player == null ) return;
+
+        try
         {
-            player.RecordTransaction( "Payday", PaydayAmount );
-            Log.Info( $"Payday! ${PaydayAmount} added. New balance: ${player.Money}" );
+            var result = await EconomySystem.Deposit( Game.SteamId, PaydayAmount, "Payday - Direct Deposit" );
+            if ( result != null )
+            {
+                player.RecordBankLog( "Payday", PaydayAmount );
+                Log.Info( $"Payday! ${PaydayAmount} deposited to bank. Bank balance: ${result.Balance}" );
+            }
+            else
+            {
+                Log.Warning( "Payday deposit failed - null result from API" );
+            }
+        }
+        catch ( Exception ex )
+        {
+            Log.Warning( $"Payday deposit failed: {ex.Message}" );
         }
     }
 }

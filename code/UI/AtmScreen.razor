@@ -1,108 +1,364 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.UI.Common;
 @using GameRP.Economy;
 @using GameRP.Systems;
 @using System;
+@using System.Linq;
 @using System.Threading.Tasks;
 
 @namespace GameRP.UI
 @inherits PanelComponent
 
-<root style="@RootStyle">
-    <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);" @onclick=@Close></div>
+<root class="@(IsOpen ? "atm-open" : "atm-closed")">
+    <div class="atm-backdrop" @onclick=@Close></div>
 
-    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 800px; background-color: rgba(30,30,40,0.95); border-radius: 16px; padding: 48px; display: flex; flex-direction: column; gap: 24px;">
-        @if (IsLoading)
-        {
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px;">
-                <div style="width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #667eea; border-radius: 50%;"></div>
-                <div style="font-size: 16px; font-weight: 600; color: white;">Loading...</div>
-            </div>
-        }
-        else if (WalletData != null)
-        {
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-size: 36px; font-weight: 700; color: white;">ATM</div>
-                <div style="width: 48px; height: 48px; background-color: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; cursor: pointer;" @onclick=@Close>×</div>
-            </div>
-
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 12px;">
-                <div style="font-size: 18px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 2px;">Balance</div>
-                <div style="font-size: 56px; font-weight: 800; color: white;">$@WalletData.Balance.ToString("N2")</div>
-            </div>
-
-            @if (!ShowAmountInput)
+    <div class="atm-body">
+        <!-- Screen -->
+        <div class="atm-bezel">
+            @if (IsLoading && WalletData == null)
             {
-                <div style="display: flex; gap: 16px;">
-                    <div style="flex: 1; padding: 28px; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;" @onclick=@(() => ShowInput(true))>DEPOSIT</div>
-                    <div style="flex: 1; padding: 28px; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); text-align: center;" @onclick=@(() => ShowInput(false))>WITHDRAW</div>
-                </div>
+                <label class="screen-text dim">Connecting to bank...</label>
             }
-            else
+            else if (Screen == AtmPage.Welcome)
             {
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Amount</div>
-                    <input type="number" @bind="Amount" placeholder="0.00" step="0.01" style="background-color: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 24px; font-size: 36px; font-weight: 700; color: white; text-align: center;" />
-
-                    <div style="display: flex; gap: 12px;">
-                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 100)>$100</div>
-                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 500)>$500</div>
-                        <div style="flex: 1; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 16px; cursor: pointer; font-size: 18px; font-weight: 600; color: white; text-align: center;" @onclick=@(() => Amount = 1000)>$1,000</div>
-                    </div>
-
-                    <div style="display: flex; gap: 16px; margin-top: 8px;">
-                        <div style="flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); text-align: center;" @onclick=@CancelInput>Cancel</div>
-                        <div style="@ConfirmButtonStyle" @onclick=@ProcessTransaction>@(IsDeposit ? "Deposit" : "Withdraw")</div>
-                    </div>
-                </div>
+                <label class="screen-text bright">Welcome</label>
+                <label class="screen-text dim">Please select a transaction</label>
+            }
+            else if (Screen == AtmPage.Balance)
+            {
+                <label class="screen-label">BANK BALANCE</label>
+                <label class="screen-value">$@WalletData?.Balance.ToString("N0")</label>
+                <div class="screen-divider"></div>
+                <label class="screen-label">CASH ON HAND</label>
+                <label class="screen-value green">$@CashOnHand.ToString("N0")</label>
+            }
+            else if (Screen == AtmPage.Withdraw || Screen == AtmPage.Deposit)
+            {
+                <label class="screen-label">@(Screen == AtmPage.Deposit ? "DEPOSIT" : "WITHDRAW") AMOUNT</label>
+                <label class="screen-value">$@RunningTotal.ToString("N0")</label>
+                @if (Screen == AtmPage.Withdraw)
+                {
+                    <label class="screen-text dim">Available: $@WalletData?.Balance.ToString("N0")</label>
+                }
+                else
+                {
+                    <label class="screen-text dim">Cash on hand: $@CashOnHand.ToString("N0")</label>
+                }
             }
 
             @if (!string.IsNullOrEmpty(Message))
             {
-                <div style="@MessageStyle">@Message</div>
+                <div class="screen-divider"></div>
+                <label class="screen-text @MessageClass">@Message</label>
             }
-        }
+
+            @if (IsLoading && WalletData != null)
+            {
+                <label class="screen-text dim">Processing...</label>
+            }
+        </div>
+
+        <!-- Buttons -->
+        <div class="atm-controls">
+            @if (Screen == AtmPage.Welcome)
+            {
+                <div class="menu-btn" @onclick=@GoToBalance><label>Check Balance</label></div>
+                <div class="menu-btn" @onclick=@GoToWithdraw><label>Withdraw</label></div>
+                <div class="menu-btn" @onclick=@GoToDeposit><label>Deposit</label></div>
+            }
+            else if (Screen == AtmPage.Balance)
+            {
+                <div class="menu-btn" @onclick=@GoToMenu><label>Back to Menu</label></div>
+            }
+            else if (Screen == AtmPage.Withdraw || Screen == AtmPage.Deposit)
+            {
+                <div class="keypad">
+                    <div class="key" @onclick=@(() => AddAmount(20))><label>+$20</label></div>
+                    <div class="key" @onclick=@(() => AddAmount(50))><label>+$50</label></div>
+                    <div class="key" @onclick=@(() => AddAmount(100))><label>+$100</label></div>
+                    <div class="key" @onclick=@(() => AddAmount(200))><label>+$200</label></div>
+                    <div class="key" @onclick=@(() => AddAmount(500))><label>+$500</label></div>
+                    <div class="key" @onclick=@(() => AddAmount(1000))><label>+$1,000</label></div>
+                </div>
+
+                <div class="action-row">
+                    <div class="menu-btn half cancel" @onclick=@ClearAmount><label>Clear</label></div>
+                    <div class="menu-btn half confirm" @onclick=@ConfirmTransaction>
+                        <label>@(Screen == AtmPage.Deposit ? "Deposit" : "Withdraw")</label>
+                    </div>
+                </div>
+
+                <div class="menu-btn back" @onclick=@GoToMenu><label>Cancel</label></div>
+            }
+        </div>
+
+        <!-- Footer -->
+        <div class="atm-footer" @onclick=@Close>
+            <label class="footer-text">REMOVE CARD</label>
+        </div>
     </div>
 </root>
 
+<style>
+    AtmScreen {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &.atm-open {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+
+    .atm-backdrop {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.75);
+    }
+
+    .atm-body {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 420px;
+        background-color: #2a2d3a;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        border: 2px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* ===== SCREEN ===== */
+    .atm-bezel {
+        background-color: #0d1117;
+        margin: 16px;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border: 2px solid #1a1f2b;
+    }
+
+    .screen-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #4a9eff;
+        letter-spacing: 2px;
+    }
+
+    .screen-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #e0e0e0;
+        font-family: 'Consolas', monospace;
+        padding: 4px 0;
+    }
+
+    .screen-value.green {
+        color: #4ade80;
+    }
+
+    .screen-text {
+        font-size: 14px;
+        font-weight: 600;
+        padding: 2px 0;
+    }
+
+    .screen-text.bright {
+        color: #e0e0e0;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .screen-text.dim {
+        color: #4a9eff;
+    }
+
+    .screen-text.success {
+        color: #4ade80;
+    }
+
+    .screen-text.error {
+        color: #f87171;
+    }
+
+    .screen-divider {
+        height: 1px;
+        background-color: rgba(74, 158, 255, 0.15);
+        margin: 6px 0;
+    }
+
+    /* ===== CONTROLS ===== */
+    .atm-controls {
+        padding: 0 16px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .menu-btn {
+        height: 44px;
+        background-color: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.12s;
+
+        label {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: rgba(74, 158, 255, 0.12);
+        }
+
+        &.confirm {
+            background-color: #22863a;
+            border-color: #22863a;
+
+            &:hover {
+                background-color: #2ea44f;
+            }
+        }
+
+        &.cancel {
+            background-color: rgba(255, 255, 255, 0.04);
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.08);
+            }
+        }
+
+        &.back {
+            background-color: transparent;
+            border-color: transparent;
+
+            label {
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 13px;
+            }
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.04);
+            }
+        }
+
+        &.half {
+            flex: 1;
+        }
+    }
+
+    .keypad {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .key {
+        flex: 1 1 30%;
+        height: 44px;
+        background-color: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.12s;
+
+        label {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: rgba(74, 158, 255, 0.15);
+            border-color: rgba(74, 158, 255, 0.3);
+        }
+    }
+
+    .action-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* ===== FOOTER ===== */
+    .atm-footer {
+        height: 36px;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 0 0 14px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.15s;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    }
+
+    .footer-text {
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.25);
+        letter-spacing: 2px;
+    }
+</style>
+
 @code
 {
+    private enum AtmPage { Welcome, Balance, Withdraw, Deposit }
+
     private bool IsOpen { get; set; } = false;
     private long SteamId { get; set; }
     private WalletData WalletData { get; set; }
     private bool IsLoading { get; set; } = true;
-    private bool ShowAmountInput { get; set; } = false;
-    private bool IsDeposit { get; set; } = false;
-    private decimal Amount { get; set; } = 0;
+    private AtmPage Screen { get; set; } = AtmPage.Welcome;
+    private int RunningTotal { get; set; } = 0;
     private string Message { get; set; } = "";
     private string MessageClass { get; set; } = "";
     private bool _isProcessing = false;
 
-    private string RootStyle => IsOpen
-        ? "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; opacity: 1; pointer-events: all;"
-        : "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; opacity: 0; pointer-events: none;";
-
-    private string ConfirmButtonStyle => IsDeposit
-        ? "flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;"
-        : "flex: 1; padding: 20px; border-radius: 12px; cursor: pointer; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); text-align: center;";
-
-    private string MessageStyle => MessageClass == "success"
-        ? "margin-top: 16px; padding: 16px; border-radius: 8px; font-size: 14px; font-weight: 600; background-color: rgba(76,175,80,0.2); border: 2px solid #4CAF50; color: #4CAF50; text-align: center;"
-        : "margin-top: 16px; padding: 16px; border-radius: 8px; font-size: 14px; font-weight: 600; background-color: rgba(244,67,54,0.2); border: 2px solid #f44336; color: #f44336; text-align: center;";
+    private int CashOnHand
+    {
+        get
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault();
+            return player?.Money ?? 0;
+        }
+    }
 
     public async void Open(long steamId)
     {
-        if (IsOpen)
-        {
-            Log.Info("[AtmScreen] Already open, ignoring");
-            return;
-        }
+        if (IsOpen) return;
 
-        Log.Info($"[AtmScreen] Opening for Steam ID: {steamId}");
         SteamId = steamId;
         IsOpen = true;
-        ShowAmountInput = false;
-        Amount = 0;
+        Screen = AtmPage.Welcome;
+        RunningTotal = 0;
         Message = "";
         Mouse.Visibility = MouseVisibility.Visible;
         await LoadWallet();
@@ -116,12 +372,11 @@
         try
         {
             WalletData = await EconomySystem.Api.GetWalletAsync(SteamId);
-            Log.Info($"[AtmScreen] Wallet loaded: ${WalletData?.Balance}");
         }
         catch (Exception ex)
         {
-            Log.Error($"[AtmScreen] Error: {ex.Message}");
-            Message = "Failed to load wallet";
+            Log.Error($"[ATM] Error: {ex.Message}");
+            Message = "Failed to connect to bank";
             MessageClass = "error";
         }
         finally
@@ -131,34 +386,73 @@
         }
     }
 
-    private void ShowInput(bool isDeposit)
+    private void GoToMenu()
     {
-        IsDeposit = isDeposit;
-        ShowAmountInput = true;
-        Amount = 0;
+        Screen = AtmPage.Welcome;
+        RunningTotal = 0;
         Message = "";
     }
 
-    private void CancelInput()
+    private void GoToBalance()
     {
-        ShowAmountInput = false;
-        Amount = 0;
+        Screen = AtmPage.Balance;
         Message = "";
     }
 
-    private async void ProcessTransaction()
+    private void GoToWithdraw()
     {
-        if (Amount <= 0)
+        Screen = AtmPage.Withdraw;
+        RunningTotal = 0;
+        Message = "";
+    }
+
+    private void GoToDeposit()
+    {
+        Screen = AtmPage.Deposit;
+        RunningTotal = 0;
+        Message = "";
+    }
+
+    private void AddAmount(int amount)
+    {
+        RunningTotal += amount;
+        Message = "";
+    }
+
+    private void ClearAmount()
+    {
+        RunningTotal = 0;
+        Message = "";
+    }
+
+    private async void ConfirmTransaction()
+    {
+        if (RunningTotal <= 0)
         {
-            Message = "Amount must be greater than 0";
+            Message = "Select an amount first";
             MessageClass = "error";
             StateHasChanged();
             return;
         }
 
-        if (_isProcessing)
+        if (_isProcessing) return;
+
+        bool isDeposit = Screen == AtmPage.Deposit;
+        var player = Scene.GetAll<RPPlayer>().FirstOrDefault();
+
+        if (isDeposit && (player == null || player.Money < RunningTotal))
         {
-            Log.Warning("[AtmScreen] Transaction already in progress, ignoring duplicate");
+            Message = "Not enough cash on hand";
+            MessageClass = "error";
+            StateHasChanged();
+            return;
+        }
+
+        if (!isDeposit && (WalletData == null || WalletData.Balance < RunningTotal))
+        {
+            Message = "Insufficient bank funds";
+            MessageClass = "error";
+            StateHasChanged();
             return;
         }
 
@@ -169,17 +463,24 @@
 
         try
         {
-            Log.Info($"[AtmScreen] Processing {(IsDeposit ? "deposit" : "withdrawal")} of ${Amount}");
-            WalletData result = IsDeposit
-                ? await EconomySystem.Deposit(SteamId, Amount, "ATM Deposit")
-                : await EconomySystem.Withdraw(SteamId, Amount, "ATM Withdrawal");
+            var amount = RunningTotal;
+            WalletData result = isDeposit
+                ? await EconomySystem.Deposit(SteamId, amount, "ATM Deposit")
+                : await EconomySystem.Withdraw(SteamId, amount, "ATM Withdrawal");
 
-            if (result != null)
+            if (result != null && player != null)
             {
+                player.RecordTransaction(
+                    isDeposit ? "ATM Deposit" : "ATM Withdrawal",
+                    isDeposit ? -amount : amount
+                );
+
                 WalletData = result;
-                Message = $"Success! New balance: ${result.Balance:N2}";
+                RunningTotal = 0;
+                Message = isDeposit
+                    ? $"Deposited ${amount:N0} into bank"
+                    : $"Withdrew ${amount:N0} cash";
                 MessageClass = "success";
-                ShowAmountInput = false;
             }
             else
             {
@@ -189,8 +490,8 @@
         }
         catch (Exception ex)
         {
-            Log.Error($"[AtmScreen] Transaction error: {ex.Message}");
-            Message = $"Error: {ex.Message}";
+            Log.Error($"[ATM] Transaction error: {ex.Message}");
+            Message = ex.Message.Contains("Insufficient") ? "Insufficient bank funds" : "Transaction failed";
             MessageClass = "error";
         }
         finally
@@ -203,13 +504,12 @@
 
     private void Close()
     {
-        Log.Info("[AtmScreen] Closing");
         IsOpen = false;
-        ShowAmountInput = false;
-        Amount = 0;
+        Screen = AtmPage.Welcome;
+        RunningTotal = 0;
         Message = "";
         Mouse.Visibility = MouseVisibility.Auto;
     }
 
-    protected override int BuildHash() => System.HashCode.Combine(IsOpen, WalletData?.Balance, IsLoading, ShowAmountInput, Message, _isProcessing);
+    protected override int BuildHash() => System.HashCode.Combine(IsOpen, WalletData?.Balance, CashOnHand, IsLoading, Screen, RunningTotal, Message);
 }

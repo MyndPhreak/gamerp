@@ -26,6 +26,13 @@ public sealed class RPPlayer : Component
     public void RecordTransaction( string title, int amount )
     {
         Money += amount;
+        RecordBankLog( title, amount );
+        SaveToDatabase();
+        Sandbox.Services.Stats.SetValue( "money", Money );
+    }
+
+    public void RecordBankLog( string title, int amount )
+    {
         BankLogs.Insert( 0, new Sandbox.UI.Tablet.BankLogEntry
         {
             Title = title,
@@ -35,9 +42,6 @@ public sealed class RPPlayer : Component
 
         if ( BankLogs.Count > 50 )
             BankLogs.RemoveAt( BankLogs.Count - 1 );
-
-        SaveToDatabase();
-        Sandbox.Services.Stats.SetValue( "money", Money );
     }
 
     private void SaveToDatabase()

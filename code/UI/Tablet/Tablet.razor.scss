@@ -1,241 +1,268 @@
 Tablet {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0;
-    transform: scale(0.9) translateY(100px);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: scale(0.9) translateY(100px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    &.open {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        pointer-events: all;
-    }
+  &.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: all;
+  }
 }
 
 .tablet-frame {
-    width: 450px;
-    height: 800px;
-    background-color: #111;
-    border-radius: 40px;
-    padding: 12px;
-    box-shadow: 0 50px 100px #000000cc;
-    border: 2px solid rgba(255, 255, 255, 0.05);
+  width: 450px;
+  height: 800px;
+  background-color: #111;
+  border-radius: 40px;
+  padding: 12px;
+  box-shadow: 0 50px 100px #000000cc;
+  border: 2px solid rgba(255, 255, 255, 0.05);
 }
 
 .tablet-screen {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #1a1c2c 0%, #4a192c 100%);
-    border-radius: 30px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1c2c 0%, #4a192c 100%);
+  border-radius: 30px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .status-bar {
-    height: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 25px;
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
 
-    .icons {
-        display: flex;
-        gap: 8px;
-        .icon {
-            font-family: 'Material Icons';
-            font-size: 16px;
-            opacity: 0.8;
-        }
+  .icons {
+    display: flex;
+    gap: 8px;
+    .icon {
+      font-family: "Material Icons";
+      font-size: 16px;
+      opacity: 0.8;
     }
+  }
 }
 
 .home-screen {
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.25s ease, transform 0.3s ease;
+
+  &.hidden {
+    opacity: 0;
+    transform: scale(0.92);
+    pointer-events: none;
+  }
 }
 
 .time-widget {
-    padding: 30px 20px;
-    background-color: #00000066;
-    border: 1px solid #ffffff26;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px #00000033;
+  padding: 30px 20px;
+  background-color: #00000066;
+  border: 1px solid #ffffff26;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px #00000033;
 
-    .widget-time {
-        font-size: 48px;
-        font-weight: 800;
-        color: white;
-        font-family: 'Outfit', sans-serif;
-        text-shadow: 0 4px 10px #0000004d;
-    }
+  .widget-time {
+    font-size: 48px;
+    font-weight: 800;
+    color: white;
+    font-family: "Outfit", sans-serif;
+    text-shadow: 0 4px 10px #0000004d;
+  }
 
-    .widget-date {
-        font-size: 14px;
-        color: #ffffff99;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+  .widget-date {
+    font-size: 14px;
+    color: #ffffff99;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 }
 
 .app-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 22px;
-    padding-top: 10px;
-    justify-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  padding-top: 10px;
+  justify-content: flex-start;
 }
 
 .app-icon-container {
-    width: 78px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: transform 0.1s ease;
+  width: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
 
-    &:hover {
-        transform: scale(1.1);
-        .app-icon {
-            filter: brightness(1.2);
-        }
-    }
-
+  &:hover {
+    transform: scale(1.1);
     .app-icon {
-        width: 65px;
-        height: 65px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        
-        .icon {
-            font-family: 'Material Icons';
-            width: 35px;
-            height: 35px;
-            font-size: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      filter: brightness(1.2);
     }
+  }
 
-    .app-label {
-        color: white;
-        font-size: 12px;
-        font-weight: 500;
-        text-shadow: 0 2px 4px #00000080;
+  .app-icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+
+    .icon {
+      font-family: "Material Icons";
+      width: 35px;
+      height: 35px;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+  }
+
+  .app-label {
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    text-shadow: 0 2px 4px #00000080;
+  }
 }
 
 .app-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #f5f5f7;
-    border-radius: 30px 30px 0 0;
-    margin-top: 10px;
+  position: absolute;
+  left: 0;
+  top: 40px;
+  width: 100%;
+  height: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f7;
+  border-radius: 30px;
+  overflow: hidden;
+
+  // Closed state: scaled down at the icon origin
+  opacity: 0;
+  transform: scale(0.15);
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.2s ease,
+              border-radius 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  &.open {
+    opacity: 1;
+    transform: scale(1);
+    border-radius: 30px;
+    pointer-events: all;
+  }
 }
 
 .app-header {
-    height: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+  .back-button {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    padding: 0 15px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    
-    .back-button {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-        color: #007aff;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    color: #007aff;
 
-        &:hover {
-            background-color: rgba(0, 122, 255, 0.1);
-        }
-
-        .icon {
-            font-family: 'Material Icons';
-            font-size: 28px;
-        }
+    &:hover {
+      background-color: rgba(0, 122, 255, 0.1);
     }
 
-    .app-title {
-        flex: 1;
-        text-align: center;
-        font-size: 18px;
-        font-weight: 700;
-        color: #1d1d1f;
-        margin-right: 40px;
+    .icon {
+      font-family: "Material Icons";
+      font-size: 28px;
     }
+  }
+
+  .app-title {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-right: 40px;
+  }
 }
 
 .app-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: scroll;
-    color: #1d1d1f;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+  color: #1d1d1f;
+  border-radius: 0 0 30px 30px;
 }
 
 .home-indicator {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 140px;
-    height: 5px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 
-    &:hover {
-        background-color: rgba(255, 255, 255, 0.6);
-    }
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+  }
 }
 
 .placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 20px;
-    opacity: 0.3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+  opacity: 0.3;
 
-    icon {
-        font-family: 'Material Icons';
-        font-size: 64px;
-    }
+  icon {
+    font-family: "Material Icons";
+    font-size: 64px;
+  }
 
-    label {
-        font-size: 20px;
-        font-weight: 600;
-    }
+  label {
+    font-size: 20px;
+    font-weight: 600;
+  }
 }

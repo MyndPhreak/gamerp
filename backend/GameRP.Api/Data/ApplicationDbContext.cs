@@ -51,7 +51,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.PlayerId).IsUnique();
-            entity.HasIndex(e => e.SteamId);
+            entity.HasIndex(e => e.SteamId).IsUnique();
             entity.HasIndex(e => e.Balance);
             entity.HasIndex(e => e.CreatedAt);
 

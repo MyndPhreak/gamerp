@@ -26,14 +26,42 @@ public sealed class InteractionManager : Component, PlayerController.IEvents
 	/// </summary>
 	[Property] public bool ShowDebug { get; set; } = false;
 
+	/// <summary>
+	/// Key to hold for world panel interaction cursor
+	/// </summary>
+	[Property] public string InteractCursorKey { get; set; } = "F";
+
 	private Interactable _currentInteractable;
 	private Interactable _previousInteractable;
 	private bool _isPressing;
+	private WorldInput _worldInput;
+
+	protected override void OnStart()
+	{
+		if ( IsProxy ) return;
+
+		var camera = Camera ?? Scene.Camera;
+		if ( camera != null )
+		{
+			_worldInput = camera.Components.GetOrCreate<WorldInput>();
+			Log.Info( $"[InteractionManager] WorldInput created on camera: {_worldInput != null}" );
+		}
+	}
 
 	protected override void OnUpdate()
 	{
 		if ( IsProxy )
 			return;
+
+		// Hold key to show cursor for world panel interaction
+		if ( Input.Keyboard.Down( InteractCursorKey ) )
+		{
+			Mouse.Visibility = MouseVisibility.Visible;
+		}
+		else if ( Input.Keyboard.Released( InteractCursorKey ) )
+		{
+			Mouse.Visibility = MouseVisibility.Hidden;
+		}
 
 		// Get the camera
 		var camera = Camera ?? Scene.Camera;

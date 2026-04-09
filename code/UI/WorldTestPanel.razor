@@ -1,0 +1,44 @@
+@using Sandbox;
+@using Sandbox.UI;
+
+@inherits PanelComponent
+
+<root>
+    <div class="world-test-panel">
+        <div class="panel-title">Elevator</div>
+        <div class="button-group">
+            <div class="floor-button @(ActiveFloor == 1 ? "active" : "")" onclick="@(() => SelectFloor(1))">1</div>
+            <div class="floor-button @(ActiveFloor == 2 ? "active" : "")" onclick="@(() => SelectFloor(2))">2</div>
+            <div class="floor-button @(ActiveFloor == 3 ? "active" : "")" onclick="@(() => SelectFloor(3))">3</div>
+        </div>
+        <div class="status">@StatusText</div>
+    </div>
+</root>
+
+@code
+{
+    [Property] public Vector2 PanelSize { get; set; } = new Vector2( 300, 500 );
+
+    private Sandbox.WorldPanel _worldPanel;
+    private int ActiveFloor { get; set; } = 1;
+    private string StatusText => $"Floor {ActiveFloor}";
+
+    protected override void OnEnabled()
+    {
+        base.OnEnabled();
+
+        _worldPanel = Components.GetOrCreate<Sandbox.WorldPanel>();
+        _worldPanel.PanelSize = PanelSize;
+        _worldPanel.InteractionRange = 200f;
+
+        Log.Info( $"[WorldTestPanel] Initialized - WorldPanel: {_worldPanel != null}, PanelSize: {PanelSize}, Position: {WorldPosition}" );
+    }
+
+    private void SelectFloor( int floor )
+    {
+        ActiveFloor = floor;
+        Log.Info( $"[WorldTestPanel] Selected floor {floor}" );
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine( ActiveFloor );
+}

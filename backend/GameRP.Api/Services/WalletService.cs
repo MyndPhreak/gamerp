@@ -27,58 +27,87 @@ public class WalletService
     {
         _logger.LogInformation("GetOrCreateWallet for SteamID: {SteamId}", steamId);
 
-        // Find or create player
+        // Find existing player first
         var player = await _context.Players
             .Include(p => p.Wallet)
             .FirstOrDefaultAsync(p => p.SteamId == steamId);
 
-        if (player == null)
-        {
-            player = new Player
-            {
-                SteamId = steamId,
-                DisplayName = displayName ?? $"Player_{steamId}",
-                FirstSeen = DateTime.UtcNow,
-                LastSeen = DateTime.UtcNow
-            };
-
-            _context.Players.Add(player);
-        }
-        else
+        if (player != null)
         {
             player.LastSeen = DateTime.UtcNow;
+
+            if (player.Wallet != null)
+            {
+                await _context.SaveChangesAsync();
+                return MapToDto(player.Wallet);
+            }
         }
 
-        // Create wallet if doesn't exist
-        if (player.Wallet == null)
+        // Need to create player or wallet — use a transaction to handle races
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            player.Wallet = new Wallet
+            // Re-query inside the transaction
+            player = await _context.Players
+                .Include(p => p.Wallet)
+                .FirstOrDefaultAsync(p => p.SteamId == steamId);
+
+            if (player == null)
             {
-                PlayerId = player.Id,
-                SteamId = steamId,
-                Balance = 1000, // Starting balance
-                TotalEarned = 1000
-            };
+                player = new Player
+                {
+                    SteamId = steamId,
+                    DisplayName = displayName ?? $"Player_{steamId}",
+                    FirstSeen = DateTime.UtcNow,
+                    LastSeen = DateTime.UtcNow
+                };
 
-            _context.Wallets.Add(player.Wallet);
+                _context.Players.Add(player);
+                await _context.SaveChangesAsync();
+            }
 
-            // Record initial balance as a transaction
-            var initialTransaction = new Transaction
+            if (player.Wallet == null)
             {
-                PlayerId = player.Id,
-                SteamId = steamId,
-                Amount = 1000,
-                BalanceAfter = 1000,
-                Type = TransactionType.Reward,
-                Description = "Starting balance"
-            };
+                player.Wallet = new Wallet
+                {
+                    PlayerId = player.Id,
+                    SteamId = steamId,
+                    Balance = 1000,
+                    TotalEarned = 1000
+                };
 
-            _context.Transactions.Add(initialTransaction);
+                _context.Wallets.Add(player.Wallet);
+
+                var initialTransaction = new Transaction
+                {
+                    PlayerId = player.Id,
+                    SteamId = steamId,
+                    Amount = 1000,
+                    BalanceAfter = 1000,
+                    Type = TransactionType.Reward,
+                    Description = "Starting balance"
+                };
+
+                _context.Transactions.Add(initialTransaction);
+                await _context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+            return MapToDto(player.Wallet);
         }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogWarning("Race condition creating wallet for SteamID: {SteamId}, retrying lookup", steamId);
 
-        await _context.SaveChangesAsync();
+            // Another request created it — just fetch
+            _context.ChangeTracker.Clear();
+            player = await _context.Players
+                .Include(p => p.Wallet)
+                .FirstOrDefaultAsync(p => p.SteamId == steamId);
 
-        return MapToDto(player.Wallet);
+            return player?.Wallet != null ? MapToDto(player.Wallet) : null;
+        }
     }
 
     /// <summary>

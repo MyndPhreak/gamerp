@@ -38,6 +38,7 @@ public sealed class Closet : Component
     // Player references
     private GameObject _player;
     private PlayerController _playerController;
+    private CharacterController _characterController;
     private SkinnedModelRenderer _bodyRenderer;
 
     protected override void OnStart()
@@ -69,6 +70,7 @@ public sealed class Closet : Component
         }
 
         _playerController = _player.Components.Get<PlayerController>();
+        _characterController = _player.Components.Get<CharacterController>();
         _camera = _player.Components.GetInChildren<CameraComponent>();
         _bodyRenderer = _player.Components.GetInChildren<SkinnedModelRenderer>();
 
@@ -79,19 +81,26 @@ public sealed class Closet : Component
     {
         _isOpen = true;
 
-        // Disable movement and look — keep HideBodyInFirstPerson off so body is visible
+        // Teleport player to stand point first (before disabling anything)
+        if ( PlayerStandPoint != null )
+        {
+            _player.WorldPosition = PlayerStandPoint.WorldPosition;
+            _player.WorldRotation = PlayerStandPoint.WorldRotation;
+        }
+
+        // Stop all movement — zero velocity on both controllers
         if ( _playerController != null )
         {
+            _playerController.WishVelocity = Vector3.Zero;
             _playerController.UseInputControls = false;
             _playerController.UseLookControls = false;
             _playerController.HideBodyInFirstPerson = false;
         }
 
-        // Teleport player to stand point if one is assigned
-        if ( PlayerStandPoint != null )
+        if ( _characterController != null )
         {
-            _player.WorldPosition = PlayerStandPoint.WorldPosition;
-            _player.WorldRotation = PlayerStandPoint.WorldRotation;
+            _characterController.Velocity = Vector3.Zero;
+            _characterController.Enabled = false;
         }
 
         // Save player yaw for restore on close
@@ -131,7 +140,12 @@ public sealed class Closet : Component
         if ( _player != null )
             _player.WorldRotation = Rotation.FromYaw( _savedPlayerYaw );
 
-        // Re-enable player movement and look
+        // Re-enable player movement
+        if ( _characterController != null )
+        {
+            _characterController.Enabled = true;
+        }
+
         if ( _playerController != null )
         {
             _playerController.UseInputControls = true;

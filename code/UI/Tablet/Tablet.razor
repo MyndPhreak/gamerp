@@ -11,59 +11,56 @@
             <div class="status-bar">
                 <div class="time">@DateTime.Now.ToString("HH:mm")</div>
                 <div class="icons">
-                    <MyIcon Name="wifi" Size=@(16) />
+                    <MyIcon Name="network_cell" Size=@(16) />
                     <MyIcon Name="battery_full" Size=@(16) />
                 </div>
             </div>
 
-            @if (ActiveApp == null)
-            {
-                <div class="home-screen">
-                    <div class="time-widget">
-                        <div class="widget-time">@DateTime.Now.ToString("HH:mm")</div>
-                        <div class="widget-date">@DateTime.Now.ToString("dddd, MMMM dd")</div>
-                    </div>
-                    <div class="app-grid">
-                        @foreach (var app in Apps)
-                        {
-                            <div class="app-icon-container" onclick="@(() => OpenApp(app))">
-                                <div class="app-icon" style="background-color: @app.AppColor.Hex">
-                                    <MyIcon Name="@app.AppIcon" Size=@(32) />
-                                </div>
-                                <div class="app-label">@app.AppName</div>
-                            </div>
-                        }
-                    </div>
+            <div class="home-screen @(ActiveApp != null ? "hidden" : "")">
+                <div class="time-widget">
+                    <div class="widget-time">@DateTime.Now.ToString("HH:mm")</div>
+                    <div class="widget-date">@DateTime.Now.ToString("dddd, MMMM dd")</div>
                 </div>
-            }
-            else
-            {
-                <div class="app-container">
-                    <div class="app-header">
-                        <div class="back-button" onclick="@CloseApp">
-                            <MyIcon Name="chevron_left" Size=@(28) Color="@(Color.FromBytes(0, 122, 255))" />
+                <div class="app-grid">
+                    @for (int i = 0; i < Apps.Count; i++)
+                    {
+                        var app = Apps[i];
+                        var index = i;
+                        <div class="app-icon-container" onclick="@(() => OpenApp(app, index))">
+                            <div class="app-icon" style="background-color: @app.AppColor.Hex">
+                                <MyIcon Name="@app.AppIcon" Size=@(32) />
+                            </div>
+                            <div class="app-label">@app.AppName</div>
                         </div>
-                        <div class="app-title">@ActiveApp.AppName</div>
-                    </div>
-                    <div class="app-content">
-                        @if (ActiveApp.AppName == "Bank")
-                        {
-                            <BankApp />
-                        }
-                        else if (ActiveApp.AppName == "Wallet")
-                        {
-                            <WalletApp />
-                        }
-                        else
-                        {
-                            <div class="placeholder">
-                                <icon>construction</icon>
-                                <label>Under Construction</label>
-                            </div>
-                        }
-                    </div>
+                    }
                 </div>
-            }
+            </div>
+
+            <div class="app-container @(ActiveApp != null ? "open" : "")" style="@AppContainerStyle">
+                <div class="app-header">
+                    <div class="back-button" onclick="@CloseApp">
+                        <MyIcon Name="chevron_left" Size=@(28) Color="@(Color.FromBytes(0, 122, 255))" />
+                    </div>
+                    <div class="app-title">@ActiveApp?.AppName</div>
+                </div>
+                <div class="app-content">
+                    @if (ActiveApp?.AppName == "Bank")
+                    {
+                        <BankApp />
+                    }
+                    else if (ActiveApp?.AppName == "Wallet")
+                    {
+                        <WalletApp />
+                    }
+                    else if (ActiveApp != null)
+                    {
+                        <div class="placeholder">
+                            <icon>construction</icon>
+                            <label>Under Construction</label>
+                        </div>
+                    }
+                </div>
+            </div>
 
             <div class="home-indicator" onclick="@CloseApp"></div>
         </div>
@@ -82,13 +79,29 @@
     };
 
     private ITabletApp ActiveApp { get; set; }
+    private int ActiveAppIndex { get; set; } = 0;
+
+    // Compute transform-origin based on which icon was tapped.
+    // Icons sit in a grid: ~100px per column, starting ~60px from left;
+    // rows start ~220px from top of the screen (status bar + widget + padding), ~100px per row.
+    private string AppContainerStyle
+    {
+        get
+        {
+            int col = ActiveAppIndex % 3;
+            int row = ActiveAppIndex / 3;
+            int originX = 60 + col * 100;
+            int originY = 220 + row * 100;
+            return $"transform-origin: {originX}px {originY}px;";
+        }
+    }
 
     protected override void OnUpdate()
     {
         if (Input.Pressed("Score")) // Tab
         {
             IsOpen = !IsOpen;
-            
+
             if (IsOpen)
                 Mouse.Visibility = MouseVisibility.Visible;
             else
@@ -96,10 +109,15 @@
         }
     }
 
-    private void OpenApp(ITabletApp app) => ActiveApp = app;
+    private void OpenApp(ITabletApp app, int index)
+    {
+        ActiveAppIndex = index;
+        ActiveApp = app;
+    }
+
     private void CloseApp() => ActiveApp = null;
 
-    protected override int BuildHash() => System.HashCode.Combine(IsOpen, ActiveApp, DateTime.Now.Minute);
+    protected override int BuildHash() => System.HashCode.Combine(IsOpen, ActiveApp, ActiveAppIndex, DateTime.Now.Minute);
 
     // Mock data structures for the app registry
     public class BankAppData : ITabletApp

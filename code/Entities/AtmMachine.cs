@@ -59,14 +59,6 @@ public sealed class AtmMachine : Component
 	/// </summary>
 	private long GetPlayerSteamId()
 	{
-		// Try to get from the local connection
-		if ( Connection.Local != null && Connection.Local.IsActive )
-		{
-			return Connection.Local.SteamId;
-		}
-
-		// Fallback for testing
-		Log.Warning( "[ATM] Using fallback Steam ID for testing" );
-		return 76561198012345678;
+		return Game.SteamId;
 	}
 }

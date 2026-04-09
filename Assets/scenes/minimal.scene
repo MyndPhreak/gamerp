@@ -20,7 +20,7 @@
         {
           "__type": "Sandbox.MapInstance",
           "__guid": "bf6988b1-a57b-402f-bb1c-96c307792490",
-          "__enabled": true,
+          "__enabled": false,
           "Flags": 0,
           "__version": 1,
           "EnableCollision": true,
@@ -83,6 +83,7 @@
           "__enabled": true,
           "Flags": 0,
           "AutoAdvance": true,
+          "HijackMapLight": true,
           "MoonDiscSize": 0.04,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -109,7 +110,7 @@
       "__version": 2,
       "Flags": 0,
       "Name": "Scene Information",
-      "Position": "0,0,0",
+      "Position": "0,0,4.163602",
       "Rotation": "0,0,0,1",
       "Scale": "1,1,1",
       "Tags": "",
@@ -605,7 +606,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "RenderOptions": {
-            "GameLayer": false,
+            "GameLayer": true,
             "OverlayLayer": false,
             "BloomLayer": false,
             "AfterUILayer": false
@@ -667,7 +668,7 @@
     "GameObjectSystems": {
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
-          "$blob": "6a83496e-755c-44e6-872d-0ca23abf3504"
+          "$blob": "93a71e21-e3ba-4f26-b4d9-11844721145d"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {

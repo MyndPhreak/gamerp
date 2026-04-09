@@ -3,6 +3,7 @@
 @using GameRP.Economy;
 @using GameRP.Systems;
 @using System;
+@using System.Linq;
 @using System.Threading.Tasks;
 
 @namespace GameRP.UI
@@ -347,6 +348,17 @@
             return;
         }
 
+        var player = Scene.GetAll<RPPlayer>().FirstOrDefault();
+        var intAmount = (int)TransactionAmount;
+
+        if (IsDeposit && (player == null || player.Money < intAmount))
+        {
+            StatusMessage = "Not enough cash on hand";
+            StatusClass = "error";
+            StateHasChanged();
+            return;
+        }
+
         IsLoading = true;
         StatusMessage = "";
         StateHasChanged();
@@ -358,16 +370,24 @@
             if (IsDeposit)
             {
                 result = await EconomySystem.Deposit(SteamId, TransactionAmount, "ATM Deposit");
+                if (result != null && player != null)
+                {
+                    player.RecordTransaction("ATM Deposit", -intAmount);
+                }
             }
             else
             {
                 result = await EconomySystem.Withdraw(SteamId, TransactionAmount, "ATM Withdrawal");
+                if (result != null && player != null)
+                {
+                    player.RecordTransaction("ATM Withdrawal", intAmount);
+                }
             }
 
             if (result != null)
             {
                 WalletData = result;
-                StatusMessage = $"Transaction successful! New balance: ${result.Balance:N2}";
+                StatusMessage = $"Transaction successful! Bank balance: ${result.Balance:N2}";
                 StatusClass = "success";
 
                 // Reset form after 2 seconds

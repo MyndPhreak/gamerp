@@ -31,6 +31,7 @@ public sealed class PlayerInteraction : Component
 		_interactionManager = Components.GetOrCreate<InteractionManager>();
 		_interactionManager.Camera = Camera;
 		_interactionManager.ShowDebug = false;
+
 	}
 
 	protected override void OnStart()
@@ -45,7 +46,7 @@ public sealed class PlayerInteraction : Component
 	{
 		if ( IsProxy || Camera == null ) return;
 
-		// Handle mouse look
+		// Handle mouse look (only when cursor is hidden)
 		if ( Mouse.Visibility == MouseVisibility.Hidden )
 		{
 			_eyeAngles.pitch += Input.MouseDelta.y * MouseSensitivity;
