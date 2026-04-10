@@ -134,7 +134,14 @@ public sealed class VehicleWheel : Component
 			}
 		}
 
-		// Lateral friction implemented in next task
+		// --- Lateral friction (all grounded wheels) ---
+		// rightDir is perpendicular to wheel forward, in the ground plane
+		var rightDir = Vector3.Cross( worldUp, wheelForward ).Normal;
+		var lateralVel = Vector3.Dot( contactVelocity, rightDir );
+		// Clamp to avoid overcorrection (no Time.Delta — physics integrator handles timestep)
+		var lateralMag = (lateralVel * LateralFriction).Clamp( -LateralFriction, LateralFriction );
+		result.LateralForce = -rightDir * lateralMag;
+
 		return result;
 	}
 
