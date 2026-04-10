@@ -163,8 +163,8 @@ public sealed class VehicleController : Component
 			.OrderBy( w => w.LocalPosition.x )
 			.ToList();
 
-		if ( front.Count < 2 && rear.Count < 2 )
-			Log.Warning( "[VehicleController] Anti-roll: could not find 2+ wheels in either axle group. Check that wheel positions straddle the vehicle pivot on the Y axis." );
+		if ( front.Count < 2 || rear.Count < 2 )
+			Log.Warning( "[VehicleController] Anti-roll: could not find 2+ wheels in one or both axle groups. Check that wheel positions straddle the vehicle pivot on the Y axis." );
 
 		ApplyAntiRollToAxle( front );
 		ApplyAntiRollToAxle( rear );

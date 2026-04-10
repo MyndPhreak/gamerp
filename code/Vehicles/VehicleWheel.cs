@@ -29,7 +29,7 @@ public sealed class VehicleWheel : Component
 	// --- Runtime (read-only in editor) ---
 	[Property, ReadOnly] public bool IsGrounded { get; private set; }
 	[Property, ReadOnly] public float SuspensionCompression { get; private set; }
-	public Vector3 GroundHitPosition { get; private set; }
+	[Property, ReadOnly] public Vector3 GroundHitPosition { get; private set; }
 
 	// Set by VehicleController for visuals
 	public float CurrentSpeed { get; set; }
