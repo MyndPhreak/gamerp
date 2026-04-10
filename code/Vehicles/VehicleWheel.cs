@@ -5,29 +5,43 @@ namespace GameRP.Vehicles;
 
 public sealed class VehicleWheel : Component
 {
+	// --- Setup ---
 	[Property] public float SuspensionLength { get; set; } = 20f;
 	[Property] public float Radius { get; set; } = 14f;
 	[Property] public bool IsSteerable { get; set; } = false;
 	[Property] public bool IsDriven { get; set; } = false;
 
+	// --- Suspension tuning ---
+	[Property] public float SpringStrength { get; set; } = 8000f;
+	[Property] public float DampStrength { get; set; } = 400f;
+
+	// --- Grip tuning ---
+	[Property] public float LateralFriction { get; set; } = 6000f;
+	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
+
+	// --- Runtime (read-only in editor) ---
 	[Property, ReadOnly] public bool IsGrounded { get; private set; }
-	[Property, ReadOnly] public float GroundDistance { get; private set; }
 	[Property, ReadOnly] public float SuspensionCompression { get; private set; }
+	public Vector3 GroundHitPosition { get; private set; }
 
-	/// <summary>
-	/// Set by VehicleController each frame — current forward speed for spin.
-	/// </summary>
+	// Set by VehicleController for visuals
 	public float CurrentSpeed { get; set; }
-
-	/// <summary>
-	/// Set by VehicleController each frame — current steer angle in degrees.
-	/// </summary>
 	public float SteerAngle { get; set; }
 
+	// --- Internals ---
 	private ModelRenderer _wheelModel;
 	private float _spinAngle;
-	private Vector3 _attachLocalPos;   // editor-placed local position — suspension base
-	private Rotation _baseLocalRot;    // editor-placed local rotation — spin/steer applied on top
+	private Vector3 _attachLocalPos;
+	private Rotation _baseLocalRot;
+
+	public struct WheelForceResult
+	{
+		public Vector3 SuspensionForce;
+		public Vector3 DriveForce;
+		public Vector3 LateralForce;
+		public Vector3 ApplicationPoint;
+		public bool IsGrounded;
+	}
 
 	protected override void OnAwake()
 	{
@@ -39,57 +53,67 @@ public sealed class VehicleWheel : Component
 		_baseLocalRot = LocalRotation;
 	}
 
-	protected override void OnUpdate()
+	/// <summary>
+	/// Called by VehicleController each OnFixedUpdate. Returns forces to apply to the car Rigidbody.
+	/// </summary>
+	public WheelForceResult ComputeForces(
+		float throttle,
+		float brake,
+		float steerAngle,
+		Rigidbody body,
+		float accelerationForce,
+		float brakeForce,
+		float reverseForce )
 	{
-		UpdateSuspension();
-		UpdateVisuals();
-	}
+		var result = new WheelForceResult();
 
-	private void UpdateSuspension()
-	{
-		// Raycast from the attach point (world space), not the current WorldPosition which
-		// includes the suspension offset — avoids a feedback loop causing bouncing
 		var parent = GameObject.Parent;
+		var worldUp = parent.WorldRotation.Up;
 		var rayOrigin = parent.WorldPosition + parent.WorldRotation * _attachLocalPos;
-		var rayDirection = -parent.WorldRotation.Up;
+		var rayDir = -worldUp;
 		var rayLength = SuspensionLength + Radius;
 
 		var trace = Scene.Trace
-			.Ray( new Ray( rayOrigin, rayDirection ), rayLength )
+			.Ray( new Ray( rayOrigin, rayDir ), rayLength )
 			.WithoutTags( "vehicle" )
 			.Run();
 
-		if ( trace.Hit )
-		{
-			IsGrounded = true;
-			GroundDistance = trace.Distance;
-			SuspensionCompression = 1f - (trace.Distance - Radius).Clamp( 0, SuspensionLength ) / SuspensionLength;
-		}
-		else
+		if ( !trace.Hit )
 		{
 			IsGrounded = false;
-			GroundDistance = rayLength;
 			SuspensionCompression = 0f;
+			GroundHitPosition = rayOrigin + rayDir * rayLength;
+			return result; // all forces zero
 		}
+
+		IsGrounded = true;
+		SuspensionCompression = 1f - ((trace.Distance - Radius).Clamp( 0f, SuspensionLength ) / SuspensionLength);
+		GroundHitPosition = trace.HitPosition;
+
+		result.IsGrounded = true;
+		result.ApplicationPoint = trace.HitPosition;
+
+		// Forces implemented in subsequent tasks
+		return result;
+	}
+
+	protected override void OnUpdate()
+	{
+		UpdateVisuals();
 	}
 
 	private void UpdateVisuals()
 	{
-		// Move the whole wheel GO up/down for suspension travel,
-		// offset from the editor-placed attach point
 		var suspensionOffset = IsGrounded
-			? GroundDistance - Radius
+			? (SuspensionLength * (1f - SuspensionCompression))
 			: SuspensionLength;
 
 		LocalPosition = _attachLocalPos + Vector3.Down * suspensionOffset;
 
 		if ( _wheelModel == null ) return;
 
-		// Spin wheel based on speed, applied on top of editor base rotation
 		_spinAngle = (_spinAngle + CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 		var spinRotation = Rotation.FromAxis( Vector3.Right, _spinAngle );
-
-		// Steer rotation for steerable wheels
 		var steerRotation = IsSteerable
 			? Rotation.FromAxis( Vector3.Up, SteerAngle )
 			: Rotation.Identity;
