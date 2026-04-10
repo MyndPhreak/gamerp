@@ -19,6 +19,10 @@ public sealed class VehicleWheel : Component
 	[Property] public float LateralFriction { get; set; } = 6000f;
 	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
 
+	// Minimum forward speed (units/sec) required for braking to apply.
+	// Prevents jitter at near-standstill. S&Box units ≈ 1 unit/sec.
+	private const float BrakeSpeedThreshold = 5f;
+
 	// --- Runtime (read-only in editor) ---
 	[Property, ReadOnly] public bool IsGrounded { get; private set; }
 	[Property, ReadOnly] public float SuspensionCompression { get; private set; }
@@ -118,10 +122,10 @@ public sealed class VehicleWheel : Component
 				// Accelerate forward
 				result.DriveForce = wheelForward * throttle * accelerationForce * LongitudinalFriction;
 			}
-			else if ( brake > 0f && MathF.Abs( forwardSpeed ) > 5f )
+			else if ( brake > 0f && MathF.Abs( forwardSpeed ) > BrakeSpeedThreshold )
 			{
 				// Braking: oppose current forward motion
-				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * brake * brakeForce;
+				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * brake * brakeForce * LongitudinalFriction;
 			}
 			else if ( throttle < 0f )
 			{
