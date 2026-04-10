@@ -89,6 +89,40 @@ public class FederalReserveController : ControllerBase
     }
 
     /// <summary>
+    /// Get recent gold transactions (anonymized for public, detailed for admin)
+    /// </summary>
+    [HttpGet("transactions")]
+    [ProducesResponseType(typeof(List<FederalReserveTransactionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<FederalReserveTransactionDto>>> GetTransactions(
+        [FromQuery] int limit = 10,
+        [FromQuery] bool includePlayerInfo = false)
+    {
+        var transactions = await _federalReserveService.GetTransactionsAsync(limit, includePlayerInfo);
+        return Ok(transactions);
+    }
+
+    /// <summary>
+    /// Update the Federal Reserve exchange rate (admin only)
+    /// </summary>
+    [HttpPut("exchange-rate")]
+    [ProducesResponseType(typeof(FederalReserveStatsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<FederalReserveStatsDto>> UpdateExchangeRate([FromBody] UpdateExchangeRateDto request)
+    {
+        _logger.LogInformation("Exchange rate update request: {NewRate}", request.NewRate);
+
+        try
+        {
+            var stats = await _federalReserveService.UpdateExchangeRateAsync(request.NewRate);
+            return Ok(stats);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]

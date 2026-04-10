@@ -244,6 +244,110 @@ public class EconomyApiClient : IEconomyApi
 	}
 
 	/// <summary>
+	/// Get historical Federal Reserve data for graphs
+	/// </summary>
+	public async Task<FederalReserveHistoryData> GetFederalReserveHistoryAsync( int periods = 10 )
+	{
+		try
+		{
+			var url = $"{_baseUrl}/federal-reserve/history?periods={periods}";
+			Log.Info( $"[EconomyAPI] Fetching Federal Reserve history ({periods} periods)" );
+
+			var response = await Http.RequestAsync( url );
+
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"[EconomyAPI] Failed to get Fed history. Status: {response.StatusCode}" );
+				return null;
+			}
+
+			var json = await response.Content.ReadAsStringAsync();
+			var history = Json.Deserialize<FederalReserveHistoryData>( json );
+
+			if ( history != null )
+			{
+				Log.Info( $"[EconomyAPI] Fed history: {history.Snapshots?.Count ?? 0} snapshots" );
+			}
+
+			return history;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[EconomyAPI] Error getting Fed history: {ex.Message}" );
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Get recent gold transactions from the Federal Reserve
+	/// </summary>
+	public async Task<System.Collections.Generic.List<FederalReserveTransactionData>> GetFederalReserveTransactionsAsync( int limit = 10, bool includePlayerInfo = false )
+	{
+		try
+		{
+			var url = $"{_baseUrl}/federal-reserve/transactions?limit={limit}&includePlayerInfo={includePlayerInfo.ToString().ToLower()}";
+			Log.Info( $"[EconomyAPI] Fetching Fed transactions (limit={limit})" );
+
+			var response = await Http.RequestAsync( url );
+
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"[EconomyAPI] Failed to get Fed transactions. Status: {response.StatusCode}" );
+				return null;
+			}
+
+			var json = await response.Content.ReadAsStringAsync();
+			var transactions = Json.Deserialize<System.Collections.Generic.List<FederalReserveTransactionData>>( json );
+
+			Log.Info( $"[EconomyAPI] Fed transactions: {transactions?.Count ?? 0} entries" );
+			return transactions;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[EconomyAPI] Error getting Fed transactions: {ex.Message}" );
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Update the Federal Reserve exchange rate (admin only)
+	/// </summary>
+	public async Task<FederalReserveStats> UpdateExchangeRateAsync( decimal newRate )
+	{
+		try
+		{
+			var url = $"{_baseUrl}/federal-reserve/exchange-rate";
+			Log.Info( $"[EconomyAPI] Updating exchange rate to ${newRate}" );
+
+			var body = new { NewRate = newRate };
+			var json = Json.Serialize( body );
+			var content = new System.Net.Http.StringContent( json, System.Text.Encoding.UTF8, "application/json" );
+			var response = await Http.RequestAsync( url, "PUT", content );
+
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"[EconomyAPI] Exchange rate update failed. Status: {response.StatusCode}" );
+				return null;
+			}
+
+			var responseJson = await response.Content.ReadAsStringAsync();
+			var stats = Json.Deserialize<FederalReserveStats>( responseJson );
+
+			if ( stats != null )
+			{
+				Log.Info( $"[EconomyAPI] Exchange rate updated. New rate: ${stats.ExchangeRate}" );
+			}
+
+			return stats;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[EconomyAPI] Error updating exchange rate: {ex.Message}" );
+			return null;
+		}
+	}
+
+	/// <summary>
 	/// Check if the API is healthy
 	/// </summary>
 	public async Task<bool> HealthCheckAsync()

@@ -1,5 +1,6 @@
 using Sandbox;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GameRP.Economy;
@@ -78,6 +79,40 @@ public class GoldOperationResult
 }
 
 /// <summary>
+/// A single point in Federal Reserve history
+/// </summary>
+public class FederalReserveSnapshotData
+{
+	public int TotalGoldReserves { get; set; }
+	public decimal TotalCurrencyInCirculation { get; set; }
+	public decimal ExchangeRate { get; set; }
+	public decimal GoldBackingRatio { get; set; }
+	public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// Historical Federal Reserve data for rendering graphs
+/// </summary>
+public class FederalReserveHistoryData
+{
+	public List<FederalReserveSnapshotData> Snapshots { get; set; }
+	public FederalReserveStats CurrentStats { get; set; }
+}
+
+/// <summary>
+/// A gold transaction from the Federal Reserve
+/// </summary>
+public class FederalReserveTransactionData
+{
+	public string Type { get; set; }
+	public int GoldBars { get; set; }
+	public decimal CurrencyAmount { get; set; }
+	public DateTime Timestamp { get; set; }
+	public long? SteamId { get; set; }
+	public string PlayerName { get; set; }
+}
+
+/// <summary>
 /// Interface for Economy API communication
 /// </summary>
 public interface IEconomyApi
@@ -125,4 +160,19 @@ public interface IEconomyApi
 	/// Withdraw gold bars from the Federal Reserve by paying currency
 	/// </summary>
 	Task<GoldOperationResult> WithdrawGoldAsync( long steamId, int goldBars );
+
+	/// <summary>
+	/// Get historical Federal Reserve data for graphs
+	/// </summary>
+	Task<FederalReserveHistoryData> GetFederalReserveHistoryAsync( int periods = 10 );
+
+	/// <summary>
+	/// Get recent gold transactions from the Federal Reserve
+	/// </summary>
+	Task<List<FederalReserveTransactionData>> GetFederalReserveTransactionsAsync( int limit = 10, bool includePlayerInfo = false );
+
+	/// <summary>
+	/// Update the Federal Reserve exchange rate (admin only)
+	/// </summary>
+	Task<FederalReserveStats> UpdateExchangeRateAsync( decimal newRate );
 }

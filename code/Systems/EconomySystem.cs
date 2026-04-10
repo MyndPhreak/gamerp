@@ -1,5 +1,6 @@
 using Sandbox;
 using GameRP.Economy;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GameRP.Systems;
@@ -113,5 +114,29 @@ public static class EconomySystem
 	public static async Task<GoldOperationResult> WithdrawGold( long steamId, int goldBars )
 	{
 		return await Api.WithdrawGoldAsync( steamId, goldBars );
+	}
+
+	/// <summary>
+	/// Get Federal Reserve historical data for graphs
+	/// </summary>
+	public static async Task<FederalReserveHistoryData> GetFederalReserveHistory( int periods = 10 )
+	{
+		return await Api.GetFederalReserveHistoryAsync( periods );
+	}
+
+	/// <summary>
+	/// Get recent gold transactions from the Federal Reserve
+	/// </summary>
+	public static async Task<List<FederalReserveTransactionData>> GetFederalReserveTransactions( int limit = 10, bool includePlayerInfo = false )
+	{
+		return await Api.GetFederalReserveTransactionsAsync( limit, includePlayerInfo );
+	}
+
+	/// <summary>
+	/// Update the Federal Reserve exchange rate (admin only)
+	/// </summary>
+	public static async Task<FederalReserveStats> UpdateExchangeRate( decimal newRate )
+	{
+		return await Api.UpdateExchangeRateAsync( newRate );
 	}
 }

@@ -247,4 +247,67 @@ public class FederalReserveService
             CurrentStats = MapToStatsDto(fed)
         };
     }
+
+    /// <summary>
+    /// Get recent gold transactions for the Fed dashboard
+    /// </summary>
+    public async Task<List<FederalReserveTransactionDto>> GetTransactionsAsync(int limit = 10, bool includePlayerInfo = false)
+    {
+        var query = _context.Transactions
+            .Where(t => t.Type == TransactionType.GoldDeposit || t.Type == TransactionType.GoldWithdrawal)
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(limit);
+
+        if (includePlayerInfo)
+        {
+            query = query.Include(t => t.Player);
+        }
+
+        var transactions = await query.ToListAsync();
+
+        return transactions.Select(t =>
+        {
+            // Parse gold bars from description (e.g., "Deposited 5 gold bar(s) at $1,000.00/bar")
+            var goldBars = 0;
+            if (t.Description != null)
+            {
+                var parts = t.Description.Split(' ');
+                if (parts.Length > 1)
+                    int.TryParse(parts[1], out goldBars);
+            }
+
+            return new FederalReserveTransactionDto
+            {
+                Type = t.Type == TransactionType.GoldDeposit ? "deposit" : "withdrawal",
+                GoldBars = goldBars,
+                CurrencyAmount = Math.Abs(t.Amount),
+                Timestamp = t.CreatedAt,
+                SteamId = includePlayerInfo ? t.SteamId : null,
+                PlayerName = includePlayerInfo ? t.Player?.DisplayName : null
+            };
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Update the Federal Reserve exchange rate (admin only)
+    /// </summary>
+    public async Task<FederalReserveStatsDto> UpdateExchangeRateAsync(decimal newRate)
+    {
+        if (newRate <= 0)
+            throw new ArgumentOutOfRangeException(nameof(newRate), "Exchange rate must be positive");
+
+        _logger.LogInformation("Exchange rate update: {NewRate}", newRate);
+
+        var fed = await GetOrCreateAsync();
+        var oldRate = fed.ExchangeRate;
+        fed.ExchangeRate = newRate;
+
+        CreateSnapshot(fed);
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Exchange rate updated: ${OldRate:N2} -> ${NewRate:N2}", oldRate, newRate);
+
+        return MapToStatsDto(fed);
+    }
 }
