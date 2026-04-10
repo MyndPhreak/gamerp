@@ -29,7 +29,7 @@ public sealed class VehicleController : Component
 
 	// --- Internals ---
 	private Rigidbody _body;
-	private List<VehicleWheel> _wheels;
+	private List<VehicleWheel> _wheels = new();
 
 	// Input cached from OnUpdate, consumed in OnFixedUpdate
 	private float _throttleInput;
@@ -63,22 +63,31 @@ public sealed class VehicleController : Component
 			else if ( Input.Down( "Backward" ) ) rawThrottle = -1f;
 		}
 
-		// Separate throttle from brake
-		if ( rawThrottle > 0f )
+		// Separate throttle from brake.
+		// CurrentSpeed is signed: positive = forward, negative = backward.
+		// Note: CurrentSpeed lags OnFixedUpdate by up to one tick — acceptable for input decisions.
+		if ( rawThrottle > 0f && CurrentSpeed > -10f )
 		{
+			// Accelerate forward (or brake out of slow reverse)
 			_throttleInput = rawThrottle;
 			_brakeInput = 0f;
 		}
+		else if ( rawThrottle > 0f && CurrentSpeed <= -10f )
+		{
+			// Moving backward fast: forward input = brake
+			_throttleInput = 0f;
+			_brakeInput = 1f;
+		}
 		else if ( rawThrottle < 0f && CurrentSpeed > 10f )
 		{
-			// Moving forward fast enough: backward input = brake
+			// Moving forward fast: backward input = brake
 			_throttleInput = 0f;
 			_brakeInput = 1f;
 		}
 		else
 		{
-			// Stopped or reversing: backward input = reverse throttle
-			_throttleInput = rawThrottle; // negative
+			// Stopped or slow: direct throttle (positive = forward, negative = reverse)
+			_throttleInput = rawThrottle;
 			_brakeInput = 0f;
 		}
 
@@ -118,6 +127,8 @@ public sealed class VehicleController : Component
 		}
 
 		// --- Hard velocity clamp ---
+		// Direct Velocity write bypasses the physics constraint solver.
+		// If micro-jitter appears at top speed, lower AccelerationForce or raise Rigidbody.LinearDamping instead.
 		if ( _body.Velocity.Length > MaxSpeed )
 			_body.Velocity = _body.Velocity.Normal * MaxSpeed;
 
@@ -151,6 +162,9 @@ public sealed class VehicleController : Component
 			.Where( w => w.LocalPosition.y < 0f )
 			.OrderBy( w => w.LocalPosition.x )
 			.ToList();
+
+		if ( front.Count < 2 && rear.Count < 2 )
+			Log.Warning( "[VehicleController] Anti-roll: could not find 2+ wheels in either axle group. Check that wheel positions straddle the vehicle pivot on the Y axis." );
 
 		ApplyAntiRollToAxle( front );
 		ApplyAntiRollToAxle( rear );
