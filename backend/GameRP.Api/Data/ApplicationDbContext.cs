@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Player> Players { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<FederalReserve> FederalReserves { get; set; }
+    public DbSet<FederalReserveSnapshot> FederalReserveSnapshots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +55,26 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.PlayerId).IsUnique();
             entity.HasIndex(e => e.SteamId).IsUnique();
             entity.HasIndex(e => e.Balance);
+            entity.HasIndex(e => e.CreatedAt);
+
+            // Soft delete query filter
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // FederalReserve configuration
+        modelBuilder.Entity<FederalReserve>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.CreatedAt);
+
+            // Soft delete query filter
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // FederalReserveSnapshot configuration
+        modelBuilder.Entity<FederalReserveSnapshot>(entity =>
+        {
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.CreatedAt);
 
             // Soft delete query filter
