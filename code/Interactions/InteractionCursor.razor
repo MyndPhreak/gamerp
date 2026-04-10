@@ -1,0 +1,19 @@
+@using Sandbox;
+@using Sandbox.UI;
+
+@namespace GameRP.Interactions
+@inherits PanelComponent
+
+<root>
+    @if ( Manager != null && Manager.IsCursorMode )
+    {
+        <div class="cursor-dot" style="left: @(Manager.VirtualCursorPos.x)px; top: @(Manager.VirtualCursorPos.y)px;"></div>
+    }
+</root>
+
+@code
+{
+    [Property] public InteractionManager Manager { get; set; }
+
+    protected override int BuildHash() => System.HashCode.Combine( Manager?.IsCursorMode, Manager?.VirtualCursorPos );
+}

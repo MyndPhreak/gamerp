@@ -7,6 +7,9 @@ public sealed class VehicleSeat : Component
 {
 	[Property] public Vector3 SeatOffset { get; set; } = new Vector3( 0, 0, 40 );
 	[Property] public Vector3 ExitOffset { get; set; } = new Vector3( 0, 80, 0 );
+	[Property] public float CameraDistance { get; set; } = 300f;
+	[Property] public Vector3 CameraLookOffset { get; set; } = new Vector3( 0, 0, 30 );
+	[Property] public float CameraSensitivity { get; set; } = 0.15f;
 
 	public RPPlayer OccupiedBy { get; private set; }
 
@@ -15,7 +18,12 @@ public sealed class VehicleSeat : Component
 	private PlayerController _playerController;
 	private CharacterController _characterController;
 	private SkinnedModelRenderer _playerModel;
+	private PlayerInteraction _playerInteraction;
+	private CameraComponent _camera;
 	private GameObject _playerObject;
+
+	// Orbit camera state
+	private Angles _orbitAngles;
 
 	protected override void OnStart()
 	{
@@ -49,12 +57,29 @@ public sealed class VehicleSeat : Component
 			return;
 		}
 
-		// Keep player positioned at seat
+		// Keep player hidden at seat position
 		if ( _playerObject != null )
 		{
 			_playerObject.LocalPosition = SeatOffset;
 			_playerObject.LocalRotation = Rotation.Identity;
 		}
+
+		UpdateOrbitCamera();
+	}
+
+	private void UpdateOrbitCamera()
+	{
+		if ( _camera == null ) return;
+
+		// Orbit with mouse
+		_orbitAngles.yaw += Input.MouseDelta.x * CameraSensitivity;
+		_orbitAngles.pitch = (_orbitAngles.pitch - Input.MouseDelta.y * CameraSensitivity).Clamp( -20f, 70f );
+
+		var orbitRot = Rotation.From( _orbitAngles );
+		var lookTarget = _vehicleController.WorldPosition + CameraLookOffset;
+
+		_camera.WorldPosition = lookTarget + orbitRot.Forward * -CameraDistance;
+		_camera.WorldRotation = Rotation.LookAt( lookTarget - _camera.WorldPosition, Vector3.Up );
 	}
 
 	private void OnSeatInteract()
@@ -62,7 +87,6 @@ public sealed class VehicleSeat : Component
 		if ( OccupiedBy != null ) return;
 		if ( _vehicleController.Driver != null ) return;
 
-		// Find local player
 		var player = FindLocalPlayer();
 		if ( player == null ) return;
 
@@ -89,30 +113,30 @@ public sealed class VehicleSeat : Component
 		_playerController = _playerObject.Components.Get<PlayerController>();
 		_characterController = _playerObject.Components.Get<CharacterController>();
 		_playerModel = _playerObject.Components.Get<SkinnedModelRenderer>( FindMode.InChildren );
+		_playerInteraction = _playerObject.Components.Get<PlayerInteraction>();
+		_camera = _playerObject.Components.Get<CameraComponent>( FindMode.InChildren );
 
-		// Disable player movement and look
+		// Disable player movement, look, and interaction camera
 		_playerController.WishVelocity = Vector3.Zero;
 		_playerController.UseInputControls = false;
 		_playerController.UseLookControls = false;
 		_characterController.Velocity = Vector3.Zero;
 		_characterController.Enabled = false;
+		if ( _playerInteraction != null ) _playerInteraction.Enabled = false;
 
-		// Parent player to vehicle
+		// Start orbit from behind vehicle
+		var vehicleAngles = _vehicleController.WorldRotation.Angles();
+		_orbitAngles = new Angles( 20f, vehicleAngles.yaw + 180f, 0f );
+
+		// Parent player to vehicle (hidden)
 		_playerObject.SetParent( GameObject );
 		_playerObject.LocalPosition = SeatOffset;
 		_playerObject.LocalRotation = Rotation.Identity;
 
-		// Hide player model
-		if ( _playerModel != null )
-			_playerModel.Enabled = false;
+		if ( _playerModel != null ) _playerModel.Enabled = false;
 
-		// Tell controller we have a driver
 		_vehicleController.Driver = player;
-
-		// Hide interaction prompt while occupied
 		_interactable.Enabled = false;
-
-		Log.Info( "[VehicleSeat] Player mounted vehicle" );
 	}
 
 	private void Dismount()
@@ -122,32 +146,27 @@ public sealed class VehicleSeat : Component
 		// Unparent player
 		_playerObject.SetParent( null );
 
-		// Position player at exit point (world space, relative to vehicle)
 		var exitWorldPos = WorldPosition + WorldRotation * ExitOffset;
 		_playerObject.WorldPosition = exitWorldPos;
 
-		// Re-enable player movement and look
+		// Re-enable player
 		_characterController.Enabled = true;
 		_playerController.UseInputControls = true;
 		_playerController.UseLookControls = true;
+		if ( _playerInteraction != null ) _playerInteraction.Enabled = true;
 
-		// Show player model
-		if ( _playerModel != null )
-			_playerModel.Enabled = true;
+		if ( _playerModel != null ) _playerModel.Enabled = true;
 
-		// Clear driver
 		_vehicleController.Driver = null;
 
-		Log.Info( "[VehicleSeat] Player dismounted vehicle" );
-
-		// Clean up references
 		OccupiedBy = null;
 		_playerObject = null;
 		_playerController = null;
 		_characterController = null;
 		_playerModel = null;
+		_playerInteraction = null;
+		_camera = null;
 
-		// Re-enable interaction prompt
 		_interactable.Enabled = true;
 	}
 

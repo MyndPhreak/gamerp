@@ -255,6 +255,7 @@
           "go": "2e6a34ab-dcf1-4a79-ba55-c85676e76621",
           "component_type": "CameraComponent"
         },
+        "InteractCursorKey": "F",
         "MaxRaycastDistance": 500,
         "OnComponentDestroy": null,
         "OnComponentDisabled": null,
@@ -262,7 +263,7 @@
         "OnComponentFixedUpdate": null,
         "OnComponentStart": null,
         "OnComponentUpdate": null,
-        "ShowDebug": false
+        "ShowDebug": true
       },
       {
         "__type": "CameraZoomController",

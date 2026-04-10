@@ -26,7 +26,8 @@ public sealed class VehicleWheel : Component
 
 	private ModelRenderer _wheelModel;
 	private float _spinAngle;
-	private Vector3 _attachLocalPos; // editor-placed position, used as suspension base
+	private Vector3 _attachLocalPos;   // editor-placed local position — suspension base
+	private Rotation _baseLocalRot;    // editor-placed local rotation — spin/steer applied on top
 
 	protected override void OnAwake()
 	{
@@ -35,6 +36,7 @@ public sealed class VehicleWheel : Component
 			Log.Warning( "[VehicleWheel] No ModelRenderer found — wheel visuals will not update" );
 
 		_attachLocalPos = LocalPosition;
+		_baseLocalRot = LocalRotation;
 	}
 
 	protected override void OnUpdate()
@@ -45,8 +47,11 @@ public sealed class VehicleWheel : Component
 
 	private void UpdateSuspension()
 	{
-		var rayOrigin = WorldPosition;
-		var rayDirection = -GameObject.Parent.WorldRotation.Up;
+		// Raycast from the attach point (world space), not the current WorldPosition which
+		// includes the suspension offset — avoids a feedback loop causing bouncing
+		var parent = GameObject.Parent;
+		var rayOrigin = parent.WorldPosition + parent.WorldRotation * _attachLocalPos;
+		var rayDirection = -parent.WorldRotation.Up;
 		var rayLength = SuspensionLength + Radius;
 
 		var trace = Scene.Trace
@@ -80,7 +85,7 @@ public sealed class VehicleWheel : Component
 
 		if ( _wheelModel == null ) return;
 
-		// Spin wheel based on speed
+		// Spin wheel based on speed, applied on top of editor base rotation
 		_spinAngle = (_spinAngle + CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 		var spinRotation = Rotation.FromAxis( Vector3.Right, _spinAngle );
 
@@ -89,6 +94,6 @@ public sealed class VehicleWheel : Component
 			? Rotation.FromAxis( Vector3.Up, SteerAngle )
 			: Rotation.Identity;
 
-		_wheelModel.LocalRotation = steerRotation * spinRotation;
+		LocalRotation = _baseLocalRot * steerRotation * spinRotation;
 	}
 }

@@ -13,11 +13,16 @@ public sealed class VehicleController : Component
 	[Property] public float TurnRate { get; set; } = 120f;
 	[Property, Range( 0.9f, 1f )] public float Drag { get; set; } = 0.98f;
 
+	/// <summary>Which local axis is the vehicle's forward direction. Change if driving sideways.</summary>
+	[Property] public Angles DriveRotationOffset { get; set; } = new Angles( 0, 0, 0 );
+
 	[Property, ReadOnly] public float CurrentSpeed { get; private set; }
 	[Property, ReadOnly] public float SteerAngle { get; private set; }
 
 	public Vector3 Velocity { get; private set; }
 	public RPPlayer Driver { get; set; }
+
+	public Rotation DriveRotation => WorldRotation * DriveRotationOffset.ToRotation();
 
 	private List<VehicleWheel> _wheels;
 	private List<VehicleWheel> _drivenWheels;
@@ -33,7 +38,8 @@ public sealed class VehicleController : Component
 			Log.Warning( "[VehicleController] No driven wheels (IsDriven=true) found" );
 	}
 
-	protected override void OnUpdate()
+
+protected override void OnUpdate()
 	{
 		if ( IsProxy ) return;
 
@@ -55,8 +61,8 @@ public sealed class VehicleController : Component
 	{
 		// Steering
 		var steerInput = 0f;
-		if ( Input.Down( "Left" ) ) steerInput -= 1f;
-		if ( Input.Down( "Right" ) ) steerInput += 1f;
+		if ( Input.Down( "Left" ) ) steerInput += 1f;
+		if ( Input.Down( "Right" ) ) steerInput -= 1f;
 
 		// Speed-dependent steering: reduce turn rate at higher speeds
 		var speedFactor = 1f - (CurrentSpeed / MaxSpeed * 0.7f).Clamp( 0f, 0.7f );
@@ -65,7 +71,7 @@ public sealed class VehicleController : Component
 		if ( MathF.Abs( CurrentSpeed ) > 1f )
 		{
 			var turnDelta = steerInput * TurnRate * speedFactor * Time.Delta;
-			WorldRotation *= Rotation.FromAxis( Vector3.Up, turnDelta );
+			WorldRotation *= Rotation.FromAxis( DriveRotation.Up, turnDelta );
 		}
 
 		// Throttle / Brake
@@ -81,7 +87,7 @@ public sealed class VehicleController : Component
 			? (float)groundedDriven / _drivenWheels.Count
 			: 0f;
 
-		var forward = WorldRotation.Forward;
+		var forward = DriveRotation.Forward;
 
 		if ( throttleInput > 0f )
 		{
@@ -124,7 +130,7 @@ public sealed class VehicleController : Component
 			Velocity = Velocity.Normal * MaxSpeed;
 
 		WorldPosition += Velocity * Time.Delta;
-		CurrentSpeed = Vector3.Dot( Velocity, WorldRotation.Forward );
+		CurrentSpeed = Vector3.Dot( Velocity, DriveRotation.Forward );
 	}
 
 	private void UpdateWheels()

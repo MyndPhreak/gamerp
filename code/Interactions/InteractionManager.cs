@@ -31,6 +31,16 @@ public sealed class InteractionManager : Component, PlayerController.IEvents
 	/// </summary>
 	[Property] public string InteractCursorKey { get; set; } = "F";
 
+	/// <summary>
+	/// True when the interact cursor key is held down
+	/// </summary>
+	public bool IsCursorMode { get; private set; }
+
+	/// <summary>
+	/// Screen-space position of the virtual cursor
+	/// </summary>
+	public Vector2 VirtualCursorPos { get; private set; }
+
 	private Interactable _currentInteractable;
 	private Interactable _previousInteractable;
 	private bool _isPressing;
@@ -56,10 +66,13 @@ public sealed class InteractionManager : Component, PlayerController.IEvents
 		// Hold key to show cursor for world panel interaction
 		if ( Input.Keyboard.Down( InteractCursorKey ) )
 		{
+			IsCursorMode = true;
 			Mouse.Visibility = MouseVisibility.Visible;
+			VirtualCursorPos = Mouse.Position;
 		}
 		else if ( Input.Keyboard.Released( InteractCursorKey ) )
 		{
+			IsCursorMode = false;
 			Mouse.Visibility = MouseVisibility.Hidden;
 		}
 
