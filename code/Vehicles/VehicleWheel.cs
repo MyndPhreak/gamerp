@@ -39,7 +39,7 @@ public sealed class VehicleWheel : Component
 
 	private void UpdateSuspension()
 	{
-		var rayOrigin = GameObject.Parent.WorldPosition + GameObject.LocalPosition;
+		var rayOrigin = WorldPosition;
 		var rayDirection = -GameObject.Parent.WorldRotation.Up;
 		var rayLength = SuspensionLength + Radius;
 

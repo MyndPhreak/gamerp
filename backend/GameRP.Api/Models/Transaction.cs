@@ -13,7 +13,9 @@ public enum TransactionType
     Transfer,
     Purchase,
     Salary,
-    Reward
+    Reward,
+    GoldDeposit,
+    GoldWithdrawal
 }
 
 /// <summary>
