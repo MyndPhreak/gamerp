@@ -90,4 +90,28 @@ public static class EconomySystem
 		};
 		return await Api.WithdrawAsync( steamId, request );
 	}
+
+	/// <summary>
+	/// Get Federal Reserve economic stats
+	/// </summary>
+	public static async Task<FederalReserveStats> GetFederalReserveStats()
+	{
+		return await Api.GetFederalReserveStatsAsync();
+	}
+
+	/// <summary>
+	/// Deposit gold bars at the Federal Reserve in exchange for currency
+	/// </summary>
+	public static async Task<GoldOperationResult> DepositGold( long steamId, int goldBars )
+	{
+		return await Api.DepositGoldAsync( steamId, goldBars );
+	}
+
+	/// <summary>
+	/// Withdraw gold bars from the Federal Reserve by paying currency
+	/// </summary>
+	public static async Task<GoldOperationResult> WithdrawGold( long steamId, int goldBars )
+	{
+		return await Api.WithdrawGoldAsync( steamId, goldBars );
+	}
 }

@@ -79,4 +79,92 @@ public static class EconomyCommands
 		Log.Info( $"Balance: ${balance:N0}" );
 		Log.Info( "========================================" );
 	}
+
+	/// <summary>
+	/// Get Federal Reserve economic stats
+	/// </summary>
+	[ConCmd( "fed_stats" )]
+	public static async Task GetFedStats()
+	{
+		Log.Info( "========================================" );
+		Log.Info( "Federal Reserve Economic Stats" );
+		Log.Info( "========================================" );
+
+		var stats = await EconomySystem.GetFederalReserveStats();
+
+		if ( stats != null )
+		{
+			Log.Info( $"Gold Reserves:     {stats.TotalGoldReserves} bars" );
+			Log.Info( $"Currency Supply:   ${stats.TotalCurrencyInCirculation:N2}" );
+			Log.Info( $"Exchange Rate:     ${stats.ExchangeRate:N2} per gold bar" );
+			Log.Info( $"Backing Ratio:     {stats.GoldBackingRatio:P0}" );
+			Log.Info( $"Last Updated:      {stats.UpdatedAt}" );
+		}
+		else
+		{
+			Log.Error( "Failed to retrieve Federal Reserve stats" );
+		}
+
+		Log.Info( "========================================" );
+	}
+
+	/// <summary>
+	/// Deposit gold bars at the Federal Reserve (test with default SteamID)
+	/// </summary>
+	[ConCmd( "fed_deposit" )]
+	public static async Task FedDeposit( int goldBars )
+	{
+		long steamId = 76561198012345678;
+
+		Log.Info( "========================================" );
+		Log.Info( $"Depositing {goldBars} gold bar(s) at the Federal Reserve" );
+		Log.Info( $"SteamID: {steamId}" );
+		Log.Info( "========================================" );
+
+		var result = await EconomySystem.DepositGold( steamId, goldBars );
+
+		if ( result != null )
+		{
+			Log.Info( $"Currency Received: ${result.CurrencyAmount:N2}" );
+			Log.Info( $"New Balance:       ${result.NewWalletBalance:N2}" );
+			Log.Info( $"Fed Gold Reserves: {result.FederalReserveStats.TotalGoldReserves} bars" );
+			Log.Info( $"Currency Supply:   ${result.FederalReserveStats.TotalCurrencyInCirculation:N2}" );
+		}
+		else
+		{
+			Log.Error( "Gold deposit failed" );
+		}
+
+		Log.Info( "========================================" );
+	}
+
+	/// <summary>
+	/// Withdraw gold bars from the Federal Reserve (test with default SteamID)
+	/// </summary>
+	[ConCmd( "fed_withdraw" )]
+	public static async Task FedWithdraw( int goldBars )
+	{
+		long steamId = 76561198012345678;
+
+		Log.Info( "========================================" );
+		Log.Info( $"Withdrawing {goldBars} gold bar(s) from the Federal Reserve" );
+		Log.Info( $"SteamID: {steamId}" );
+		Log.Info( "========================================" );
+
+		var result = await EconomySystem.WithdrawGold( steamId, goldBars );
+
+		if ( result != null )
+		{
+			Log.Info( $"Currency Paid:     ${result.CurrencyAmount:N2}" );
+			Log.Info( $"New Balance:       ${result.NewWalletBalance:N2}" );
+			Log.Info( $"Fed Gold Reserves: {result.FederalReserveStats.TotalGoldReserves} bars" );
+			Log.Info( $"Currency Supply:   ${result.FederalReserveStats.TotalCurrencyInCirculation:N2}" );
+		}
+		else
+		{
+			Log.Error( "Gold withdrawal failed" );
+		}
+
+		Log.Info( "========================================" );
+	}
 }

@@ -29,6 +29,8 @@ public sealed class VehicleWheel : Component
 	protected override void OnAwake()
 	{
 		_wheelModel = Components.Get<ModelRenderer>();
+		if ( _wheelModel == null )
+			Log.Warning( "[VehicleWheel] No ModelRenderer found — wheel visuals will not update" );
 	}
 
 	protected override void OnUpdate()
@@ -75,7 +77,7 @@ public sealed class VehicleWheel : Component
 		_wheelModel.LocalPosition = localDown * suspensionOffset;
 
 		// Spin wheel based on speed
-		_spinAngle += CurrentSpeed * Time.Delta * (360f / (2f * MathF.PI * Radius));
+		_spinAngle = (_spinAngle + CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 		var spinRotation = Rotation.FromAxis( Vector3.Right, _spinAngle );
 
 		// Steer rotation for front wheels

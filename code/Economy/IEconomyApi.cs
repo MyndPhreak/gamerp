@@ -37,6 +37,47 @@ public class WithdrawRequest
 }
 
 /// <summary>
+/// Federal Reserve economic stats
+/// </summary>
+public class FederalReserveStats
+{
+	public int TotalGoldReserves { get; set; }
+	public decimal TotalCurrencyInCirculation { get; set; }
+	public decimal ExchangeRate { get; set; }
+	public decimal GoldBackingRatio { get; set; }
+	public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>
+/// Request to deposit gold bars at the Federal Reserve
+/// </summary>
+public class GoldDepositRequest
+{
+	public long SteamId { get; set; }
+	public int GoldBars { get; set; }
+}
+
+/// <summary>
+/// Request to withdraw gold bars from the Federal Reserve
+/// </summary>
+public class GoldWithdrawRequest
+{
+	public long SteamId { get; set; }
+	public int GoldBars { get; set; }
+}
+
+/// <summary>
+/// Result of a gold deposit or withdrawal operation
+/// </summary>
+public class GoldOperationResult
+{
+	public decimal CurrencyAmount { get; set; }
+	public int GoldBars { get; set; }
+	public decimal NewWalletBalance { get; set; }
+	public FederalReserveStats FederalReserveStats { get; set; }
+}
+
+/// <summary>
 /// Interface for Economy API communication
 /// </summary>
 public interface IEconomyApi
@@ -69,4 +110,19 @@ public interface IEconomyApi
 	/// </summary>
 	/// <returns>True if API is responding</returns>
 	Task<bool> HealthCheckAsync();
+
+	/// <summary>
+	/// Get Federal Reserve economic stats
+	/// </summary>
+	Task<FederalReserveStats> GetFederalReserveStatsAsync();
+
+	/// <summary>
+	/// Deposit gold bars at the Federal Reserve in exchange for currency
+	/// </summary>
+	Task<GoldOperationResult> DepositGoldAsync( long steamId, int goldBars );
+
+	/// <summary>
+	/// Withdraw gold bars from the Federal Reserve by paying currency
+	/// </summary>
+	Task<GoldOperationResult> WithdrawGoldAsync( long steamId, int goldBars );
 }

@@ -8,14 +8,14 @@ namespace GameRP.Api.Models;
 /// </summary>
 public enum TransactionType
 {
-    Deposit,
-    Withdrawal,
-    Transfer,
-    Purchase,
-    Salary,
-    Reward,
-    GoldDeposit,
-    GoldWithdrawal
+    Deposit = 0,
+    Withdrawal = 1,
+    Transfer = 2,
+    Purchase = 3,
+    Salary = 4,
+    Reward = 5,
+    GoldDeposit = 6,
+    GoldWithdrawal = 7
 }
 
 /// <summary>
