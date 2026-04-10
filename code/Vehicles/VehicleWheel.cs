@@ -106,7 +106,31 @@ public sealed class VehicleWheel : Component
 		var dampForce = vertVel * DampStrength;
 		result.SuspensionForce = worldUp * (springForce - dampForce);
 
-		// Drive and lateral friction implemented in subsequent tasks
+		// --- Wheel forward direction (steered for front wheels) ---
+		var wheelForward = Rotation.FromAxis( worldUp, IsSteerable ? steerAngle : 0f ) * parent.WorldRotation.Forward;
+		var forwardSpeed = Vector3.Dot( contactVelocity, wheelForward );
+
+		// --- Drive / Brake (driven wheels only) ---
+		if ( IsDriven )
+		{
+			if ( throttle > 0f )
+			{
+				// Accelerate forward
+				result.DriveForce = wheelForward * throttle * accelerationForce * LongitudinalFriction;
+			}
+			else if ( brake > 0f && MathF.Abs( forwardSpeed ) > 5f )
+			{
+				// Braking: oppose current forward motion
+				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * brake * brakeForce;
+			}
+			else if ( throttle < 0f )
+			{
+				// Reverse
+				result.DriveForce = wheelForward * throttle * reverseForce * LongitudinalFriction;
+			}
+		}
+
+		// Lateral friction implemented in next task
 		return result;
 	}
 
