@@ -20,7 +20,7 @@ public sealed class VehicleSeat : Component
 	protected override void OnStart()
 	{
 		_interactable = Components.Get<Interactable>();
-		_vehicleController = Components.GetInAncestorsOrSelf<VehicleController>();
+		_vehicleController = Components.Get<VehicleController>( FindMode.InAncestors | FindMode.InSelf );
 
 		if ( _interactable == null )
 		{
@@ -88,7 +88,7 @@ public sealed class VehicleSeat : Component
 		// Cache player components
 		_playerController = _playerObject.Components.Get<PlayerController>();
 		_characterController = _playerObject.Components.Get<CharacterController>();
-		_playerModel = _playerObject.Components.GetInChildren<SkinnedModelRenderer>();
+		_playerModel = _playerObject.Components.Get<SkinnedModelRenderer>( FindMode.InChildren );
 
 		// Disable player movement and look
 		_playerController.WishVelocity = Vector3.Zero;

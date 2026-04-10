@@ -1,4 +1,5 @@
 using Sandbox;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +24,7 @@ public sealed class VehicleController : Component
 
 	protected override void OnAwake()
 	{
-		_wheels = Components.GetInChildren<VehicleWheel>().ToList();
+		_wheels = Components.GetAll<VehicleWheel>( FindMode.InChildren ).ToList();
 		_drivenWheels = _wheels.Where( w => w.IsDriven ).ToList();
 
 		if ( _wheels.Count == 0 )
