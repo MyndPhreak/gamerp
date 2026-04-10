@@ -1,0 +1,166 @@
+@using Sandbox.UI.Common;
+@using Sandbox.UI.Tablet;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@using System.Threading.Tasks;
+@using System.Collections.Generic;
+@using GameRP.Systems;
+@using GameRP.Economy;
+
+<root>
+    @if (IsLoading)
+    {
+        <div class="fed-loading">
+            <div class="spinner"></div>
+            <label>Loading Federal Reserve data...</label>
+        </div>
+    }
+    else
+    {
+        <div class="fed-header">
+            <div class="fed-title">
+                <label class="fed-title-text">Federal Reserve</label>
+                <label class="fed-subtitle">Economic Dashboard</label>
+            </div>
+            <div class="refresh-btn" @onclick=@RefreshData>
+                <MyIcon Name="refresh" Size=@(22) Color="@(Color.FromBytes(0, 122, 255))" />
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-icon gold">
+                    <MyIcon Name="diamond" Size=@(20) />
+                </div>
+                <label class="stat-label">Gold Reserves</label>
+                <label class="stat-value">@(Stats?.TotalGoldReserves.ToString("N0") ?? "—")</label>
+                <label class="stat-unit">bars</label>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <MyIcon Name="payments" Size=@(20) />
+                </div>
+                <label class="stat-label">Currency Supply</label>
+                <label class="stat-value">$@(Stats?.TotalCurrencyInCirculation.ToString("N0") ?? "—")</label>
+                <label class="stat-unit">in circulation</label>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <MyIcon Name="currency_exchange" Size=@(20) />
+                </div>
+                <label class="stat-label">Exchange Rate</label>
+                <label class="stat-value">$@(Stats?.ExchangeRate.ToString("N2") ?? "—")</label>
+                <label class="stat-unit">per gold bar</label>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon @BackingRatioClass">
+                    <MyIcon Name="shield" Size=@(20) />
+                </div>
+                <label class="stat-label">Backing Ratio</label>
+                <label class="stat-value @BackingRatioClass">@(Stats != null ? Stats.GoldBackingRatio.ToString("N1") + "%" : "—")</label>
+                <label class="stat-unit">gold backed</label>
+            </div>
+        </div>
+
+        <div class="trend-section">
+            <label class="section-title">Money Supply Trend</label>
+            <label class="section-sub">Last @(History?.Snapshots?.Count ?? 0) snapshots</label>
+            <div class="bar-chart">
+                @if (History?.Snapshots != null && History.Snapshots.Any())
+                {
+                    var maxVal = History.Snapshots.Max(s => (double)s.TotalCurrencyInCirculation);
+                    @foreach (var snap in History.Snapshots)
+                    {
+                        var heightPct = maxVal > 0 ? (double)snap.TotalCurrencyInCirculation / maxVal * 100.0 : 0;
+                        <div class="bar-wrapper">
+                            <div class="bar" style="height: @((int)heightPct)%;"></div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="chart-empty">
+                        <label>No snapshot data available</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="fed-footer">
+            <MyIcon Name="info" Size=@(14) Color="@(Color.FromBytes(142, 142, 147))" />
+            <label>Visit the Federal Reserve for detailed stats</label>
+        </div>
+    }
+</root>
+
+@code
+{
+    private FederalReserveStats Stats { get; set; }
+    private FederalReserveHistoryData History { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private bool _hasLoaded = false;
+
+    private string BackingRatioClass
+    {
+        get
+        {
+            if (Stats == null) return "blue";
+            if (Stats.GoldBackingRatio >= 100m) return "green";
+            if (Stats.GoldBackingRatio >= 75m) return "yellow";
+            return "red";
+        }
+    }
+
+    protected override void OnAfterTreeRender(bool firstTime)
+    {
+        base.OnAfterTreeRender(firstTime);
+
+        if (firstTime && !_hasLoaded)
+        {
+            _hasLoaded = true;
+            _ = LoadData();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var statsTask = EconomySystem.GetFederalReserveStats();
+            var historyTask = EconomySystem.GetFederalReserveHistory(10);
+            await Task.WhenAll(statsTask, historyTask);
+            Stats = statsTask.Result;
+            History = historyTask.Result;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[FedReserveApp] Failed to load data: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        _hasLoaded = false;
+        await LoadData();
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(
+        IsLoading,
+        Stats?.TotalGoldReserves,
+        Stats?.TotalCurrencyInCirculation,
+        Stats?.GoldBackingRatio,
+        History?.Snapshots?.Count
+    );
+}

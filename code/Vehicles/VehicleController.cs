@@ -104,9 +104,6 @@ public sealed class VehicleController : Component
 			}
 		}
 
-		// Clamp to max speed
-		if ( Velocity.Length > MaxSpeed )
-			Velocity = Velocity.Normal * MaxSpeed;
 	}
 
 	private void ApplyDrag()
@@ -121,6 +118,10 @@ public sealed class VehicleController : Component
 
 	private void ApplyMovement()
 	{
+		// Clamp to max speed
+		if ( Velocity.Length > MaxSpeed )
+			Velocity = Velocity.Normal * MaxSpeed;
+
 		WorldPosition += Velocity * Time.Delta;
 		CurrentSpeed = Vector3.Dot( Velocity, WorldRotation.Forward );
 	}

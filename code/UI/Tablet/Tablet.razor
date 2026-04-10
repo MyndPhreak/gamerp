@@ -52,6 +52,10 @@
                     {
                         <WalletApp />
                     }
+                    else if (ActiveApp?.AppName == "Fed Reserve")
+                    {
+                        <FedReserveApp />
+                    }
                     else if (ActiveApp != null)
                     {
                         <div class="placeholder">
@@ -75,6 +79,7 @@
     {
         new BankAppData(),
         new WalletAppData(),
+        new FedReserveAppData(),
         new SettingsAppData()
     };
 
@@ -132,6 +137,13 @@
         public string AppName => "Wallet";
         public string AppIcon => "account_balance_wallet";
         public Color AppColor => Color.FromBytes(52, 199, 89);
+    }
+
+    public class FedReserveAppData : ITabletApp
+    {
+        public string AppName => "Fed Reserve";
+        public string AppIcon => "account_balance";
+        public Color AppColor => Color.FromBytes(255, 179, 0);
     }
 
     public class SettingsAppData : ITabletApp
