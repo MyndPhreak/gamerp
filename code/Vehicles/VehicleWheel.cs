@@ -93,7 +93,20 @@ public sealed class VehicleWheel : Component
 		result.IsGrounded = true;
 		result.ApplicationPoint = trace.HitPosition;
 
-		// Forces implemented in subsequent tasks
+		// --- Velocity at contact point ---
+		// v_contact = v_linear + ω × r
+		// AngularVelocity is in radians/second (Havok convention).
+		// If your S&Box version returns deg/s, multiply AngularVelocity by (MathF.PI / 180f) first.
+		var r = trace.HitPosition - body.WorldPosition;
+		var contactVelocity = body.Velocity + Vector3.Cross( body.AngularVelocity, r );
+
+		// --- Suspension (spring + damper) ---
+		var vertVel = Vector3.Dot( contactVelocity, worldUp );
+		var springForce = SuspensionCompression * SpringStrength;
+		var dampForce = vertVel * DampStrength;
+		result.SuspensionForce = worldUp * (springForce - dampForce);
+
+		// Drive and lateral friction implemented in subsequent tasks
 		return result;
 	}
 
