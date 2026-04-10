@@ -26,12 +26,15 @@ public sealed class VehicleWheel : Component
 
 	private ModelRenderer _wheelModel;
 	private float _spinAngle;
+	private Vector3 _attachLocalPos; // editor-placed position, used as suspension base
 
 	protected override void OnAwake()
 	{
 		_wheelModel = Components.Get<ModelRenderer>();
 		if ( _wheelModel == null )
 			Log.Warning( "[VehicleWheel] No ModelRenderer found — wheel visuals will not update" );
+
+		_attachLocalPos = LocalPosition;
 	}
 
 	protected override void OnUpdate()
@@ -67,21 +70,21 @@ public sealed class VehicleWheel : Component
 
 	private void UpdateVisuals()
 	{
-		if ( _wheelModel == null ) return;
-
-		// Position wheel at suspension height
+		// Move the whole wheel GO up/down for suspension travel,
+		// offset from the editor-placed attach point
 		var suspensionOffset = IsGrounded
 			? GroundDistance - Radius
 			: SuspensionLength;
 
-		var localDown = -Vector3.Up;
-		_wheelModel.LocalPosition = localDown * suspensionOffset;
+		LocalPosition = _attachLocalPos + Vector3.Down * suspensionOffset;
+
+		if ( _wheelModel == null ) return;
 
 		// Spin wheel based on speed
 		_spinAngle = (_spinAngle + CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 		var spinRotation = Rotation.FromAxis( Vector3.Right, _spinAngle );
 
-		// Steer rotation for front wheels
+		// Steer rotation for steerable wheels
 		var steerRotation = IsSteerable
 			? Rotation.FromAxis( Vector3.Up, SteerAngle )
 			: Rotation.Identity;
