@@ -16,7 +16,10 @@ public sealed class VehicleWheel : Component
 	[Property] public float DampStrength { get; set; } = 400f;
 
 	// --- Grip tuning ---
+	/// <summary>Max lateral corrective force (N-equivalent) per wheel. Higher = more grip before sliding.</summary>
 	[Property] public float LateralFriction { get; set; } = 6000f;
+	/// <summary>Gain: how aggressively lateral velocity is corrected. Higher = snappier grip response.</summary>
+	[Property] public float LateralGripStiffness { get; set; } = 500f;
 	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
 
 	// Minimum forward speed (units/sec) required for braking to apply.
@@ -136,10 +139,14 @@ public sealed class VehicleWheel : Component
 
 		// --- Lateral friction (all grounded wheels) ---
 		// rightDir is perpendicular to wheel forward, in the ground plane
+		// Cross(worldUp, wheelForward) should point to the car's physical right in S&Box's coordinate system.
+		// If the car amplifies lateral sliding instead of resisting it (negative grip), swap the operands:
+		// var rightDir = Vector3.Cross( wheelForward, worldUp ).Normal;
 		var rightDir = Vector3.Cross( worldUp, wheelForward ).Normal;
 		var lateralVel = Vector3.Dot( contactVelocity, rightDir );
-		// Clamp to avoid overcorrection (no Time.Delta — physics integrator handles timestep)
-		var lateralMag = (lateralVel * LateralFriction).Clamp( -LateralFriction, LateralFriction );
+		// LateralGripStiffness is the gain; LateralFriction is the force cap.
+		// Cap triggers when |lateralVel| > LateralFriction / LateralGripStiffness.
+		var lateralMag = (lateralVel * LateralGripStiffness).Clamp( -LateralFriction, LateralFriction );
 		result.LateralForce = -rightDir * lateralMag;
 
 		return result;
