@@ -1,0 +1,429 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.UI.Common;
+@using GameRP.Economy;
+@using GameRP.Systems;
+@using System;
+@using System.Linq;
+@using System.Collections.Generic;
+@using System.Threading.Tasks;
+
+@namespace GameRP.UI
+@inherits PanelComponent
+
+<root class="@(IsOpen ? "fed-open" : "fed-closed")">
+    <div class="fed-backdrop" @onclick=@Close></div>
+
+    <div class="fed-panel">
+        <!-- Header -->
+        <div class="fed-header">
+            <div class="fed-header-title">
+                <label class="fed-title">Federal Reserve</label>
+                <label class="fed-subtitle">Economic Dashboard</label>
+            </div>
+            <div class="fed-tabs">
+                <div class="fed-tab @(ActiveTab == "public" ? "active" : "")" @onclick=@(() => SwitchTab("public"))>
+                    <label>Public</label>
+                </div>
+                <div class="fed-tab @(ActiveTab == "admin" ? "active" : "")" @onclick=@(() => SwitchTab("admin"))>
+                    <label>Admin</label>
+                </div>
+            </div>
+            <div class="fed-close-btn" @onclick=@Close>
+                <label>✕</label>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="fed-body">
+            @if (IsLoading)
+            {
+                <div class="fed-loading">
+                    <label class="loading-text">Loading Federal Reserve data...</label>
+                </div>
+            }
+            else if (ActiveTab == "public")
+            {
+                <!-- Stat Cards -->
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <label class="stat-label">Gold Reserves</label>
+                        <label class="stat-value gold">@(Stats?.TotalGoldReserves.ToString("N0") ?? "—")</label>
+                        <label class="stat-unit">bars</label>
+                        @if (History?.Snapshots != null && History.Snapshots.Count >= 2)
+                        {
+                            <label class="stat-trend">@ComputeTrend((decimal)Stats.TotalGoldReserves, (decimal)History.Snapshots.First().TotalGoldReserves)</label>
+                        }
+                    </div>
+                    <div class="stat-card">
+                        <label class="stat-label">Currency Supply</label>
+                        <label class="stat-value blue">$@(Stats?.TotalCurrencyInCirculation.ToString("N0") ?? "—")</label>
+                        <label class="stat-unit">in circulation</label>
+                        @if (History?.Snapshots != null && History.Snapshots.Count >= 2)
+                        {
+                            <label class="stat-trend">@ComputeTrend(Stats.TotalCurrencyInCirculation, History.Snapshots.First().TotalCurrencyInCirculation)</label>
+                        }
+                    </div>
+                    <div class="stat-card">
+                        <label class="stat-label">Exchange Rate</label>
+                        <label class="stat-value blue">$@(Stats?.ExchangeRate.ToString("N2") ?? "—")</label>
+                        <label class="stat-unit">per gold bar</label>
+                        @if (History?.Snapshots != null && History.Snapshots.Count >= 2)
+                        {
+                            <label class="stat-trend">@ComputeTrend(Stats.ExchangeRate, History.Snapshots.First().ExchangeRate)</label>
+                        }
+                    </div>
+                    <div class="stat-card">
+                        <label class="stat-label">Backing Ratio</label>
+                        <label class="stat-value @BackingRatioClass">@(Stats != null ? Stats.GoldBackingRatio.ToString("N1") + "%" : "—")</label>
+                        <label class="stat-unit">gold backed</label>
+                        @if (History?.Snapshots != null && History.Snapshots.Count >= 2)
+                        {
+                            <label class="stat-trend">@ComputeTrend(Stats.GoldBackingRatio, History.Snapshots.First().GoldBackingRatio)</label>
+                        }
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-row">
+                    <div class="chart-section">
+                        <label class="section-title">Money Supply Over Time</label>
+                        <div class="bar-chart">
+                            @if (History?.Snapshots != null && History.Snapshots.Any())
+                            {
+                                var moneyBars = BuildBars(s => s.TotalCurrencyInCirculation);
+                                @foreach (var bar in moneyBars)
+                                {
+                                    <div class="bar-wrapper">
+                                        <div class="bar money-bar" style="height: @((int)bar)%;"></div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="chart-empty"><label>No snapshot data</label></div>
+                            }
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <label class="section-title">Gold Reserves Over Time</label>
+                        <div class="bar-chart">
+                            @if (History?.Snapshots != null && History.Snapshots.Any())
+                            {
+                                var goldBarsData = BuildBars(s => (decimal)s.TotalGoldReserves);
+                                @foreach (var bar in goldBarsData)
+                                {
+                                    <div class="bar-wrapper">
+                                        <div class="bar gold-bar" style="height: @((int)bar)%;"></div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="chart-empty"><label>No snapshot data</label></div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-section">
+                    <label class="section-title">Recent Activity</label>
+                    <div class="activity-list">
+                        @if (PublicTransactions != null && PublicTransactions.Any())
+                        {
+                            @foreach (var tx in PublicTransactions)
+                            {
+                                <div class="activity-row">
+                                    <div class="activity-icon @(tx.Type == "deposit" ? "icon-deposit" : "icon-withdrawal")">
+                                        <label>@(tx.Type == "deposit" ? "▲" : "▼")</label>
+                                    </div>
+                                    <div class="activity-info">
+                                        <label class="activity-desc">
+                                            A player @(tx.Type == "deposit" ? "deposited" : "withdrew") @tx.GoldBars gold bar@(tx.GoldBars == 1 ? "" : "s")
+                                        </label>
+                                        <label class="activity-amount">$@tx.CurrencyAmount.ToString("N0")</label>
+                                    </div>
+                                    <label class="activity-time">@FormatTimeAgo(tx.Timestamp)</label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="activity-empty"><label>No recent transactions</label></div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (ActiveTab == "admin")
+            {
+                <!-- Exchange Rate Control -->
+                <div class="admin-section">
+                    <label class="section-title">Exchange Rate Control</label>
+                    <div class="rate-control">
+                        <div class="rate-current">
+                            <label class="rate-label">Current Rate</label>
+                            <label class="rate-value">$@(Stats?.ExchangeRate.ToString("N2") ?? "—") / bar</label>
+                        </div>
+                        <div class="rate-input-row">
+                            <input class="rate-input" type="text" @bind=@NewRateInput placeholder="Enter new rate..." />
+                            <div class="rate-update-btn @(IsUpdatingRate ? "disabled" : "")" @onclick=@UpdateRate>
+                                <label>@(IsUpdatingRate ? "Updating..." : "Update")</label>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(RateMessage))
+                        {
+                            <label class="rate-message @RateMessageClass">@RateMessage</label>
+                        }
+                    </div>
+                </div>
+
+                <!-- Economic Health -->
+                <div class="admin-section">
+                    <label class="section-title">Economic Health</label>
+                    <div class="health-rows">
+                        <div class="health-row @(Stats != null && Stats.GoldBackingRatio >= 100m ? "status-healthy" : "status-inactive")">
+                            <label class="health-indicator">●</label>
+                            <label class="health-label">Fully Backed (≥100%)</label>
+                            <label class="health-value">@(Stats != null ? Stats.GoldBackingRatio.ToString("N1") + "%" : "—")</label>
+                        </div>
+                        <div class="health-row @(Stats != null && Stats.GoldBackingRatio >= 75m && Stats.GoldBackingRatio < 100m ? "status-caution" : "status-inactive")">
+                            <label class="health-indicator">●</label>
+                            <label class="health-label">Caution Zone (75–100%)</label>
+                            <label class="health-value">@(Stats != null ? Stats.GoldBackingRatio.ToString("N1") + "%" : "—")</label>
+                        </div>
+                        <div class="health-row @(Stats != null && Stats.GoldBackingRatio < 75m ? "status-critical" : "status-inactive")">
+                            <label class="health-indicator">●</label>
+                            <label class="health-label">Critical (below 75%)</label>
+                            <label class="health-value">@(Stats != null ? Stats.GoldBackingRatio.ToString("N1") + "%" : "—")</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Log -->
+                <div class="admin-section txlog-section">
+                    <label class="section-title">Transaction Log</label>
+                    <div class="txlog-list">
+                        @if (AdminTransactions != null && AdminTransactions.Any())
+                        {
+                            <div class="txlog-header">
+                                <label>Type</label>
+                                <label>Player</label>
+                                <label>Gold</label>
+                                <label>Currency</label>
+                                <label>Time</label>
+                            </div>
+                            @foreach (var tx in AdminTransactions)
+                            {
+                                <div class="txlog-row">
+                                    <label class="txlog-type @(tx.Type == "deposit" ? "type-deposit" : "type-withdrawal")">
+                                        @(tx.Type == "deposit" ? "▲ DEP" : "▼ WDR")
+                                    </label>
+                                    <div class="txlog-player">
+                                        <label class="txlog-name">@(tx.PlayerName ?? "Unknown")</label>
+                                        @if (tx.SteamId.HasValue)
+                                        {
+                                            <label class="txlog-steam">@tx.SteamId.Value</label>
+                                        }
+                                    </div>
+                                    <label class="txlog-gold">@tx.GoldBars bar@(tx.GoldBars == 1 ? "" : "s")</label>
+                                    <label class="txlog-currency">$@tx.CurrencyAmount.ToString("N0")</label>
+                                    <label class="txlog-time">@FormatTimeAgo(tx.Timestamp)</label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="activity-empty"><label>No transaction data</label></div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</root>
+
+@code
+{
+    public bool IsOpen { get; private set; } = false;
+    private string ActiveTab { get; set; } = "public";
+    private bool IsLoading { get; set; } = false;
+
+    private FederalReserveStats Stats { get; set; }
+    private FederalReserveHistoryData History { get; set; }
+    private List<FederalReserveTransactionData> PublicTransactions { get; set; }
+    private List<FederalReserveTransactionData> AdminTransactions { get; set; }
+
+    private string NewRateInput { get; set; } = "";
+    private string RateMessage { get; set; } = "";
+    private string RateMessageClass { get; set; } = "";
+    private bool IsUpdatingRate { get; set; } = false;
+
+    public async void Open()
+    {
+        if (IsOpen) return;
+
+        IsOpen = true;
+        ActiveTab = "public";
+        RateMessage = "";
+        NewRateInput = "";
+        Mouse.Visibility = MouseVisibility.Visible;
+        StateHasChanged();
+
+        await LoadData();
+    }
+
+    public void Close()
+    {
+        IsOpen = false;
+        Mouse.Visibility = MouseVisibility.Auto;
+    }
+
+    private async void SwitchTab(string tab)
+    {
+        if (ActiveTab == tab) return;
+        ActiveTab = tab;
+        StateHasChanged();
+
+        if (tab == "admin" && AdminTransactions == null)
+        {
+            await LoadAdminTransactions();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var statsTask = EconomySystem.GetFederalReserveStats();
+            var historyTask = EconomySystem.GetFederalReserveHistory(20);
+            var txTask = EconomySystem.GetFederalReserveTransactions(10, false);
+
+            await Task.WhenAll(statsTask, historyTask, txTask);
+
+            Stats = statsTask.Result;
+            History = historyTask.Result;
+            PublicTransactions = txTask.Result;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[FedReserveScreen] Failed to load data: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAdminTransactions()
+    {
+        try
+        {
+            AdminTransactions = await EconomySystem.GetFederalReserveTransactions(50, true);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[FedReserveScreen] Failed to load admin transactions: {ex.Message}");
+        }
+    }
+
+    private async void UpdateRate()
+    {
+        if (IsUpdatingRate) return;
+
+        if (!decimal.TryParse(NewRateInput, out var newRate) || newRate <= 0)
+        {
+            RateMessage = "Enter a valid positive number";
+            RateMessageClass = "msg-error";
+            StateHasChanged();
+            return;
+        }
+
+        IsUpdatingRate = true;
+        RateMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var updated = await EconomySystem.UpdateExchangeRate(newRate);
+            if (updated != null)
+            {
+                Stats = updated;
+                RateMessage = $"Rate updated to ${newRate:N2} per bar";
+                RateMessageClass = "msg-success";
+                NewRateInput = "";
+            }
+            else
+            {
+                RateMessage = "Update failed — check server logs";
+                RateMessageClass = "msg-error";
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"[FedReserveScreen] UpdateRate error: {ex.Message}");
+            RateMessage = "Update failed — server error";
+            RateMessageClass = "msg-error";
+        }
+        finally
+        {
+            IsUpdatingRate = false;
+            StateHasChanged();
+        }
+    }
+
+    private List<decimal> BuildBars(Func<FederalReserveSnapshotData, decimal> selector)
+    {
+        if (History?.Snapshots == null || !History.Snapshots.Any())
+            return new List<decimal>();
+
+        var values = History.Snapshots.Select(selector).ToList();
+        var max = values.Max();
+        if (max == 0) return values.Select(_ => 0m).ToList();
+        return values.Select(v => v / max * 100m).ToList();
+    }
+
+    private string ComputeTrend(decimal current, decimal previous)
+    {
+        var delta = current - previous;
+        if (delta > 0) return $"▲ +{delta:N0}";
+        if (delta < 0) return $"▼ {delta:N0}";
+        return "— 0";
+    }
+
+    private string FormatTimeAgo(DateTime timestamp)
+    {
+        var diff = DateTime.UtcNow - timestamp;
+        if (diff.TotalSeconds < 60) return "just now";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}min ago";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}hr ago";
+        return $"{(int)diff.TotalDays}d ago";
+    }
+
+    private string BackingRatioClass
+    {
+        get
+        {
+            if (Stats == null) return "ratio-yellow";
+            if (Stats.GoldBackingRatio >= 100m) return "ratio-green";
+            if (Stats.GoldBackingRatio >= 75m) return "ratio-yellow";
+            return "ratio-red";
+        }
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(
+        IsOpen,
+        ActiveTab,
+        IsLoading,
+        Stats?.TotalGoldReserves,
+        Stats?.TotalCurrencyInCirculation,
+        Stats?.ExchangeRate,
+        Stats?.GoldBackingRatio,
+        RateMessage
+    );
+}
