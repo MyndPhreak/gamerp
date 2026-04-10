@@ -32,7 +32,7 @@ FedReserveScreen {
     top: 50%;
     transform: translate(-50%, -50%);
     width: 900px;
-    height: 650px;
+    max-height: 650px;
     background-color: #1a1a2e;
     border-radius: 16px;
     display: flex;
@@ -157,12 +157,11 @@ FedReserveScreen {
 
 /* ===== BODY ===== */
 .fed-body {
-    flex: 1;
     overflow: scroll;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px;
+    gap: 14px;
+    padding: 16px 20px;
 }
 
 /* ===== LOADING ===== */
@@ -604,7 +603,7 @@ FedReserveScreen {
     display: flex;
     flex-direction: column;
     gap: 0;
-    max-height: 250px;
+    max-height: 200px;
     overflow: scroll;
 }
 
