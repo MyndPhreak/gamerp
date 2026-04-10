@@ -421,7 +421,7 @@ FedReserveScreen {
     gap: 12px;
 
     &.txlog-section {
-        flex: 1;
+        flex-shrink: 0;
     }
 }
 
@@ -604,8 +604,8 @@ FedReserveScreen {
     display: flex;
     flex-direction: column;
     gap: 0;
+    max-height: 250px;
     overflow: scroll;
-    flex: 1;
 }
 
 .txlog-header {
