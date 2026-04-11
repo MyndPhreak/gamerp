@@ -29,8 +29,9 @@ public sealed class VehicleWheel : Component
 	[Property] public float LateralGripStiffness { get; set; } = 25000f;
 	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
 
-	// Minimum forward speed (units/sec) required for braking to apply.
-	private const float BrakeSpeedThreshold = 5f;
+	// --- Handbrake Tuning ---
+	public float HandbrakeSlidingFriction { get; set; } = 0.65f;
+	public float HandbrakeLateralFriction { get; set; } = 0.8f;
 
 	// --- Runtime (read-only in editor) ---
 	[Property, ReadOnly] public bool IsGrounded { get; private set; }
@@ -40,6 +41,7 @@ public sealed class VehicleWheel : Component
 	// Set by VehicleController for visuals
 	public float CurrentSpeed { get; set; }
 	public float SteerAngle { get; set; }
+	public float Handbrake { get; set; }
 
 	// --- Internals ---
 	private ModelRenderer _wheelModel;
@@ -83,6 +85,23 @@ public sealed class VehicleWheel : Component
 		_attachLocalPos = LocalPosition;
 	}
 
+	protected override void OnStart()
+	{
+		// If the user manually specifies a Radius (auto-detect off), physically scale the 
+		// visual renderer so the 3D model accurately reflects its actual physics size!
+		if ( !AutoDetectRadius && _wheelModel?.Model != null && Radius > 0f )
+		{
+			var size = _wheelModel.Model.Bounds.Size;
+			var modelRadius = MathF.Max( size.y, size.z ) / 2f;
+			if ( modelRadius > 0.01f )
+			{
+				var scale = Radius / modelRadius;
+				_wheelModel.GameObject.LocalScale = new Vector3(scale);
+				Log.Info( $"[VehicleWheel] Scaled visual wheel '{GameObject.Name}' to x{scale:F2} to match manual Radius {Radius:F1}" );
+			}
+		}
+	}
+
 	/// <summary>
 	/// Called by VehicleController each OnFixedUpdate. Returns forces to apply to the car Rigidbody.
 	/// </summary>
@@ -96,7 +115,8 @@ public sealed class VehicleWheel : Component
 		float brakeForce,
 		float reverseForce,
 		float handbrake,
-		float handbrakeForce )
+		float handbrakeForce,
+		Vector3 localForward )
 	{
 		var result = new WheelForceResult();
 
@@ -150,6 +170,17 @@ public sealed class VehicleWheel : Component
 		if (gravity < 1f) gravity = 800f; // S&box fallback roughly 800 units/s2
 		
 		var effectiveMass = (body.PhysicsBody?.Mass ?? 1000f) / MathF.Max( 1, totalWheels );
+
+		// --- Adaptive Engine & Handling (Mass-Independent Tuning) ---
+		// By scaling the driving and handling inputs relative to a standard 1,000kg 4-wheel car
+		// (which has an effective mass of ~250kg per wheel), the designer simply configures the "baseline feel" 
+		// (e.g. Engine Force = 5000) and the math engine perfectly amplifies it for heavier vehicles!
+		var massRatio = effectiveMass / 250f;
+		accelerationForce *= massRatio;
+		brakeForce *= massRatio;
+		reverseForce *= massRatio;
+		handbrakeForce *= massRatio;
+		var adaptiveLateralStiffness = LateralGripStiffness * massRatio;
 		
 		// Map stiffness to a natural resting compression point (e.g. 50% vs 30% of travel used at rest)
 		var restCompression = MathX.Lerp( 0.6f, 0.3f, Stiffness );
@@ -187,54 +218,109 @@ public sealed class VehicleWheel : Component
 		result.SuspensionForce = worldUp * totalForce;
 
 		// --- Wheel forward direction (steered for front wheels) ---
-		var wheelForward = Rotation.FromAxis( worldUp, IsSteerable ? steerAngle : 0f ) * _vehicleRoot.WorldRotation.Forward;
+		var modelForward = _vehicleRoot.WorldRotation * localForward;
+		var wheelForward = Rotation.FromAxis( worldUp, IsSteerable ? steerAngle : 0f ) * modelForward;
 		var forwardSpeed = Vector3.Dot( contactVelocity, wheelForward );
 
-		// --- Handbrake: locks rear wheels ---
-		if ( IsHandbrakeWheel && handbrake > 0f )
+		float handbrakeFactor = (IsHandbrakeWheel && handbrake > 0f) ? handbrake : 0f;
+
+		// --- Pillar 1: LOAD-DEPENDENT GRIP ---
+		// The absolute limit of grip this tire has is dictated strictly by the weight currently pressing on it.
+		// A standard performance tire pulls ~1.2G max.
+		var normalForce = MathF.Max(springForce, 0f); 
+		var maxGrip = normalForce * LongitudinalFriction * 1.2f; 
+
+		// --- LONGITUDINAL FORCES (Drive / Brake) ---
+		var rawDrive = 0f;
+		if ( handbrakeFactor > 0f )
 		{
-			if ( MathF.Abs( forwardSpeed ) > BrakeSpeedThreshold )
-			{
-				var effectiveBrake = handbrake * handbrakeForce * LongitudinalFriction;
-				var maxBrake = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
-				effectiveBrake = MathF.Min(effectiveBrake, maxBrake);
-				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * effectiveBrake;
-			}
+			var kineticBrake = normalForce * HandbrakeSlidingFriction;
+			rawDrive = -MathF.Sign(forwardSpeed) * kineticBrake * handbrakeFactor;
 		}
-		// --- Drive / Brake (driven wheels only) ---
 		else if ( IsDriven )
 		{
-			if ( throttle > 0f )
-			{
-				result.DriveForce = wheelForward * throttle * accelerationForce * LongitudinalFriction;
-			}
-			else if ( brake > 0f && MathF.Abs( forwardSpeed ) > BrakeSpeedThreshold )
-			{
-				var effectiveBrake = brake * brakeForce * LongitudinalFriction;
-				var maxBrake = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
-				effectiveBrake = MathF.Min(effectiveBrake, maxBrake);
-				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * effectiveBrake;
-			}
-			else if ( throttle < 0f )
-			{
-				result.DriveForce = wheelForward * throttle * reverseForce * LongitudinalFriction;
-			}
+			if ( throttle > 0f ) rawDrive = throttle * accelerationForce * LongitudinalFriction;
+			else if ( brake > 0f ) rawDrive = -MathF.Sign(forwardSpeed) * brake * brakeForce * LongitudinalFriction;
+			else if ( throttle < 0f ) rawDrive = throttle * reverseForce * LongitudinalFriction;
 		}
 
-		// --- Lateral friction (all grounded wheels) ---
+		// Cap longitudinal demand strictly at its absolute physical grip limit
+		var appliedDrive = rawDrive.Clamp(-maxGrip, maxGrip);
+
+		// Anti-spazz constraint (only applies when we are slowing down, don't cap hard acceleration requests)
+		if ( MathF.Sign(appliedDrive) != MathF.Sign(forwardSpeed) && MathF.Abs(appliedDrive) > 0f )
+		{
+			var maxBrakeConstraint = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
+			if ( MathF.Abs(appliedDrive) > maxBrakeConstraint )
+			{
+				appliedDrive = MathF.Sign(appliedDrive) * maxBrakeConstraint;
+			}
+		}
+		result.DriveForce = wheelForward * appliedDrive;
+
+		// --- Pillar 2: THE FRICTION CIRCLE ---
+		// A tire has a finite grip budget. We subtract whatever grip the longitudinal forces (braking/accelerating) 
+		// stole from the tire to find our TRUE remaining lateral steering grip.
+		// If you brake 100%, you get 0% steering grip.
+		var usedGrip = MathF.Abs(appliedDrive);
+		var maxLateralGrip = MathF.Sqrt( MathF.Max((maxGrip * maxGrip) - (usedGrip * usedGrip), 0f) );
+
+		// Handbrake overrides the friction circle by manually snapping the tire loose into a slide
+		if ( handbrakeFactor > 0f )
+		{
+			var slidingLateralGrip = normalForce * HandbrakeLateralFriction; 
+			maxLateralGrip = MathX.Lerp(maxLateralGrip, slidingLateralGrip, handbrakeFactor);
+		}
+
+		// --- Pillar 3: ORGANIC SLIP-ANGLE CURVE (PACEJKA APPROX) ---
 		var rightDir = Vector3.Cross( worldUp, wheelForward ).Normal;
 		var lateralVel = Vector3.Dot( contactVelocity, rightDir );
-		var lateralMag = (lateralVel * LateralGripStiffness).Clamp( -LateralFriction, LateralFriction );
 
-		// Anti-spazz constraint for lateral grip: prevent lateral force from over-correcting
-		// Because the force is applied at the ground (offset from Center of Mass), S&box Physics 
-		// converts a huge amount of this force into rolling/yawing angular velocity! 
-		// We MUST divide the max force by a factor (~2.5) to account for rotational inertia, 
-		// otherwise the wheels violently slip-stick vibrate across the ground!
-		var maxLateralForce = (effectiveMass * MathF.Abs(lateralVel)) / (0.02f * 2.5f);
-		lateralMag = MathF.Sign(lateralMag) * MathF.Min(MathF.Abs(lateralMag), maxLateralForce);
+		// 'Stiffness' controls how snappy the steering is (how fast grip builds as you turn the wheel).
+		// Instead of hitting a brick wall and snapping into understeer, we use an arc-tangent curve 
+		// to create a buttery smooth limit breakaway, mimicking organic rubber flexing.
+		var slipDemand = lateralVel * adaptiveLateralStiffness;
+
+		float lateralMag = 0f;
+		if ( maxLateralGrip > 1f )
+		{
+			// Normalize demand to a 0.0 - 1.0 (and beyond) scale representing how deeply we exceeded grip
+			var normalizedSlip = slipDemand / maxLateralGrip;
+			// Atan smoothly rolls off peak grip, mimicking the exact shape of a Pacejka tire curve
+			lateralMag = maxLateralGrip * (2f / MathF.PI) * MathF.Atan(normalizedSlip * MathF.PI / 2f);
+		}
+
+		// Prevent lateral slip-stick spazzing
+		var maxLatConstraint = (effectiveMass * MathF.Abs(lateralVel)) / (0.02f * 2.5f);
+		lateralMag = MathF.Sign(lateralMag) * MathF.Min(MathF.Abs(lateralMag), maxLatConstraint);
 
 		result.LateralForce = -rightDir * lateralMag;
+
+		// --- Anti-Creep (Static Hold) ---
+		// Prevent infinite creeping on hills when the car is rolling at a microscopic crawl with no throttle.
+		// By deploying this on ALL wheels globally, we guarantee 100% gravity cancellation of the car's 
+		// total mass regardless of whether it's parked, braking, or just resting in neutral.
+		var wantToMove = MathF.Abs(throttle) > 0.05f;
+		var creepingSpeed = contactVelocity.WithZ(0).Length;
+		var parkingBlend = 1f - (creepingSpeed / 10f).Clamp(0f, 1f);
+
+		if ( parkingBlend > 0f && (!wantToMove || handbrakeFactor > 0.5f) )
+		{
+			var grav = Scene.PhysicsWorld?.Gravity ?? new Vector3(0,0,-800f);
+				
+			// Calculate the EXACT forces needed to mathematically freeze the tire in 1 frame
+			// ignoring rot inertia divisor (strict stopping) AND counteracting sloped gravity.
+			var gravForward = effectiveMass * Vector3.Dot( grav, wheelForward );
+			var strictDrive = -(effectiveMass * forwardSpeed / 0.02f) - gravForward;
+
+			var gravLateral = effectiveMass * Vector3.Dot( grav, rightDir );
+			var strictLateral = -(effectiveMass * lateralVel / 0.02f) - gravLateral;
+
+			// Overwrite the dynamic slip-friction forces with these rigid anchors as it slows to 0
+			var maxHold = MathF.Max(handbrakeForce, brakeForce);
+			result.DriveForce = Vector3.Lerp( result.DriveForce, wheelForward * strictDrive.Clamp(-maxHold, maxHold), parkingBlend );
+			result.LateralForce = Vector3.Lerp( result.LateralForce, rightDir * strictLateral.Clamp(-maxHold, maxHold), parkingBlend );
+		}
 
 		return result;
 	}
@@ -275,7 +361,14 @@ public sealed class VehicleWheel : Component
 		if ( _wheelModel == null ) return;
 
 		var spinDir = ReverseSpinDirection ? 1f : -1f;
-		_spinAngle = (_spinAngle + spinDir * CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
+
+		var visualSpeed = CurrentSpeed;
+		if ( IsHandbrakeWheel && Handbrake > 0f )
+		{
+			visualSpeed = MathX.Lerp( visualSpeed, 0f, Handbrake );
+		}
+
+		_spinAngle = (_spinAngle + spinDir * visualSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 
 		var flipRot = ReverseSpinDirection ? Rotation.FromAxis( Vector3.Up, 180f ) : Rotation.Identity;
 		var steerRot = IsSteerable ? Rotation.FromAxis( Vector3.Up, SteerAngle ) : Rotation.Identity;

@@ -21,6 +21,12 @@ public sealed class VehicleAxle : Component
 	[Property] public float WheelRadius { get; set; } = 14f;
 	[Property] public bool AutoDetectRadius { get; set; } = true;
 	[Property] public bool IsHandbrake { get; set; } = false;
+	
+	// --- Handbrake Tuning ---
+	/// <summary>Percentage of longitudinal grip retained when handbrake locks wheels. Higher = snaps to a halt.</summary>
+	[Property, Range( 0f, 1f )] public float HandbrakeSlidingFriction { get; set; } = 0.65f;
+	/// <summary>Percentage of lateral normal force retained. Higher = rear holds tighter during drifts.</summary>
+	[Property, Range( 0f, 1f )] public float HandbrakeLateralFriction { get; set; } = 0.8f;
 
 	// --- Suspension tuning ---
 	/// <summary>How far the suspension can travel (units). Longer = more ground clearance and travel.</summary>
@@ -111,6 +117,8 @@ public sealed class VehicleAxle : Component
 		wheel.LateralFriction = LateralFriction;
 		wheel.LateralGripStiffness = LateralGripStiffness;
 		wheel.LongitudinalFriction = LongitudinalFriction;
+		wheel.HandbrakeSlidingFriction = HandbrakeSlidingFriction;
+		wheel.HandbrakeLateralFriction = HandbrakeLateralFriction;
 
 		return wheel;
 	}
@@ -150,8 +158,20 @@ public sealed class VehicleAxle : Component
 		Gizmo.Draw.Color = Color.Yellow;
 		Gizmo.Draw.Line( leftPos, rightPos );
 
-		// Wheel circles — use runtime radius if wheels exist (auto-detected), else fallback
-		var radius = LeftWheel?.Radius ?? WheelRadius;
+		// Accurately determine preview radius 
+		var radius = WheelRadius;
+		if ( LeftWheel != null )
+		{
+			radius = LeftWheel.Radius;
+		}
+		else if ( AutoDetectRadius && WheelModel != null )
+		{
+			// Read the model bounds directly while in the editor
+			var size = WheelModel.Bounds.Size;
+			var detected = MathF.Max( size.y, size.z ) / 2f;
+			if ( detected > 0f ) radius = detected;
+		}
+
 		Gizmo.Draw.Color = IsSteering ? Color.Green : (IsPowered ? Color.Cyan : Color.Gray);
 
 		DrawWheelGizmo( leftPos, radius );

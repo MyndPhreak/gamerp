@@ -36,6 +36,32 @@ public sealed class VehicleController : Component
 
 	// --- Physics ---
 	[Property] public Vector3 CenterOfMass { get; set; } = Vector3.Zero;
+	
+	public enum ForwardAxisDirection
+	{
+		PositiveX_Forward,
+		NegativeX_Backward,
+		PositiveY_Left,
+		NegativeY_Right
+	}
+	
+	/// <summary>
+	/// If your imported model naturally drives sideways (e.g. facing Left instead of Forward),
+	/// change this axis so the math knows which way the "front" of the car points.
+	/// </summary>
+	[Property] public ForwardAxisDirection ForwardAxis { get; set; } = ForwardAxisDirection.PositiveX_Forward;
+
+	public Vector3 GetForwardVector()
+	{
+		return ForwardAxis switch
+		{
+			ForwardAxisDirection.PositiveX_Forward => Vector3.Forward,
+			ForwardAxisDirection.NegativeX_Backward => Vector3.Backward,
+			ForwardAxisDirection.PositiveY_Left => Vector3.Left,
+			ForwardAxisDirection.NegativeY_Right => Vector3.Right,
+			_ => Vector3.Forward
+		};
+	}
 
 	// --- Runtime (read-only in editor) ---
 	[Property, ReadOnly] public float CurrentSpeed { get; private set; }
@@ -157,10 +183,12 @@ public sealed class VehicleController : Component
 		SteerAngle += MathF.Sign( diff ) * MathF.Min( MathF.Abs( diff ), maxStep );
 
 		// --- Push steer angle and speed to wheels for visuals ---
+		var hasDriver = Driver != null;
 		foreach ( var wheel in _allWheels )
 		{
 			wheel.SteerAngle = SteerAngle;
 			wheel.CurrentSpeed = CurrentSpeed;
+			wheel.Handbrake = hasDriver ? _handbrakeInput : 1f;
 		}
 	}
 
@@ -185,8 +213,9 @@ public sealed class VehicleController : Component
 				AccelerationForce,
 				BrakeForce,
 				ReverseForce,
-				hasDriver ? _handbrakeInput : 0f,
-				HandbrakeForce );
+				hasDriver ? _handbrakeInput : 1f,
+				HandbrakeForce,
+				GetForwardVector() );
 
 			if ( !result.IsGrounded ) continue;
 			pendingForces.Add( result );
@@ -203,8 +232,10 @@ public sealed class VehicleController : Component
 			// resulting in rapid left/right vibrations.
 			_body.PhysicsBody.ApplyImpulseAt( r.MountPoint, r.LateralForce * 0.02f );
 			
-			// Apply drive force at MountPoint 
-			_body.PhysicsBody.ApplyImpulseAt( r.MountPoint, r.DriveForce * 0.02f );
+			// Apply drive force at GroundContact to create natural longitudinal pitch torque!
+			// Because the ground is below the Center of Mass, pushing the car forward from the ground 
+			// creates a rear-tilting lever arm (Squat during acceleration, Dive during braking).
+			_body.PhysicsBody.ApplyImpulseAt( r.GroundContact, r.DriveForce * 0.02f );
 		}
 
 		// --- Parking drag (no driver) ---
@@ -227,6 +258,7 @@ public sealed class VehicleController : Component
 			_body.Velocity = _body.Velocity.Normal * MaxSpeed;
 
 		// Always update speed so wheel spin visuals reflect actual car velocity while coasting.
-		CurrentSpeed = Vector3.Dot( _body.Velocity, WorldRotation.Forward );
+		var modelForward = WorldRotation * GetForwardVector();
+		CurrentSpeed = Vector3.Dot( _body.Velocity, modelForward );
 	}
 }

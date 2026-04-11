@@ -80,7 +80,7 @@
         {
           "__type": "DayNightCycle",
           "__guid": "55f46f0e-93a8-4860-8f09-a526b6a7b536",
-          "__enabled": true,
+          "__enabled": false,
           "Flags": 0,
           "AutoAdvance": true,
           "HijackMapLight": true,
@@ -922,8 +922,56 @@
               "Type": "Component",
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
+            "Property": "ForwardAxis",
+            "Value": "PositiveX_Forward"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "ParkingDrag",
+            "Value": 10
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
             "Property": "ReverseForce",
             "Value": 30000
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "e99bb772-6f89-4286-b6a0-932fa96c1d6a"
+            },
+            "Property": "Position",
+            "Value": "0,0,0"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "e99bb772-6f89-4286-b6a0-932fa96c1d6a"
+            },
+            "Property": "Scale",
+            "Value": "1.409999,3.188622,0.1025755"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "613110d5-1000-4f3a-bcb2-fbe010435355"
+            },
+            "Property": "Center",
+            "Value": "-0.000007629395,0,0"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "613110d5-1000-4f3a-bcb2-fbe010435355"
+            },
+            "Property": "Scale",
+            "Value": "49.99998,50,50"
           },
           {
             "Target": {
@@ -938,6 +986,22 @@
               "Type": "Component",
               "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
             },
+            "Property": "HandbrakeLateralFriction",
+            "Value": 0.8
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
+            },
+            "Property": "HandbrakeSlidingFriction",
+            "Value": 0.65
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
+            },
             "Property": "Stiffness",
             "Value": 0.5
           },
@@ -946,8 +1010,16 @@
               "Type": "Component",
               "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
             },
+            "Property": "WheelRadius",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
+            },
             "Property": "Width",
-            "Value": 65
+            "Value": 88.37995
           },
           {
             "Target": {
@@ -962,8 +1034,56 @@
               "Type": "Component",
               "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
             },
+            "Property": "HandbrakeLateralFriction",
+            "Value": 0.8
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
+            },
+            "Property": "HandbrakeSlidingFriction",
+            "Value": 0.8111111
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
+            },
             "Property": "Stiffness",
             "Value": 0.5
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
+            },
+            "Property": "WheelRadius",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
+            },
+            "Property": "Width",
+            "Value": 88.519966
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "b533d7bc-fce8-427f-975a-064b7209cba4"
+            },
+            "Property": "Position",
+            "Value": "24.86636,15.68774,5.721313"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "c3c426ee-ce97-4bf7-bf49-e9a09a44458c"
+            },
+            "Property": "Position",
+            "Value": "24.13376,-15.31659,5.721313"
           }
         ],
         "MovedObjects": []
@@ -990,6 +1110,126 @@
         "3686925b-6bd4-46b5-979a-4539d3017f9e": "48770d64-332b-4d37-8d49-854a102d91e8",
         "539b823c-850b-4354-aa4b-276186319cd4": "af958ccf-7553-4d70-a942-95b46b1f032b"
       }
+    },
+    {
+      "__guid": "ba972d58-6543-481d-b679-d5b56e053b3e",
+      "__version": 2,
+      "__Prefab": "prefabs/dump_truck.prefab",
+      "__PrefabInstancePatch": {
+        "AddedObjects": [],
+        "RemovedObjects": [],
+        "PropertyOverrides": [
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "173474ba-82f6-4b97-9d44-87a7b2821949"
+            },
+            "Property": "Position",
+            "Value": "437.3421,1250.188,0.1646008"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "ForwardAxis",
+            "Value": "PositiveY_Left"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "79ba7546-230a-4845-97c9-3200c5d535b2"
+            },
+            "Property": "Center",
+            "Value": "-0.2082901,-1.733871,101.0876"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "79ba7546-230a-4845-97c9-3200c5d535b2"
+            },
+            "Property": "Scale",
+            "Value": "118.8775,391.7394,86.53614"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "993c2762-da7a-4ae2-9cef-b4b41e634ffa"
+            },
+            "Property": "Stiffness",
+            "Value": 0.685446
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "993c2762-da7a-4ae2-9cef-b4b41e634ffa"
+            },
+            "Property": "SuspensionLength",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9e2701bf-2172-4b54-a965-4bc21b093130"
+            },
+            "Property": "Stiffness",
+            "Value": 0.685446
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9e2701bf-2172-4b54-a965-4bc21b093130"
+            },
+            "Property": "SuspensionLength",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "ba572dcd-5362-482b-931a-e40b2184b586"
+            },
+            "Property": "Stiffness",
+            "Value": 0.685446
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "ba572dcd-5362-482b-931a-e40b2184b586"
+            },
+            "Property": "SuspensionLength",
+            "Value": 30
+          }
+        ],
+        "MovedObjects": []
+      },
+      "__PrefabIdToInstanceId": {
+        "173474ba-82f6-4b97-9d44-87a7b2821949": "ba972d58-6543-481d-b679-d5b56e053b3e",
+        "86d08979-ae2d-404c-8be1-fcdefc15eb70": "3de12750-e9b7-4f72-940f-dadefb3e9a97",
+        "f0c4e516-b02a-45fd-9d22-e29d4baf6a20": "98fac138-d169-41ab-a9a3-c023f9525d8e",
+        "a627e385-3592-49d2-9871-0238f0fe2856": "ebecef3e-745d-4c1b-8eb9-3323d51b5c35",
+        "d8b70979-be51-4bdc-ab0d-0c8b5faa3c5d": "2c518815-7f79-4764-8204-0de0f2e14bcb",
+        "079c93ea-b311-43f9-8c40-e1748c08e5af": "73b3039b-c0c1-4bc6-b90e-d0803457f433",
+        "ec56ea62-5cb3-4936-ab40-ceb92a1fc471": "168b82a1-b995-4cb8-9635-093da142c6c7",
+        "799d7106-7a14-40ca-aa47-0b40df359d11": "af022f4d-6632-4a6b-8f54-3af0dd32b987",
+        "75463faa-7cd3-4ec3-8b30-bdac163a176b": "ea9f8da6-8d7f-421f-99c4-9ae5fc796db8",
+        "bcc014eb-d554-4422-bee2-b454e300356f": "4d47df72-4005-4c45-8152-6694b6902770",
+        "5d9b276e-ac1e-4ae6-800e-b0041f5c4202": "0befed76-1513-4897-b989-89e14f53283f",
+        "993c2762-da7a-4ae2-9cef-b4b41e634ffa": "8e7d7423-fb11-4ad7-89da-12970a206573",
+        "fbe247b0-2a8f-4290-8fd6-d062612e543a": "bf1108e5-2490-4548-a118-d4bfaed8ba61",
+        "9e2701bf-2172-4b54-a965-4bc21b093130": "6d872cec-11c6-4996-ab2f-b9bba680659d",
+        "8719863c-8636-4eaf-853c-0723c08d4556": "4da2645a-5ee9-468e-b3c3-9fdef14a233d",
+        "ba572dcd-5362-482b-931a-e40b2184b586": "c8c3872c-66ac-4716-9f8e-392b023fd1ae",
+        "1942468a-c192-4f83-9544-2c5466339467": "b71ab76e-0f7a-4c9b-9959-5652b71ec87e",
+        "626c3746-5428-425b-8168-4f8b6107026f": "933b6257-8407-4523-9c82-964817e76b70",
+        "0e25f05b-7743-449f-93a7-ef8592a10193": "fb388f2a-3d01-4552-8a25-4b45c4441560",
+        "358fd36d-4b99-4253-ada0-45fa0889df24": "8072d3d1-dc58-4ac5-b82a-6889daa2af96",
+        "8f2bbd65-3a26-4e10-acb5-ceabdf8f2604": "099c6d41-44ce-47e7-9a12-4dfd0819046a",
+        "41e148dd-a2ba-43d8-b5b3-d05ef1b480bf": "de59c781-8ea9-4eb9-83ce-00a3b68518c4",
+        "3744f83e-5b24-4723-8a3a-7bb4311db933": "0c84327b-bf51-4802-be81-2cae8fe37e61",
+        "979be9ac-eed0-423a-92fd-26cff2595ca2": "462fe597-a872-4eb4-9515-37cb3967dd2b",
+        "2fc77893-8293-402e-893b-c22a30adf0a0": "8d36d475-8173-4086-b62a-3fa7c0f499fa",
+        "79ba7546-230a-4845-97c9-3200c5d535b2": "afdab06c-9de8-4f38-a712-ddd2d115cbef"
+      }
     }
   ],
   "SceneProperties": {
@@ -1015,7 +1255,7 @@
     "GameObjectSystems": {
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
-          "$blob": "ca3a10ee-76b1-4a85-995b-24eb7054e60e"
+          "$blob": "8ef6a29a-9db7-4d82-97c9-fc01b38e13dc"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
