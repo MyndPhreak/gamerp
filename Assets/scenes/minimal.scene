@@ -24,7 +24,7 @@
           "Flags": 0,
           "__version": 1,
           "EnableCollision": true,
-          "MapName": "facepunch.flatgrass",
+          "MapName": "marcandreher.rp_biggest_testmap",
           "NoOrigin": true,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -80,7 +80,7 @@
         {
           "__type": "DayNightCycle",
           "__guid": "55f46f0e-93a8-4860-8f09-a526b6a7b536",
-          "__enabled": false,
+          "__enabled": true,
           "Flags": 0,
           "AutoAdvance": true,
           "HijackMapLight": true,
@@ -898,7 +898,305 @@
       "__version": 2,
       "__Prefab": "prefabs/testvehicle.prefab",
       "__PrefabInstancePatch": {
-        "AddedObjects": [],
+        "AddedObjects": [
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "5e860285-9157-4c6a-8ce5-909a37b63cc4"
+            },
+            "PreviousElement": {
+              "Type": "GameObject",
+              "IdValue": "c3c426ee-ce97-4bf7-bf49-e9a09a44458c"
+            },
+            "ContainerProperty": "Children",
+            "IsContainerArray": true,
+            "Data": {
+              "__guid": "16ef653a-a974-44dc-b732-f2cd9ee145ce",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "SteeringWheel",
+              "Position": "37.0864,16.12866,37.02031",
+              "Rotation": "0,0,0.7071067,0.7071068",
+              "Scale": "0.5,1,0.5",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": []
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "acd02d76-3e96-4e50-aaf4-f6f478fbbbb0"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": null,
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.Prop",
+              "__guid": "acd02d76-3e96-4e50-aaf4-f6f478fbbbb0",
+              "__enabled": true,
+              "Flags": 0,
+              "BodyGroups": 18446744073709551615,
+              "Health": 0,
+              "IsStatic": false,
+              "MaterialGroup": null,
+              "Model": "models/props/bike/bike_wheel.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnPropBreak": null,
+              "OnPropTakeDamage": null,
+              "StartAsleep": false,
+              "Tint": "1,1,1,1"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "d84494c0-153c-4ebe-9a93-1d85b356eaaa"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "acd02d76-3e96-4e50-aaf4-f6f478fbbbb0"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "GameRP.Vehicles.SteeringWheel",
+              "__guid": "d84494c0-153c-4ebe-9a93-1d85b356eaaa",
+              "__enabled": true,
+              "Flags": 0,
+              "LockToLockRange": 90,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RotateAxis": "PositiveY_Left"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "54632e6c-5125-40ec-ba3e-18a656e16e44"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "d84494c0-153c-4ebe-9a93-1d85b356eaaa"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "54632e6c-5125-40ec-ba3e-18a656e16e44",
+              "__enabled": true,
+              "Flags": 0,
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "LodOverride": null,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Materials": null,
+              "Model": "models/props/bike/bike_wheel.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "ca920c7b-cb7d-49aa-a949-e022506be68f"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "54632e6c-5125-40ec-ba3e-18a656e16e44"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.ModelCollider",
+              "__guid": "ca920c7b-cb7d-49aa-a949-e022506be68f",
+              "__enabled": false,
+              "Flags": 0,
+              "ColliderFlags": 0,
+              "Elasticity": null,
+              "Friction": null,
+              "IsTrigger": false,
+              "Model": "models/props/bike/bike_wheel.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
+              "RollingResistance": null,
+              "Static": false,
+              "Surface": null,
+              "SurfaceVelocity": "0,0,0"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "c3cebe81-113b-447b-8767-77c27591f2b4"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "ca920c7b-cb7d-49aa-a949-e022506be68f"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.Rigidbody",
+              "__guid": "c3cebe81-113b-447b-8767-77c27591f2b4",
+              "__enabled": false,
+              "Flags": 0,
+              "AngularDamping": 0,
+              "EnableImpactDamage": true,
+              "EnhancedCcd": false,
+              "Gravity": true,
+              "GravityScale": 1,
+              "ImpactDamage": 0,
+              "LinearDamping": 0,
+              "Locking": {
+                "X": false,
+                "Y": false,
+                "Z": false,
+                "Pitch": false,
+                "Yaw": false,
+                "Roll": false
+              },
+              "MassCenterOverride": "0,0,0",
+              "MassOverride": 2,
+              "MinImpactDamageSpeed": 500,
+              "MotionEnabled": true,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OverrideMassCenter": false,
+              "RigidbodyFlags": 0,
+              "StartAsleep": false
+            }
+          },
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "67f018c0-c1b6-4292-8f02-9eca0dc77741"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": null,
+            "ContainerProperty": "Children",
+            "IsContainerArray": true,
+            "Data": {
+              "__guid": "67f018c0-c1b6-4292-8f02-9eca0dc77741",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "HandPosL",
+              "Position": "15.67602,5.014131,-1.37915",
+              "Rotation": "0.5,-0.4999999,-0.4999999,0.5",
+              "Scale": "2,1,2",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": []
+            }
+          },
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "06348c4e-2ed5-49c7-868a-8316e4cdffd6"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
+            },
+            "PreviousElement": {
+              "Type": "GameObject",
+              "IdValue": "67f018c0-c1b6-4292-8f02-9eca0dc77741"
+            },
+            "ContainerProperty": "Children",
+            "IsContainerArray": true,
+            "Data": {
+              "__guid": "06348c4e-2ed5-49c7-868a-8316e4cdffd6",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "HandPosR",
+              "Position": "-19.02466,5.014128,-1.37915",
+              "Rotation": "0.5,-0.4999999,-0.4999999,0.5",
+              "Scale": "2,1,2",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": []
+            }
+          }
+        ],
         "RemovedObjects": [],
         "PropertyOverrides": [
           {
@@ -907,7 +1205,7 @@
               "IdValue": "5e860285-9157-4c6a-8ce5-909a37b63cc4"
             },
             "Property": "Position",
-            "Value": "123.2888,1032.361,70.1922"
+            "Value": "123.2888,1032.361,108.1462"
           },
           {
             "Target": {
@@ -915,7 +1213,15 @@
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
             "Property": "AccelerationForce",
-            "Value": 75000
+            "Value": 100000
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "BrakeForce",
+            "Value": 100000
           },
           {
             "Target": {
@@ -924,6 +1230,14 @@
             },
             "Property": "ForwardAxis",
             "Value": "PositiveX_Forward"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "MaxSpeed",
+            "Value": 2400
           },
           {
             "Target": {
@@ -1079,11 +1393,59 @@
           },
           {
             "Target": {
+              "Type": "Component",
+              "IdValue": "54ca77f0-3626-4935-bd1f-50306bc80d53"
+            },
+            "Property": "CameraZoomStep",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "54ca77f0-3626-4935-bd1f-50306bc80d53"
+            },
+            "Property": "MaxCameraDistance",
+            "Value": 800
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "54ca77f0-3626-4935-bd1f-50306bc80d53"
+            },
+            "Property": "MinCameraDistance",
+            "Value": 80
+          },
+          {
+            "Target": {
               "Type": "GameObject",
               "IdValue": "c3c426ee-ce97-4bf7-bf49-e9a09a44458c"
             },
             "Property": "Position",
             "Value": "24.13376,-15.31659,5.721313"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "3686925b-6bd4-46b5-979a-4539d3017f9e"
+            },
+            "Property": "CameraZoomStep",
+            "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "3686925b-6bd4-46b5-979a-4539d3017f9e"
+            },
+            "Property": "MaxCameraDistance",
+            "Value": 800
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "3686925b-6bd4-46b5-979a-4539d3017f9e"
+            },
+            "Property": "MinCameraDistance",
+            "Value": 80
           }
         ],
         "MovedObjects": []
@@ -1125,79 +1487,79 @@
               "IdValue": "173474ba-82f6-4b97-9d44-87a7b2821949"
             },
             "Property": "Position",
-            "Value": "437.3421,1250.188,0.1646008"
+            "Value": "437.3421,1250.188,105.3136"
           },
           {
             "Target": {
               "Type": "Component",
-              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+              "IdValue": "626c3746-5428-425b-8168-4f8b6107026f"
             },
-            "Property": "ForwardAxis",
-            "Value": "PositiveY_Left"
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "79ba7546-230a-4845-97c9-3200c5d535b2"
-            },
-            "Property": "Center",
-            "Value": "-0.2082901,-1.733871,101.0876"
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "79ba7546-230a-4845-97c9-3200c5d535b2"
-            },
-            "Property": "Scale",
-            "Value": "118.8775,391.7394,86.53614"
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "993c2762-da7a-4ae2-9cef-b4b41e634ffa"
-            },
-            "Property": "Stiffness",
-            "Value": 0.685446
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "993c2762-da7a-4ae2-9cef-b4b41e634ffa"
-            },
-            "Property": "SuspensionLength",
+            "Property": "CameraZoomStep",
             "Value": 30
           },
           {
             "Target": {
               "Type": "Component",
-              "IdValue": "9e2701bf-2172-4b54-a965-4bc21b093130"
+              "IdValue": "626c3746-5428-425b-8168-4f8b6107026f"
             },
-            "Property": "Stiffness",
-            "Value": 0.685446
+            "Property": "MaxCameraDistance",
+            "Value": 800
           },
           {
             "Target": {
               "Type": "Component",
-              "IdValue": "9e2701bf-2172-4b54-a965-4bc21b093130"
+              "IdValue": "626c3746-5428-425b-8168-4f8b6107026f"
             },
-            "Property": "SuspensionLength",
+            "Property": "MinCameraDistance",
+            "Value": 80
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "8f2bbd65-3a26-4e10-acb5-ceabdf8f2604"
+            },
+            "Property": "CameraZoomStep",
             "Value": 30
           },
           {
             "Target": {
               "Type": "Component",
-              "IdValue": "ba572dcd-5362-482b-931a-e40b2184b586"
+              "IdValue": "8f2bbd65-3a26-4e10-acb5-ceabdf8f2604"
             },
-            "Property": "Stiffness",
-            "Value": 0.685446
+            "Property": "MaxCameraDistance",
+            "Value": 800
           },
           {
             "Target": {
               "Type": "Component",
-              "IdValue": "ba572dcd-5362-482b-931a-e40b2184b586"
+              "IdValue": "8f2bbd65-3a26-4e10-acb5-ceabdf8f2604"
             },
-            "Property": "SuspensionLength",
+            "Property": "MinCameraDistance",
+            "Value": 80
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "979be9ac-eed0-423a-92fd-26cff2595ca2"
+            },
+            "Property": "CameraZoomStep",
             "Value": 30
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "979be9ac-eed0-423a-92fd-26cff2595ca2"
+            },
+            "Property": "MaxCameraDistance",
+            "Value": 800
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "979be9ac-eed0-423a-92fd-26cff2595ca2"
+            },
+            "Property": "MinCameraDistance",
+            "Value": 80
           }
         ],
         "MovedObjects": []
@@ -1255,7 +1617,7 @@
     "GameObjectSystems": {
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
-          "$blob": "8ef6a29a-9db7-4d82-97c9-fc01b38e13dc"
+          "$blob": "1bbf7a33-a500-4512-b114-90cff43ca83c"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
@@ -1268,6 +1630,7 @@
   "Description": null,
   "__references": [
     "facepunch.atm#33652",
+    "facepunch.bike_wheel#141962",
     "frogpond.closet#12964"
   ],
   "__version": 3

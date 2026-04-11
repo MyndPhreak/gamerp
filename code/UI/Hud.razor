@@ -1,5 +1,7 @@
 @using Sandbox.UI.Common;
 @using System.Linq;
+@using System;
+@using GameRP.Vehicles;
 
 @inherits PanelComponent
 
@@ -16,13 +18,32 @@
 			<span class="label">Job:</span>
 			<span class="value" style="color: @PlayerColor">@Player?.JobTitle</span>
 		</div>
+
+		@if ( CurrentVehicle != null )
+		{
+			<div class="stat-box speed">
+				<MyIcon Name="speed" Color="@Color.Cyan" Size=@(24) />
+				<span class="label">Speed:</span>
+				<span class="value">@MathF.Round( MathF.Abs( CurrentVehicle.CurrentSpeed ) * (80f / 1200f) ) km/h</span>
+			</div>
+		}
 	</div>
 </root>
 
 @code
 {
-	private RPPlayer Player => Scene.GetAll<RPPlayer>().FirstOrDefault();
+	private RPPlayer Player => Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
 	private string PlayerColor => Player?.JobColor.Hex ?? "#fff";
 
-	protected override int BuildHash() => System.HashCode.Combine( Player, Player?.Money, Player?.JobTitle, PlayerColor );
+	private VehicleSeat CurrentSeat => Scene.GetAll<VehicleSeat>().FirstOrDefault( s => s.OccupiedBy != null && s.OccupiedBy == Player );
+	private VehicleController CurrentVehicle => CurrentSeat?.Components.GetInAncestors<VehicleController>();
+
+	protected override int BuildHash() => System.HashCode.Combine( 
+		Player, 
+		Player?.Money, 
+		Player?.JobTitle, 
+		PlayerColor, 
+		CurrentVehicle != null, 
+		MathF.Round( MathF.Abs( CurrentVehicle?.CurrentSpeed ?? 0f ) * (80f / 1200f) ) 
+	);
 }
