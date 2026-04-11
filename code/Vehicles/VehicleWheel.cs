@@ -8,22 +8,28 @@ public sealed class VehicleWheel : Component
 	// --- Setup ---
 	[Property] public float SuspensionLength { get; set; } = 20f;
 	[Property] public float Radius { get; set; } = 14f;
+	/// <summary>If true, Radius is computed from the wheel model's mesh bounds on startup.</summary>
+	[Property] public bool AutoDetectRadius { get; set; } = true;
 	[Property] public bool IsSteerable { get; set; } = false;
 	[Property] public bool IsDriven { get; set; } = false;
+	[Property] public bool ReverseSpinDirection { get; set; } = false;
+	/// <summary>Rear wheels should have this enabled so the handbrake affects them.</summary>
+	[Property] public bool IsHandbrakeWheel { get; set; } = false;
 
 	// --- Suspension tuning ---
-	[Property] public float SpringStrength { get; set; } = 8000f;
-	[Property] public float DampStrength { get; set; } = 400f;
+	/// <summary>0 = soft/bouncy, 1 = stiff/firm. Controls active ride height and damping ratio.</summary>
+	[Property, Range( 0f, 1f )] public float Stiffness { get; set; } = 0.5f;
 
 	// --- Grip tuning ---
-	/// <summary>Max lateral corrective force (N-equivalent) per wheel. Higher = more grip before sliding.</summary>
-	[Property] public float LateralFriction { get; set; } = 6000f;
-	/// <summary>Gain: how aggressively lateral velocity is corrected. Higher = snappier grip response.</summary>
-	[Property] public float LateralGripStiffness { get; set; } = 500f;
+	/// <summary>Max lateral corrective force per wheel. Must be several times larger than
+	/// AccelerationForce per driven wheel to prevent fishtailing.</summary>
+	[Property] public float LateralFriction { get; set; } = 800000f;
+	/// <summary>Lateral velocity correction gain. Keep below mass/(numWheels·fixedDt) — roughly
+	/// 25000 for a 1000 kg car on 4 wheels at 50 Hz physics.</summary>
+	[Property] public float LateralGripStiffness { get; set; } = 25000f;
 	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
 
 	// Minimum forward speed (units/sec) required for braking to apply.
-	// Prevents jitter at near-standstill. S&Box units ≈ 1 unit/sec.
 	private const float BrakeSpeedThreshold = 5f;
 
 	// --- Runtime (read-only in editor) ---
@@ -39,25 +45,42 @@ public sealed class VehicleWheel : Component
 	private ModelRenderer _wheelModel;
 	private float _spinAngle;
 	private Vector3 _attachLocalPos;
-	private Rotation _baseLocalRot;
+	private GameObject _vehicleRoot;
+	// Initialised to 0.5 so the wheel sits at the correct rest position before ComputeForces runs.
+	private float _smoothedCompression = 0.5f;
 
 	public struct WheelForceResult
 	{
 		public Vector3 SuspensionForce;
 		public Vector3 DriveForce;
 		public Vector3 LateralForce;
-		public Vector3 ApplicationPoint;
+		/// <summary>Where suspension + drive forces are applied (mount point, near chassis).</summary>
+		public Vector3 MountPoint;
+		/// <summary>Where lateral grip forces are applied (ground contact, for correct yaw torque).</summary>
+		public Vector3 GroundContact;
 		public bool IsGrounded;
 	}
 
 	protected override void OnAwake()
 	{
 		_wheelModel = Components.Get<ModelRenderer>();
-		if ( _wheelModel == null )
-			Log.Warning( "[VehicleWheel] No ModelRenderer found — wheel visuals will not update" );
+
+		if ( AutoDetectRadius && _wheelModel?.Model != null )
+		{
+			var size = _wheelModel.Model.Bounds.Size;
+			var detected = MathF.Max( size.y, size.z ) / 2f;
+			if ( detected > 0f )
+			{
+				Radius = detected;
+				Log.Info( $"[VehicleWheel] Auto-detected radius {Radius:F1} from bounds {size}" );
+			}
+		}
+
+		// Walk up to the vehicle root (VehicleController's GameObject).
+		var controller = Components.GetInAncestors<VehicleController>();
+		_vehicleRoot = controller?.GameObject ?? GameObject.Parent?.Parent ?? GameObject.Parent;
 
 		_attachLocalPos = LocalPosition;
-		_baseLocalRot = LocalRotation;
 	}
 
 	/// <summary>
@@ -68,21 +91,35 @@ public sealed class VehicleWheel : Component
 		float brake,
 		float steerAngle,
 		Rigidbody body,
+		int totalWheels,
 		float accelerationForce,
 		float brakeForce,
-		float reverseForce )
+		float reverseForce,
+		float handbrake,
+		float handbrakeForce )
 	{
 		var result = new WheelForceResult();
 
-		var parent = GameObject.Parent;
-		var worldUp = parent.WorldRotation.Up;
-		var rayOrigin = parent.WorldPosition + parent.WorldRotation * _attachLocalPos;
+		// Deferred root lookup if OnAwake ran before hierarchy was ready
+		if ( _vehicleRoot == null || !_vehicleRoot.IsValid )
+		{
+			var controller = Components.GetInAncestors<VehicleController>();
+			_vehicleRoot = controller?.GameObject ?? GameObject.Parent?.Parent ?? GameObject.Parent;
+		}
+		if ( _vehicleRoot == null ) return result;
+
+		var worldUp = _vehicleRoot.WorldRotation.Up;
+		// Ray origin = fixed mount point on the axle, NOT the moving wheel visual.
+		var axle = GameObject.Parent;
+		var mountPoint = axle.WorldPosition + axle.WorldRotation * _attachLocalPos;
+		// Offset upward so axle position ≈ wheel center at rest.
+		var rayOrigin = mountPoint + worldUp * (SuspensionLength * 0.5f);
 		var rayDir = -worldUp;
 		var rayLength = SuspensionLength + Radius;
 
 		var trace = Scene.Trace
 			.Ray( new Ray( rayOrigin, rayDir ), rayLength )
-			.WithoutTags( "vehicle" )
+			.IgnoreGameObjectHierarchy( _vehicleRoot )
 			.Run();
 
 		if ( !trace.Hit )
@@ -90,7 +127,7 @@ public sealed class VehicleWheel : Component
 			IsGrounded = false;
 			SuspensionCompression = 0f;
 			GroundHitPosition = rayOrigin + rayDir * rayLength;
-			return result; // all forces zero
+			return result;
 		}
 
 		IsGrounded = true;
@@ -98,55 +135,105 @@ public sealed class VehicleWheel : Component
 		GroundHitPosition = trace.HitPosition;
 
 		result.IsGrounded = true;
-		result.ApplicationPoint = trace.HitPosition;
+		// Suspension and drive forces applied at the mount point (near chassis).
+		// This reduces pitch/roll torques since the mount point is close to the center of mass.
+		result.MountPoint = rayOrigin;
+		// Lateral grip applied at ground contact for correct yaw torque during cornering.
+		result.GroundContact = trace.HitPosition;
 
-		// --- Velocity at contact point ---
-		// v_contact = v_linear + ω × r
-		// AngularVelocity is in radians/second (Havok convention).
-		// If your S&Box version returns deg/s, multiply AngularVelocity by (MathF.PI / 180f) first.
-		var r = trace.HitPosition - body.WorldPosition;
-		var contactVelocity = body.Velocity + Vector3.Cross( body.AngularVelocity, r );
+		// --- Velocity at contact point (for drive/lateral calculations) ---
+		var contactVelocity = body.GetVelocityAtPoint( trace.HitPosition );
 
-		// --- Suspension (spring + damper) ---
-		var vertVel = Vector3.Dot( contactVelocity, worldUp );
-		var springForce = SuspensionCompression * SpringStrength;
-		var dampForce = vertVel * DampStrength;
-		result.SuspensionForce = worldUp * (springForce - dampForce);
+		// --- Active Suspension (spring + damper) ---
+		// Computes required forces dynamically based on current Rigidbody mass to prevent sagging under load.
+		var gravity = MathF.Abs( Scene.PhysicsWorld?.Gravity.z ?? 800f );
+		if (gravity < 1f) gravity = 800f; // S&box fallback roughly 800 units/s2
+		
+		var effectiveMass = (body.PhysicsBody?.Mass ?? 1000f) / MathF.Max( 1, totalWheels );
+		
+		// Map stiffness to a natural resting compression point (e.g. 50% vs 30% of travel used at rest)
+		var restCompression = MathX.Lerp( 0.6f, 0.3f, Stiffness );
+		var targetSpring = (effectiveMass * gravity) / restCompression;
+		
+		var dampRatio = MathX.Lerp( 0.4f, 0.8f, Stiffness );
+		// The true physical spring constant 'k' is targetSpring / SuspensionLength.
+		// Missing this division caused the damper to be Sqrt(SuspensionLength) times too strong (overdamped/bouncy rock)
+		var k_true = targetSpring / MathF.Max( 0.1f, SuspensionLength );
+		var targetDamper = dampRatio * 2f * MathF.Sqrt( k_true * effectiveMass );
+
+		// Use suspension mount point velocity (vertical only). This correctly resists roll and pitch,
+		// unlike using center-of-mass velocity.
+		var pointVel = body.GetVelocityAtPoint( result.MountPoint );
+		var vertVel = Vector3.Dot( pointVel, worldUp );
+
+		var springForce = SuspensionCompression * targetSpring;
+		var dampForce = vertVel * targetDamper;
+
+		// Anti-spazz constraint: Prevent damper from applying a force so massive that it reverses
+		// the suspension velocity within a single physics tick. Use hardcoded 0.02f (50Hz) for fixed time step.
+		var maxDampForce = (effectiveMass * MathF.Abs(vertVel)) / 0.02f;
+		dampForce = MathF.Sign(dampForce) * MathF.Min(MathF.Abs(dampForce), maxDampForce);
+
+		// Suspension can only push the chassis UP. Rebound damping shouldn't suck the car into the dirt!
+		var totalForce = springForce - dampForce;
+		if ( totalForce < 0f ) totalForce = 0f;
+
+		// Hard cap the maximum upward force to ~5 Gs per wheel. 
+		// If the car drops from the sky, the suspension bottoms out softly and lets the rigid chassis
+		// take the actual impact with the ground. This completely prevents wild off-center physics spins.
+		var maxForceGClamp = effectiveMass * gravity * 5f;
+		if ( totalForce > maxForceGClamp ) totalForce = maxForceGClamp;
+
+		result.SuspensionForce = worldUp * totalForce;
 
 		// --- Wheel forward direction (steered for front wheels) ---
-		var wheelForward = Rotation.FromAxis( worldUp, IsSteerable ? steerAngle : 0f ) * parent.WorldRotation.Forward;
+		var wheelForward = Rotation.FromAxis( worldUp, IsSteerable ? steerAngle : 0f ) * _vehicleRoot.WorldRotation.Forward;
 		var forwardSpeed = Vector3.Dot( contactVelocity, wheelForward );
 
+		// --- Handbrake: locks rear wheels ---
+		if ( IsHandbrakeWheel && handbrake > 0f )
+		{
+			if ( MathF.Abs( forwardSpeed ) > BrakeSpeedThreshold )
+			{
+				var effectiveBrake = handbrake * handbrakeForce * LongitudinalFriction;
+				var maxBrake = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
+				effectiveBrake = MathF.Min(effectiveBrake, maxBrake);
+				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * effectiveBrake;
+			}
+		}
 		// --- Drive / Brake (driven wheels only) ---
-		if ( IsDriven )
+		else if ( IsDriven )
 		{
 			if ( throttle > 0f )
 			{
-				// Accelerate forward
 				result.DriveForce = wheelForward * throttle * accelerationForce * LongitudinalFriction;
 			}
 			else if ( brake > 0f && MathF.Abs( forwardSpeed ) > BrakeSpeedThreshold )
 			{
-				// Braking: oppose current forward motion
-				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * brake * brakeForce * LongitudinalFriction;
+				var effectiveBrake = brake * brakeForce * LongitudinalFriction;
+				var maxBrake = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
+				effectiveBrake = MathF.Min(effectiveBrake, maxBrake);
+				result.DriveForce = -wheelForward * MathF.Sign( forwardSpeed ) * effectiveBrake;
 			}
 			else if ( throttle < 0f )
 			{
-				// Reverse
 				result.DriveForce = wheelForward * throttle * reverseForce * LongitudinalFriction;
 			}
 		}
 
 		// --- Lateral friction (all grounded wheels) ---
-		// rightDir is perpendicular to wheel forward, in the ground plane
-		// Cross(worldUp, wheelForward) should point to the car's physical right in S&Box's coordinate system.
-		// If the car amplifies lateral sliding instead of resisting it (negative grip), swap the operands:
-		// var rightDir = Vector3.Cross( wheelForward, worldUp ).Normal;
 		var rightDir = Vector3.Cross( worldUp, wheelForward ).Normal;
 		var lateralVel = Vector3.Dot( contactVelocity, rightDir );
-		// LateralGripStiffness is the gain; LateralFriction is the force cap.
-		// Cap triggers when |lateralVel| > LateralFriction / LateralGripStiffness.
 		var lateralMag = (lateralVel * LateralGripStiffness).Clamp( -LateralFriction, LateralFriction );
+
+		// Anti-spazz constraint for lateral grip: prevent lateral force from over-correcting
+		// Because the force is applied at the ground (offset from Center of Mass), S&box Physics 
+		// converts a huge amount of this force into rolling/yawing angular velocity! 
+		// We MUST divide the max force by a factor (~2.5) to account for rotational inertia, 
+		// otherwise the wheels violently slip-stick vibrate across the ground!
+		var maxLateralForce = (effectiveMass * MathF.Abs(lateralVel)) / (0.02f * 2.5f);
+		lateralMag = MathF.Sign(lateralMag) * MathF.Min(MathF.Abs(lateralMag), maxLateralForce);
+
 		result.LateralForce = -rightDir * lateralMag;
 
 		return result;
@@ -159,20 +246,42 @@ public sealed class VehicleWheel : Component
 
 	private void UpdateVisuals()
 	{
-		var suspensionOffset = IsGrounded
-			? (SuspensionLength * (1f - SuspensionCompression))
-			: SuspensionLength;
+		// Resolve vehicle root lazily — may not have been ready during OnAwake.
+		if ( _vehicleRoot == null || !_vehicleRoot.IsValid )
+		{
+			var controller = Components.GetInAncestors<VehicleController>();
+			_vehicleRoot = controller?.GameObject ?? GameObject.Parent?.Parent ?? GameObject.Parent;
+		}
+		if ( _vehicleRoot == null ) return;
 
-		LocalPosition = _attachLocalPos + Vector3.Down * suspensionOffset;
+		// Recompute mount point every frame directly from the axle transform.
+		// This works whether or not ComputeForces has run (i.e. car has no driver yet).
+		var axle = GameObject.Parent;
+		if ( axle == null ) return;
+		var worldUp = _vehicleRoot.WorldRotation.Up;
+		var mountPoint = axle.WorldPosition + axle.WorldRotation * _attachLocalPos;
+
+		// When grounded, track actual compression; when airborne or parked without a driver,
+		// hold the current value so wheels don't snap to fully-extended.
+		var targetCompression = IsGrounded ? SuspensionCompression : _smoothedCompression;
+		_smoothedCompression = MathX.Lerp( _smoothedCompression, targetCompression, Time.Delta * 10f );
+
+		// Position: mount point is at axle height; add halfTravel to reach ray origin,
+		// then subtract suspensionDrop to place wheel center.
+		var halfTravel = SuspensionLength * 0.5f;
+		var suspensionDrop = SuspensionLength * (1f - _smoothedCompression);
+		WorldPosition = mountPoint + worldUp * halfTravel - worldUp * suspensionDrop;
 
 		if ( _wheelModel == null ) return;
 
-		_spinAngle = (_spinAngle + CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
-		var spinRotation = Rotation.FromAxis( Vector3.Right, _spinAngle );
-		var steerRotation = IsSteerable
-			? Rotation.FromAxis( Vector3.Up, SteerAngle )
-			: Rotation.Identity;
+		var spinDir = ReverseSpinDirection ? 1f : -1f;
+		_spinAngle = (_spinAngle + spinDir * CurrentSpeed * Time.Delta * (360f / (MathF.Tau * Radius))) % 360f;
 
-		LocalRotation = _baseLocalRot * steerRotation * spinRotation;
+		var flipRot = ReverseSpinDirection ? Rotation.FromAxis( Vector3.Up, 180f ) : Rotation.Identity;
+		var steerRot = IsSteerable ? Rotation.FromAxis( Vector3.Up, SteerAngle ) : Rotation.Identity;
+		var spinRot = Rotation.FromAxis( Vector3.Right, _spinAngle );
+
+		// Base from axle world rotation — wheels tilt with body roll/pitch, staying perpendicular to the axle.
+		WorldRotation = axle.WorldRotation * flipRot * steerRot * spinRot;
 	}
 }

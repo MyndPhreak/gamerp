@@ -80,7 +80,7 @@
         {
           "__type": "DayNightCycle",
           "__guid": "55f46f0e-93a8-4860-8f09-a526b6a7b536",
-          "__enabled": false,
+          "__enabled": true,
           "Flags": 0,
           "AutoAdvance": true,
           "HijackMapLight": true,
@@ -408,8 +408,57 @@
       "__version": 2,
       "__Prefab": "prefabs/closet.prefab",
       "__PrefabInstancePatch": {
-        "AddedObjects": [],
-        "RemovedObjects": [],
+        "AddedObjects": [
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "12149427-7af8-4cea-adc8-f9719820e918"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "cfe883a3-4706-4f66-9437-d480b29a5c81"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "320675e0-dcf3-4992-b86d-791bc67b0dd6"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.ModelCollider",
+              "__guid": "12149427-7af8-4cea-adc8-f9719820e918",
+              "__enabled": true,
+              "Flags": 0,
+              "ColliderFlags": 0,
+              "Elasticity": null,
+              "Friction": null,
+              "IsTrigger": false,
+              "Model": "models/indoor/closet/closet.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
+              "RollingResistance": null,
+              "Static": false,
+              "Surface": null,
+              "SurfaceVelocity": "0,0,0"
+            }
+          }
+        ],
+        "RemovedObjects": [
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "ff0cf249-ecdc-4190-8fb1-f38b08130a52"
+            }
+          }
+        ],
         "PropertyOverrides": [
           {
             "Target": {
@@ -426,9 +475,34 @@
             },
             "Property": "Position",
             "Value": "-43.94506,682.6782,72.46851"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "15f0848c-bba2-404e-8889-b2c5e575bcdc"
+            },
+            "Property": "Position",
+            "Value": "-0.00004434398,55.0976,-36.27743"
           }
         ],
-        "MovedObjects": []
+        "MovedObjects": [
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "679c61a6-ae16-4391-9962-c3c971dcea1f"
+            },
+            "NewParent": {
+              "Type": "GameObject",
+              "IdValue": "cfe883a3-4706-4f66-9437-d480b29a5c81"
+            },
+            "NewContainerProperty": "Components",
+            "IsNewContainerArray": true,
+            "NewPreviousElement": {
+              "Type": "Component",
+              "IdValue": "fe863a04-b8fe-49c2-acc4-ae7aeb6ece21"
+            }
+          }
+        ]
       },
       "__PrefabIdToInstanceId": {
         "cfe883a3-4706-4f66-9437-d480b29a5c81": "d55ae56d-4a23-4219-824f-7df664dc2124",
@@ -820,611 +894,102 @@
       ]
     },
     {
-      "__guid": "5e6a9c84-9f9d-419d-8cb9-778c2f5be6f2",
+      "__guid": "049d0b69-ff30-4db8-86ee-2f1af770043c",
       "__version": 2,
-      "Flags": 0,
-      "Name": "TestVehicle",
-      "Position": "29.73457,1047.229,51.85595",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "vehicle",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "GameRP.Vehicles.VehicleController",
-          "__guid": "c5740662-c7c3-45be-86dd-f4644c7947ed",
-          "__enabled": true,
-          "Flags": 0,
-          "Acceleration": 400,
-          "BrakeForce": 600,
-          "CurrentSpeed": 0,
-          "Drag": 0.98,
-          "MaxSpeed": 800,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "SteerAngle": 0,
-          "TurnRate": 120
-        },
-        {
-          "__type": "GameRP.Interactions.Interactable",
-          "__guid": "f9ff8aaf-95c3-4225-a519-40bb4dc9d5ee",
-          "__enabled": true,
-          "Flags": 0,
-          "HoldDuration": 0,
-          "InteractionDistance": 200,
-          "InteractionText": "E To Get In",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "PromptColor": "1,1,1,1"
-        },
-        {
-          "__type": "GameRP.Vehicles.VehicleSeat",
-          "__guid": "822a3d07-ecc0-4ef9-add2-607fb3166924",
-          "__enabled": true,
-          "Flags": 0,
-          "ExitOffset": "0,80,0",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "SeatOffset": "0,0,40"
-        }
-      ],
-      "Children": [
-        {
-          "__guid": "55c5ee08-bf6d-4a3f-828c-87ea80f59f9c",
-          "__version": 2,
-          "Flags": 0,
-          "Name": "Body",
-          "Position": "0,0,0",
-          "Rotation": "0,0,0,1",
-          "Scale": "1,3.118622,0.1025757",
-          "Tags": "",
-          "Enabled": true,
-          "NetworkMode": 2,
-          "NetworkFlags": 0,
-          "NetworkOrphaned": 0,
-          "NetworkTransmit": true,
-          "OwnerTransfer": 1,
-          "Components": [
-            {
-              "__type": "Sandbox.ModelRenderer",
-              "__guid": "8eb660a7-24dd-483f-9663-ff019b11a7b7",
-              "__enabled": true,
-              "Flags": 0,
-              "BodyGroups": 18446744073709551615,
-              "CreateAttachments": false,
-              "LodOverride": null,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Materials": null,
-              "Model": null,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Tint": "1,1,1,1"
+      "__Prefab": "prefabs/testvehicle.prefab",
+      "__PrefabInstancePatch": {
+        "AddedObjects": [],
+        "RemovedObjects": [],
+        "PropertyOverrides": [
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "5e860285-9157-4c6a-8ce5-909a37b63cc4"
             },
-            {
-              "__type": "Sandbox.BoxCollider",
-              "__guid": "5ba37b3e-e0ab-4519-937a-d067d452b538",
-              "__enabled": true,
-              "Flags": 0,
-              "Center": "0,0,0",
-              "ColliderFlags": 0,
-              "Elasticity": null,
-              "Friction": null,
-              "IsTrigger": false,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OnObjectTriggerEnter": null,
-              "OnObjectTriggerExit": null,
-              "OnTriggerEnter": null,
-              "OnTriggerExit": null,
-              "RollingResistance": null,
-              "Scale": "50,50,50",
-              "Static": false,
-              "Surface": null,
-              "SurfaceVelocity": "0,0,0"
+            "Property": "Position",
+            "Value": "123.2888,1032.361,70.1922"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
-            {
-              "__type": "Sandbox.Rigidbody",
-              "__guid": "f9425714-4f13-4d8e-8e32-eb0b9f438969",
-              "__enabled": false,
-              "Flags": 0,
-              "AngularDamping": 0,
-              "EnableImpactDamage": true,
-              "EnhancedCcd": false,
-              "Gravity": true,
-              "GravityScale": 1,
-              "ImpactDamage": 0,
-              "LinearDamping": 0,
-              "Locking": {
-                "X": false,
-                "Y": false,
-                "Z": false,
-                "Pitch": false,
-                "Yaw": false,
-                "Roll": false
-              },
-              "MassCenterOverride": "0,0,0",
-              "MassOverride": 0,
-              "MinImpactDamageSpeed": 500,
-              "MotionEnabled": true,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OverrideMassCenter": false,
-              "RigidbodyFlags": 0,
-              "StartAsleep": false
-            }
-          ],
-          "Children": []
-        },
-        {
-          "__guid": "4f7c4404-fa5d-4a21-99fe-7e1c4b7217d1",
-          "__version": 2,
-          "Flags": 0,
-          "Name": "FL",
-          "Position": "-33.98103,74.69312,0",
-          "Rotation": "0,0,0.7071068,-0.7071068",
-          "Scale": "1,1,1",
-          "Tags": "",
-          "Enabled": true,
-          "NetworkMode": 2,
-          "NetworkFlags": 0,
-          "NetworkOrphaned": 0,
-          "NetworkTransmit": true,
-          "OwnerTransfer": 1,
-          "Components": [
-            {
-              "__type": "Sandbox.SkinnedModelRenderer",
-              "__guid": "707ac6ff-b227-48ae-9b01-99d3c21e3ad0",
-              "__enabled": true,
-              "Flags": 0,
-              "AnimationGraph": null,
-              "BodyGroups": 18446744073709551615,
-              "BoneMergeTarget": null,
-              "CreateAttachments": false,
-              "CreateBoneObjects": false,
-              "LodOverride": null,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Materials": null,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "Morphs": {},
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Parameters": {
-                "bools": {},
-                "ints": {},
-                "floats": {},
-                "vectors": {},
-                "rotations": {}
-              },
-              "PlaybackRate": 1,
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Sequence": {
-                "Name": null,
-                "Looping": true,
-                "Blending": false
-              },
-              "Tint": "1,1,1,1",
-              "UseAnimGraph": true
+            "Property": "AccelerationForce",
+            "Value": 75000
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
-            {
-              "__type": "Sandbox.ModelCollider",
-              "__guid": "4eaad982-0869-49dd-945a-ab6ba9e34131",
-              "__enabled": true,
-              "Flags": 0,
-              "ColliderFlags": 0,
-              "Elasticity": null,
-              "Friction": null,
-              "IsTrigger": false,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OnObjectTriggerEnter": null,
-              "OnObjectTriggerExit": null,
-              "OnTriggerEnter": null,
-              "OnTriggerExit": null,
-              "RollingResistance": null,
-              "Static": false,
-              "Surface": null,
-              "SurfaceVelocity": "0,0,0"
+            "Property": "ReverseForce",
+            "Value": 30000
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "f39f766d-9ef9-423f-8bd7-83726e4137df"
             },
-            {
-              "__type": "GameRP.Vehicles.VehicleWheel",
-              "__guid": "b06a4791-e6a6-43bd-8249-c9d378f8c8dc",
-              "__enabled": true,
-              "Flags": 0,
-              "GroundDistance": 0,
-              "IsDriven": true,
-              "IsGrounded": false,
-              "IsSteerable": true,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Radius": 14,
-              "SuspensionCompression": 0,
-              "SuspensionLength": 20
-            }
-          ],
-          "Children": []
-        },
-        {
-          "__guid": "019e70ab-f281-41d4-a833-8fb6529027c5",
-          "__version": 2,
-          "Flags": 0,
-          "Name": "FR",
-          "Position": "33.36785,74.69312,0",
-          "Rotation": "0,0,-0.7071067,-0.7071069",
-          "Scale": "1,1,1",
-          "Tags": "",
-          "Enabled": true,
-          "NetworkMode": 2,
-          "NetworkFlags": 0,
-          "NetworkOrphaned": 0,
-          "NetworkTransmit": true,
-          "OwnerTransfer": 1,
-          "Components": [
-            {
-              "__type": "Sandbox.SkinnedModelRenderer",
-              "__guid": "a183a40e-398d-4d18-b8cb-b09432168a3c",
-              "__enabled": true,
-              "Flags": 0,
-              "AnimationGraph": null,
-              "BodyGroups": 18446744073709551615,
-              "BoneMergeTarget": null,
-              "CreateAttachments": false,
-              "CreateBoneObjects": false,
-              "LodOverride": null,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Materials": null,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "Morphs": {},
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Parameters": {
-                "bools": {},
-                "ints": {},
-                "floats": {},
-                "vectors": {},
-                "rotations": {}
-              },
-              "PlaybackRate": 1,
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Sequence": {
-                "Name": null,
-                "Looping": true,
-                "Blending": false
-              },
-              "Tint": "1,1,1,1",
-              "UseAnimGraph": true
+            "Property": "Position",
+            "Value": "75.85257,0,-3.790199"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
             },
-            {
-              "__type": "Sandbox.ModelCollider",
-              "__guid": "3a999926-8fe0-4950-a833-3f3aed7ac0a2",
-              "__enabled": true,
-              "Flags": 0,
-              "ColliderFlags": 0,
-              "Elasticity": null,
-              "Friction": null,
-              "IsTrigger": false,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OnObjectTriggerEnter": null,
-              "OnObjectTriggerExit": null,
-              "OnTriggerEnter": null,
-              "OnTriggerExit": null,
-              "RollingResistance": null,
-              "Static": false,
-              "Surface": null,
-              "SurfaceVelocity": "0,0,0"
+            "Property": "Stiffness",
+            "Value": 0.5
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
             },
-            {
-              "__type": "GameRP.Vehicles.VehicleWheel",
-              "__guid": "60a811ba-127f-458c-9257-d326c06cf4cc",
-              "__enabled": true,
-              "Flags": 0,
-              "GroundDistance": 0,
-              "IsDriven": true,
-              "IsGrounded": false,
-              "IsSteerable": true,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Radius": 14,
-              "SuspensionCompression": 0,
-              "SuspensionLength": 20
-            }
-          ],
-          "Children": []
-        },
-        {
-          "__guid": "e9505df6-9d10-4d21-b807-b01c58625dcb",
-          "__version": 2,
-          "Flags": 0,
-          "Name": "RL",
-          "Position": "-33.98103,-75.14417,0",
-          "Rotation": "0,0,0.7071068,-0.7071068",
-          "Scale": "1,1,1",
-          "Tags": "",
-          "Enabled": true,
-          "NetworkMode": 2,
-          "NetworkFlags": 0,
-          "NetworkOrphaned": 0,
-          "NetworkTransmit": true,
-          "OwnerTransfer": 1,
-          "Components": [
-            {
-              "__type": "Sandbox.SkinnedModelRenderer",
-              "__guid": "a7163a0c-0fdb-46f6-a272-a148acaedcd0",
-              "__enabled": true,
-              "Flags": 0,
-              "AnimationGraph": null,
-              "BodyGroups": 18446744073709551615,
-              "BoneMergeTarget": null,
-              "CreateAttachments": false,
-              "CreateBoneObjects": false,
-              "LodOverride": null,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Materials": null,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "Morphs": {},
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Parameters": {
-                "bools": {},
-                "ints": {},
-                "floats": {},
-                "vectors": {},
-                "rotations": {}
-              },
-              "PlaybackRate": 1,
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Sequence": {
-                "Name": null,
-                "Looping": true,
-                "Blending": false
-              },
-              "Tint": "1,1,1,1",
-              "UseAnimGraph": true
+            "Property": "Width",
+            "Value": 65
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "15238e2d-071d-4f72-8a06-4bc922f080f6"
             },
-            {
-              "__type": "Sandbox.ModelCollider",
-              "__guid": "f667f22d-4f87-4db9-a3f7-2f14300a2c8a",
-              "__enabled": true,
-              "Flags": 0,
-              "ColliderFlags": 0,
-              "Elasticity": null,
-              "Friction": null,
-              "IsTrigger": false,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OnObjectTriggerEnter": null,
-              "OnObjectTriggerExit": null,
-              "OnTriggerEnter": null,
-              "OnTriggerExit": null,
-              "RollingResistance": null,
-              "Static": false,
-              "Surface": null,
-              "SurfaceVelocity": "0,0,0"
+            "Property": "Position",
+            "Value": "-73.79679,0,-3.790199"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
             },
-            {
-              "__type": "GameRP.Vehicles.VehicleWheel",
-              "__guid": "a7ca6eed-977c-493e-8d9d-5d7a2e3e784c",
-              "__enabled": true,
-              "Flags": 0,
-              "GroundDistance": 0,
-              "IsDriven": true,
-              "IsGrounded": false,
-              "IsSteerable": false,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Radius": 14,
-              "SuspensionCompression": 0,
-              "SuspensionLength": 20
-            }
-          ],
-          "Children": []
-        },
-        {
-          "__guid": "e970b9d8-526f-4aa2-a425-9dc17cecfbfb",
-          "__version": 2,
-          "Flags": 0,
-          "Name": "RR",
-          "Position": "33.36785,-74.68347,0",
-          "Rotation": "0,0,-0.7071067,-0.7071069",
-          "Scale": "1,1,1",
-          "Tags": "",
-          "Enabled": true,
-          "NetworkMode": 2,
-          "NetworkFlags": 0,
-          "NetworkOrphaned": 0,
-          "NetworkTransmit": true,
-          "OwnerTransfer": 1,
-          "Components": [
-            {
-              "__type": "Sandbox.SkinnedModelRenderer",
-              "__guid": "640d3d7a-41ce-4a7e-b168-cb4c173039f0",
-              "__enabled": true,
-              "Flags": 0,
-              "AnimationGraph": null,
-              "BodyGroups": 18446744073709551615,
-              "BoneMergeTarget": null,
-              "CreateAttachments": false,
-              "CreateBoneObjects": false,
-              "LodOverride": null,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Materials": null,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "Morphs": {},
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Parameters": {
-                "bools": {},
-                "ints": {},
-                "floats": {},
-                "vectors": {},
-                "rotations": {}
-              },
-              "PlaybackRate": 1,
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Sequence": {
-                "Name": null,
-                "Looping": true,
-                "Blending": false
-              },
-              "Tint": "1,1,1,1",
-              "UseAnimGraph": true
-            },
-            {
-              "__type": "Sandbox.ModelCollider",
-              "__guid": "be5ce8ad-55ba-4452-9c3b-9c2a363c5260",
-              "__enabled": true,
-              "Flags": 0,
-              "ColliderFlags": 0,
-              "Elasticity": null,
-              "Friction": null,
-              "IsTrigger": false,
-              "Model": "models/citizen_props/wheel01.vmdl",
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "OnObjectTriggerEnter": null,
-              "OnObjectTriggerExit": null,
-              "OnTriggerEnter": null,
-              "OnTriggerExit": null,
-              "RollingResistance": null,
-              "Static": false,
-              "Surface": null,
-              "SurfaceVelocity": "0,0,0"
-            },
-            {
-              "__type": "GameRP.Vehicles.VehicleWheel",
-              "__guid": "8812c2c1-9bc2-49d0-960e-9555fbd0abed",
-              "__enabled": true,
-              "Flags": 0,
-              "GroundDistance": 0,
-              "IsDriven": true,
-              "IsGrounded": false,
-              "IsSteerable": false,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Radius": 14,
-              "SuspensionCompression": 0,
-              "SuspensionLength": 20
-            }
-          ],
-          "Children": []
-        }
-      ]
+            "Property": "Stiffness",
+            "Value": 0.5
+          }
+        ],
+        "MovedObjects": []
+      },
+      "__PrefabIdToInstanceId": {
+        "5e860285-9157-4c6a-8ce5-909a37b63cc4": "049d0b69-ff30-4db8-86ee-2f1af770043c",
+        "4d44e05e-a091-4149-868b-8217ef2e16ab": "6abe7b09-d612-457a-8153-7eccfeee3f70",
+        "b1b33098-ab78-426e-a203-210116bad315": "d571e8a5-7d66-4cc4-bec5-692a385ce250",
+        "a2a1447e-c6f6-4c57-a341-f2b73fa2fd0b": "eb724481-8629-4ce5-9cc9-68960025ad30",
+        "181f498c-59bf-4576-84eb-0fc866f22627": "ee576aed-2eb8-4cb6-b6ab-0967c03e8644",
+        "e99bb772-6f89-4286-b6a0-932fa96c1d6a": "762c17dd-f372-4f1a-8562-1183958e74e9",
+        "e311144b-fef3-45fa-b09a-9c42aeb500b7": "59ff1060-2ce3-45fa-ad0f-a651ebb2a1e7",
+        "613110d5-1000-4f3a-bcb2-fbe010435355": "4c288f39-5463-4645-a92f-319a858cd240",
+        "de6ba733-e620-41f9-9eed-fcb4e38c3faa": "6a55c041-ad1c-4ce5-ac70-b94c52ea0b14",
+        "2c36da22-09d6-480e-9051-26cf0a794352": "87320d53-e177-41b5-b1a4-3b94566fc008",
+        "f39f766d-9ef9-423f-8bd7-83726e4137df": "f2380dc5-7d26-4448-9b09-48cf7cfd0670",
+        "34b202db-d2b3-459c-ad43-17d8a2114954": "2167d1e3-a3a0-4e2b-926f-490685f577a7",
+        "15238e2d-071d-4f72-8a06-4bc922f080f6": "0ec11cfd-8f57-4375-8c33-f180b2010e8f",
+        "9d959a59-668a-449e-b04e-983504b5b35a": "8a3c7eee-c090-4793-bc30-84c9789f9ae5",
+        "b533d7bc-fce8-427f-975a-064b7209cba4": "673ddda0-c9b1-4ef2-90f2-5922cefb7d94",
+        "54ca77f0-3626-4935-bd1f-50306bc80d53": "1518d2e7-a16b-4d55-b185-2dc31d79f468",
+        "59e53856-fc88-4cad-9302-d256ff954465": "1a461d68-b93e-4d0e-bc58-421028b75d99",
+        "c3c426ee-ce97-4bf7-bf49-e9a09a44458c": "ef9b66f6-73fe-4273-ac6a-4f21483babf6",
+        "3686925b-6bd4-46b5-979a-4539d3017f9e": "48770d64-332b-4d37-8d49-854a102d91e8",
+        "539b823c-850b-4354-aa4b-276186319cd4": "af958ccf-7553-4d70-a942-95b46b1f032b"
+      }
     }
   ],
   "SceneProperties": {
@@ -1448,13 +1013,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
-          "$blob": "2253b675-dcf8-4b10-b4c5-7e1b811f25e8"
+          "$blob": "ca3a10ee-76b1-4a85-995b-24eb7054e60e"
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       }
     }
   },
@@ -1462,7 +1027,8 @@
   "Title": "minimal",
   "Description": null,
   "__references": [
-    "facepunch.atm#33652"
+    "facepunch.atm#33652",
+    "frogpond.closet#12964"
   ],
   "__version": 3
 }

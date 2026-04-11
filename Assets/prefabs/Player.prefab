@@ -263,7 +263,7 @@
         "OnComponentFixedUpdate": null,
         "OnComponentStart": null,
         "OnComponentUpdate": null,
-        "ShowDebug": true
+        "ShowDebug": false
       },
       {
         "__type": "CameraZoomController",

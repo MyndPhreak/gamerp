@@ -28,7 +28,7 @@ public sealed class Spawner : Component
 			return;
 		}
 
-		var player = PlayerPrefab.Clone( Transform.Position, Transform.Rotation );
-		Log.Info( "[Spawner] Player spawned at " + Transform.Position );
+		var player = PlayerPrefab.Clone( WorldPosition, WorldRotation );
+		Log.Info( "[Spawner] Player spawned at " + WorldPosition );
 	}
 }

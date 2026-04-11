@@ -166,7 +166,7 @@
                             <label class="rate-value">$@(Stats?.ExchangeRate.ToString("N2") ?? "—") / bar</label>
                         </div>
                         <div class="rate-input-row">
-                            <input class="rate-input" type="text" @bind=@NewRateInput placeholder="Enter new rate..." />
+                            <TextEntry @ref="RateEntry" class="rate-input" placeholder="Enter new rate..." />
                             <div class="rate-update-btn @(IsUpdatingRate ? "disabled" : "")" @onclick=@UpdateRate>
                                 <label>@(IsUpdatingRate ? "Updating..." : "Update")</label>
                             </div>
@@ -254,7 +254,7 @@
     private List<FederalReserveTransactionData> PublicTransactions { get; set; }
     private List<FederalReserveTransactionData> AdminTransactions { get; set; }
 
-    private string NewRateInput { get; set; } = "";
+    private TextEntry RateEntry { get; set; }
     private string RateMessage { get; set; } = "";
     private string RateMessageClass { get; set; } = "";
     private bool IsUpdatingRate { get; set; } = false;
@@ -266,7 +266,7 @@
         IsOpen = true;
         ActiveTab = "public";
         RateMessage = "";
-        NewRateInput = "";
+        if (RateEntry != null) RateEntry.Text = "";
         Mouse.Visibility = MouseVisibility.Visible;
         StateHasChanged();
 
@@ -336,7 +336,8 @@
     {
         if (IsUpdatingRate) return;
 
-        if (!decimal.TryParse(NewRateInput, out var newRate) || newRate <= 0)
+        var inputText = RateEntry?.Text ?? "";
+        if (!decimal.TryParse(inputText, out var newRate) || newRate <= 0)
         {
             RateMessage = "Enter a valid positive number";
             RateMessageClass = "msg-error";
@@ -356,7 +357,7 @@
                 Stats = updated;
                 RateMessage = $"Rate updated to ${newRate:N2} per bar";
                 RateMessageClass = "msg-success";
-                NewRateInput = "";
+                if (RateEntry != null) RateEntry.Text = "";
             }
             else
             {
