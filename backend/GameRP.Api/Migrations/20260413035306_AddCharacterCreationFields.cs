@@ -15,14 +15,14 @@ namespace GameRP.Api.Migrations
                 table: "Players",
                 type: "real",
                 nullable: false,
-                defaultValue: 0f);
+                defaultValue: 0.5f);
 
             migrationBuilder.AddColumn<string>(
                 name: "ClothingList",
                 table: "Players",
                 type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "[]");
 
             migrationBuilder.AddColumn<string>(
                 name: "DateOfBirth",
@@ -52,14 +52,14 @@ namespace GameRP.Api.Migrations
                 table: "Players",
                 type: "real",
                 nullable: false,
-                defaultValue: 0f);
+                defaultValue: 0.5f);
 
             migrationBuilder.AddColumn<float>(
                 name: "SkinTone",
                 table: "Players",
                 type: "real",
                 nullable: false,
-                defaultValue: 0f);
+                defaultValue: 0.5f);
         }
 
         /// <inheritdoc />
