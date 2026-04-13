@@ -18,6 +18,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<FederalReserve> FederalReserves { get; set; }
     public DbSet<FederalReserveSnapshot> FederalReserveSnapshots { get; set; }
+    public DbSet<Inventory> Inventories { get; set; }
+    public DbSet<InventoryItem> InventoryItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +80,33 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.CreatedAt);
 
             // Soft delete query filter
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // Inventory configuration
+        modelBuilder.Entity<Inventory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.PlayerId).IsUnique();
+            entity.HasIndex(e => e.SteamId).IsUnique();
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+
+            entity.HasMany(i => i.Items)
+                .WithOne(item => item.Inventory)
+                .HasForeignKey(item => item.InventoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // InventoryItem configuration
+        modelBuilder.Entity<InventoryItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.InventoryId);
+            entity.HasIndex(e => new { e.InventoryId, e.Container, e.SlotIndex }).IsUnique();
+            entity.HasIndex(e => e.ItemId);
+
             entity.HasQueryFilter(e => !e.IsDeleted);
         });
 

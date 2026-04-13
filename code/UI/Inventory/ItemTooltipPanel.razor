@@ -1,0 +1,135 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using GameRP.Inventory;
+@using System;
+@using System.Linq;
+
+@namespace GameRP.UI
+@inherits Panel
+
+<root class="tooltip" style="display: @(Item == null ? "none" : "flex");">
+    @if (Item != null)
+    {
+        var def = Item.GetDefinition();
+        if (def != null)
+        {
+            var rarityHex = def.Rarity.GetHex();
+
+            <label class="tooltip-name" style="color: @rarityHex;">@Item.GetDisplayName()</label>
+            <label class="tooltip-rarity">@def.Rarity.ToString() · @def.Category</label>
+
+            @if (!string.IsNullOrEmpty(def.Description))
+            {
+                <label class="tooltip-desc">@def.Description</label>
+            }
+
+            @if (Item.Nbt?.Lore != null && Item.Nbt.Lore.Count > 0)
+            {
+                <div class="tooltip-divider"></div>
+                @foreach (var line in Item.Nbt.Lore)
+                {
+                    <label class="tooltip-lore">@line</label>
+                }
+            }
+
+            @if (Item.Nbt?.Modifiers != null && Item.Nbt.Modifiers.Count > 0)
+            {
+                <div class="tooltip-divider"></div>
+                @foreach (var mod in Item.Nbt.Modifiers)
+                {
+                    <label class="tooltip-modifier">@mod.Id @ToRoman(mod.Level)</label>
+                }
+            }
+
+            @if (def.IsDamageable)
+            {
+                var dur = Item.GetCurrentDurability();
+                <div class="tooltip-divider"></div>
+                <label class="tooltip-stat">Durability: @dur / @def.MaxDurability</label>
+            }
+
+            @if (def.Weight > 0)
+            {
+                <label class="tooltip-stat">Weight: @def.Weight.ToString("0.##")kg</label>
+            }
+
+            @if (def.MaxStack > 1)
+            {
+                <label class="tooltip-stat">Stack: @Item.Quantity / @def.MaxStack</label>
+            }
+        }
+    }
+</root>
+
+<style>
+    ItemTooltipPanel {
+        position: absolute;
+        background-color: rgba(15,16,22,0.96);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px;
+        padding: 10px 12px;
+        flex-direction: column;
+        gap: 2px;
+        max-width: 280px;
+        pointer-events: none;
+        z-index: 1000;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+
+        .tooltip-name {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tooltip-rarity {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 2px;
+        }
+
+        .tooltip-lore {
+            font-size: 11px;
+            color: #a78bfa;
+            font-style: italic;
+        }
+
+        .tooltip-modifier {
+            font-size: 11px;
+            color: #60a5fa;
+        }
+
+        .tooltip-stat {
+            font-size: 11px;
+            color: rgba(255,255,255,0.55);
+        }
+
+        .tooltip-divider {
+            height: 1px;
+            background-color: rgba(255,255,255,0.1);
+            margin: 4px 0;
+        }
+    }
+</style>
+
+@code
+{
+    [Property] public ItemInstance Item { get; set; }
+
+    static string ToRoman( int n )
+    {
+        return n switch
+        {
+            1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V",
+            6 => "VI", 7 => "VII", 8 => "VIII", 9 => "IX", 10 => "X",
+            _ => n.ToString()
+        };
+    }
+
+    protected override int BuildHash() => HashCode.Combine( Item?.InstanceId, Item?.Quantity );
+}
