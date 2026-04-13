@@ -105,11 +105,6 @@
                 }
             </div>
 
-            <!-- Item count debug info -->
-            <div style="font-size: 11px; color: rgba(255,255,255,0.3);">
-                @GetItemsForCategory().Count items in @_selectedCategory | @_allClothing.Count total loaded
-            </div>
-
             <!-- Action buttons -->
             <div style="display: flex; gap: 12px;">
                 @if (_wizardMode)
@@ -157,6 +152,10 @@
     private float _previewSkinTone = 0.5f;
     private float _previewHeight = 0.5f;
     private float _previewAge = 0.5f;
+    private float _originalSkinTone = 0.5f;
+    private float _originalHeight = 0.5f;
+    private float _originalAge = 0.5f;
+    private string _originalGender = "Male";
 
     // All clothing categories
     private readonly string[] _categories = new[]
@@ -176,7 +175,12 @@
 
     private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
 
-    private bool HasUnsavedChanges => !DictionariesEqual( _originalClothing, _previewClothing );
+    private bool HasUnsavedChanges =>
+        !DictionariesEqual( _originalClothing, _previewClothing ) ||
+        MathF.Abs( _previewSkinTone - _originalSkinTone ) >= 0.001f ||
+        MathF.Abs( _previewHeight - _originalHeight ) >= 0.001f ||
+        MathF.Abs( _previewAge - _originalAge ) >= 0.001f ||
+        _selectedGender != _originalGender;
 
     /// <summary>
     /// Open in standalone mode (from in-world closet entity)
@@ -220,6 +224,11 @@
         _previewHeight = rpPlayer.Height;
         _previewAge = rpPlayer.Age;
 
+        _originalSkinTone = _previewSkinTone;
+        _originalHeight = _previewHeight;
+        _originalAge = _previewAge;
+        _originalGender = _selectedGender;
+
         StateHasChanged();
     }
 
@@ -241,6 +250,7 @@
     {
         _selectedCategory = category;
         _showConfirmClose = false;
+        StateHasChanged();
     }
 
     private void SelectGender( string gender )
@@ -383,6 +393,12 @@
         ApplyPreviewToDresser();
         _rpPlayer.EquippedClothing = _originalClothing.Values.ToList();
 
+        _previewSkinTone = _originalSkinTone;
+        _previewHeight = _originalHeight;
+        _previewAge = _originalAge;
+        _selectedGender = _originalGender;
+        ApplyBodyToDresser();
+
         DoClose();
     }
 
@@ -422,8 +438,11 @@
     }
 
     protected override int BuildHash() => System.HashCode.Combine(
-        _isOpen, _selectedCategory, _showConfirmClose,
-        _previewClothing.Count, HasUnsavedChanges, _wizardMode,
-        _selectedGender, _previewSkinTone.GetHashCode()
+        System.HashCode.Combine( _isOpen, _selectedCategory, _showConfirmClose, _wizardMode ),
+        System.HashCode.Combine( _previewClothing.Count, HasUnsavedChanges ),
+        System.HashCode.Combine( _selectedGender,
+            _previewSkinTone.GetHashCode(),
+            _previewHeight.GetHashCode(),
+            _previewAge.GetHashCode() )
     );
 }
