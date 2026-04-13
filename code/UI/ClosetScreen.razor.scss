@@ -1,6 +1,244 @@
 @import 'theme'; // explicit: S&Box compiler may not resolve theme transitively through _mixins
 @import 'mixins';
 
+// =====================================================
+// Root
+// =====================================================
 ClosetScreen {
-    display: contents;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    pointer-events: none;
+}
+
+// =====================================================
+// Left panel
+// =====================================================
+.closet-panel {
+    @include dark-panel;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 38%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: $padding;
+    gap: $gap-lg;
+    pointer-events: all;
+    overflow: hidden;
+}
+
+// =====================================================
+// Header
+// =====================================================
+.closet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .closet-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: $text-primary;
+    }
+}
+
+// =====================================================
+// Wizard sections (gender + body sliders)
+// =====================================================
+.wizard-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .section-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+}
+
+.gender-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.gender-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-secondary;
+    background: $surface-hover;
+    text-align: center;
+
+    &.active {
+        font-weight: 600;
+        color: $text-primary;
+        background: $accent-gradient;
+    }
+}
+
+.body-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: $text-secondary;
+    }
+
+    input[type="range"] {
+        width: 100%;
+        accent-color: $accent-start;
+    }
+}
+
+// =====================================================
+// Category tabs
+// =====================================================
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-sm;
+}
+
+.pill-tab {
+    @include pill-tab;
+
+    &.active {
+        @include pill-tab--active;
+    }
+}
+
+// =====================================================
+// Item grid
+// =====================================================
+.item-grid {
+    flex: 1;
+    overflow: scroll;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: $gap-sm;
+    align-content: flex-start;
+}
+
+// =====================================================
+// Item cards
+// =====================================================
+.item-card {
+    @include icon-card;
+
+    &.selected {
+        @include icon-card--selected;
+    }
+
+    .card-thumb {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .card-name {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 14px 4px 4px;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+        font-size: 9px;
+        font-weight: 600;
+        color: $text-primary;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 0;
+        transition: opacity $transition;
+    }
+
+    &:hover .card-name {
+        opacity: 1;
+    }
+}
+
+// "None" card — name always visible, no gradient needed
+.item-card--none {
+    @include icon-card;
+
+    color: $text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+
+    .card-name {
+        opacity: 1;
+        background: none;
+        color: $text-muted;
+        font-size: 9px;
+    }
+
+    &.selected {
+        @include icon-card--selected;
+        color: $text-primary;
+
+        .card-name {
+            color: $text-primary;
+        }
+    }
+}
+
+// =====================================================
+// Action buttons
+// =====================================================
+.action-row {
+    display: flex;
+    gap: $gap-md;
+}
+
+.btn-primary   { @include btn-primary; }
+.btn-secondary { @include btn-secondary; }
+.btn-danger    { @include btn-danger; }
+.btn-success   { @include btn-success; }
+
+// =====================================================
+// Unsaved changes confirmation
+// =====================================================
+.confirm-close {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-md;
+
+    .confirm-message {
+        font-size: 14px;
+        font-weight: 600;
+        color: $danger;
+        text-align: center;
+    }
+
+    .confirm-buttons {
+        display: flex;
+        gap: $gap-md;
+    }
 }
