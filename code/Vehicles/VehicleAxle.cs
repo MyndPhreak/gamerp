@@ -54,8 +54,8 @@ public sealed class VehicleAxle : Component
 	[Property, Range( 0f, 1f )] public float LongitudinalFriction { get; set; } = 1f;
 
 	// --- Anti-roll (per-axle) ---
-	/// <summary>Torque applied to resist body roll. Higher = less lean in corners. 0 = disabled.</summary>
-	[Property] public float AntiRollStrength { get; set; } = 5000f;
+	/// <summary>Multiplier for anti-roll torque to resist body lean. 1.0 = standard road car, 2.0+ = track stiffness.</summary>
+	[Property, Range(0f, 10f)] public float AntiRollStrength { get; set; } = 1.0f;
 
 	// --- Runtime references ---
 	public VehicleWheel LeftWheel { get; private set; }
@@ -136,7 +136,20 @@ public sealed class VehicleAxle : Component
 		// Right more compressed (car leaning right) → compressionDiff < 0
 		// → torque = Forward * negative = negative roll around Forward = right side rises. ✓
 		var compressionDiff = LeftWheel.SuspensionCompression - RightWheel.SuspensionCompression;
-		var torque = body.WorldRotation.Forward * compressionDiff * AntiRollStrength;
+		
+		// Ensure anti-roll automatically scales with vehicle weight and width.
+		// A standard 1G cornering load rolls the car with force relative to its mass.
+		var mass = body.PhysicsBody?.Mass ?? 1000f;
+		var gravity = MathF.Abs(Scene.PhysicsWorld?.Gravity.z ?? 800f);
+		
+		// Base restoring torque capable of supporting half the car's weight at the edge of the wheels
+		var baseTorque = (mass * gravity) * (Width * 0.5f);
+		
+		// Apply user multiplier (1.0 = rigid enough to keep the car mostly flat, 0 = no anti-roll)
+		// CRITICAL: Clamp to max 10 to protect against old "5000" saved values exploding the physics engine
+		var safeStrength = AntiRollStrength.Clamp(0f, 10f);
+		var torque = GameObject.WorldRotation.Forward * (compressionDiff * baseTorque * safeStrength);
+		
 		body.PhysicsBody.ApplyTorque( torque );
 	}
 

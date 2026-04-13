@@ -901,6 +901,49 @@
         "AddedObjects": [
           {
             "Id": {
+              "Type": "Component",
+              "IdValue": "4d0b5444-828f-485d-84d3-9f7f0a2b6cd0"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "5e860285-9157-4c6a-8ce5-909a37b63cc4"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "181f498c-59bf-4576-84eb-0fc866f22627"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "GameRP.Vehicles.VehicleAudio",
+              "__guid": "4d0b5444-828f-485d-84d3-9f7f0a2b6cd0",
+              "__enabled": false,
+              "Flags": 0,
+              "Controller": {
+                "_type": "component",
+                "component_id": "4d44e05e-a091-4149-868b-8217ef2e16ab",
+                "go": "5e860285-9157-4c6a-8ce5-909a37b63cc4",
+                "component_type": "VehicleController"
+              },
+              "CrashCooldown": 0.2,
+              "CrashSound": null,
+              "EngineSound": "sounds/engine.sound",
+              "IgnitionSound": null,
+              "IsElectric": true,
+              "MaximumPitch": 2,
+              "MinimumPitch": 0.8,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "ShiftSound": null,
+              "ShutoffSound": null
+            }
+          },
+          {
+            "Id": {
               "Type": "GameObject",
               "IdValue": "16ef653a-a974-44dc-b732-f2cd9ee145ce"
             },
@@ -1212,8 +1255,8 @@
               "Type": "Component",
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
-            "Property": "AccelerationForce",
-            "Value": 100000
+            "Property": "AutomaticTransmission",
+            "Value": true
           },
           {
             "Target": {
@@ -1228,6 +1271,46 @@
               "Type": "Component",
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
+            "Property": "CurrentGear",
+            "Value": 1
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "DownshiftRPM",
+            "Value": 2500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "DrivetrainEfficiency",
+            "Value": 0.85
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "EngineRPM",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "FinalDrive",
+            "Value": 3.42
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
             "Property": "ForwardAxis",
             "Value": "PositiveX_Forward"
           },
@@ -1236,8 +1319,39 @@
               "Type": "Component",
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
-            "Property": "MaxSpeed",
-            "Value": 2400
+            "Property": "GearRatios",
+            "Value": [
+              2.97,
+              2.07,
+              1.43,
+              1,
+              0.84,
+              0.56
+            ]
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "Horsepower",
+            "Value": 250
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "IdleRPM",
+            "Value": 800
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "MaxRPM",
+            "Value": 7000
           },
           {
             "Target": {
@@ -1252,8 +1366,48 @@
               "Type": "Component",
               "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
             },
-            "Property": "ReverseForce",
-            "Value": 30000
+            "Property": "PeakHpRPM",
+            "Value": 6500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "PeakTorqueRPM",
+            "Value": 4500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "ReverseGearRatio",
+            "Value": 2.9
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "SpeedKmh",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "SpeedMph",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "4d44e05e-a091-4149-868b-8217ef2e16ab"
+            },
+            "Property": "UpshiftRPM",
+            "Value": 6500
           },
           {
             "Target": {
@@ -1294,6 +1448,14 @@
             },
             "Property": "Position",
             "Value": "75.85257,0,-3.790199"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "34b202db-d2b3-459c-ad43-17d8a2114954"
+            },
+            "Property": "AntiRollStrength",
+            "Value": 10
           },
           {
             "Target": {
@@ -1342,6 +1504,14 @@
             },
             "Property": "Position",
             "Value": "-73.79679,0,-3.790199"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9d959a59-668a-449e-b04e-983504b5b35a"
+            },
+            "Property": "AntiRollStrength",
+            "Value": 10
           },
           {
             "Target": {
@@ -1478,7 +1648,82 @@
       "__version": 2,
       "__Prefab": "prefabs/dump_truck.prefab",
       "__PrefabInstancePatch": {
-        "AddedObjects": [],
+        "AddedObjects": [
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "ad72b317-6f0b-40e9-890b-3d1443b72a9e"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "173474ba-82f6-4b97-9d44-87a7b2821949"
+            },
+            "PreviousElement": {
+              "Type": "GameObject",
+              "IdValue": "3744f83e-5b24-4723-8a3a-7bb4311db933"
+            },
+            "ContainerProperty": "Children",
+            "IsContainerArray": true,
+            "Data": {
+              "__guid": "ad72b317-6f0b-40e9-890b-3d1443b72a9e",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "Sound",
+              "Position": "0.00002288818,125.5286,76.84007",
+              "Rotation": "0,0,0,1",
+              "Scale": "1,1,1",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": []
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "ae4edd78-d1fb-4ac7-873a-aadfc4f964a7"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "ad72b317-6f0b-40e9-890b-3d1443b72a9e"
+            },
+            "PreviousElement": null,
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "GameRP.Vehicles.VehicleAudio",
+              "__guid": "ae4edd78-d1fb-4ac7-873a-aadfc4f964a7",
+              "__enabled": true,
+              "Flags": 0,
+              "Controller": {
+                "_type": "component",
+                "component_id": "86d08979-ae2d-404c-8be1-fcdefc15eb70",
+                "go": "173474ba-82f6-4b97-9d44-87a7b2821949",
+                "component_type": "VehicleController"
+              },
+              "CrashCooldown": 0.2,
+              "CrashSound": null,
+              "EngineSound": "sounds/engine.sound",
+              "IgnitionSound": "sounds/startup.sound",
+              "IsElectric": false,
+              "MaximumPitch": 2,
+              "MinimumPitch": 0.8,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "ShiftSound": null,
+              "ShutoffSound": null
+            }
+          }
+        ],
         "RemovedObjects": [],
         "PropertyOverrides": [
           {
@@ -1488,6 +1733,173 @@
             },
             "Property": "Position",
             "Value": "437.3421,1250.188,105.3136"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "AutomaticTransmission",
+            "Value": true
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "BrakeForce",
+            "Value": 14390.243
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "CurrentGear",
+            "Value": 1
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "DownshiftRPM",
+            "Value": 1500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "DrivetrainEfficiency",
+            "Value": 0.85
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "EngineRPM",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "FinalDrive",
+            "Value": 8.5
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "GearRatios",
+            "Value": [
+              2.97,
+              2.07,
+              1.43,
+              1,
+              0.84,
+              0.56
+            ]
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "Horsepower",
+            "Value": 500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "IdleRPM",
+            "Value": 800
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "MaxRPM",
+            "Value": 7000
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "PeakHpRPM",
+            "Value": 6500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "PeakTorqueRPM",
+            "Value": 4500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "ReverseGearRatio",
+            "Value": 2.9
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "SpeedKmh",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "SpeedMph",
+            "Value": 0
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "86d08979-ae2d-404c-8be1-fcdefc15eb70"
+            },
+            "Property": "UpshiftRPM",
+            "Value": 4500
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "993c2762-da7a-4ae2-9cef-b4b41e634ffa"
+            },
+            "Property": "AntiRollStrength",
+            "Value": 10
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "9e2701bf-2172-4b54-a965-4bc21b093130"
+            },
+            "Property": "AntiRollStrength",
+            "Value": 10
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "ba572dcd-5362-482b-931a-e40b2184b586"
+            },
+            "Property": "AntiRollStrength",
+            "Value": 10
           },
           {
             "Target": {
@@ -1617,7 +2029,7 @@
     "GameObjectSystems": {
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
-          "$blob": "1bbf7a33-a500-4512-b114-90cff43ca83c"
+          "$blob": "cb2243ea-08a6-4098-b2c0-b5d3a551dbfd"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {

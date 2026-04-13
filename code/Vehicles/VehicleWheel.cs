@@ -21,6 +21,7 @@ public sealed class VehicleWheel : Component
 	[Property, Range( 0f, 1f )] public float Stiffness { get; set; } = 0.5f;
 
 	// --- Grip tuning ---
+	[Property] public float TireGripCoefficient { get; set; } = 1.0f;
 	/// <summary>Max lateral corrective force per wheel. Must be several times larger than
 	/// AccelerationForce per driven wheel to prevent fishtailing.</summary>
 	[Property] public float LateralFriction { get; set; } = 800000f;
@@ -55,10 +56,11 @@ public sealed class VehicleWheel : Component
 	{
 		public Vector3 SuspensionForce;
 		public Vector3 DriveForce;
+		public Vector3 FrictionForce;
 		public Vector3 LateralForce;
 		/// <summary>Where suspension + drive forces are applied (mount point, near chassis).</summary>
 		public Vector3 MountPoint;
-		/// <summary>Where lateral grip forces are applied (ground contact, for correct yaw torque).</summary>
+		/// <summary>Where lateral grip + friction forces are applied (ground contact).</summary>
 		public Vector3 GroundContact;
 		public bool IsGrounded;
 	}
@@ -172,14 +174,9 @@ public sealed class VehicleWheel : Component
 		var effectiveMass = (body.PhysicsBody?.Mass ?? 1000f) / MathF.Max( 1, totalWheels );
 
 		// --- Adaptive Engine & Handling (Mass-Independent Tuning) ---
-		// By scaling the driving and handling inputs relative to a standard 1,000kg 4-wheel car
-		// (which has an effective mass of ~250kg per wheel), the designer simply configures the "baseline feel" 
-		// (e.g. Engine Force = 5000) and the math engine perfectly amplifies it for heavier vehicles!
+		// We retain massRatio scaling ONLY for lateral grip (so heavy cars still turn properly).
+		// Drive forces are pure Newtons computed correctly by the controller.
 		var massRatio = effectiveMass / 250f;
-		accelerationForce *= massRatio;
-		brakeForce *= massRatio;
-		reverseForce *= massRatio;
-		handbrakeForce *= massRatio;
 		var adaptiveLateralStiffness = LateralGripStiffness * massRatio;
 		
 		// Map stiffness to a natural resting compression point (e.g. 50% vs 30% of travel used at rest)
@@ -201,8 +198,8 @@ public sealed class VehicleWheel : Component
 		var dampForce = vertVel * targetDamper;
 
 		// Anti-spazz constraint: Prevent damper from applying a force so massive that it reverses
-		// the suspension velocity within a single physics tick. Use hardcoded 0.02f (50Hz) for fixed time step.
-		var maxDampForce = (effectiveMass * MathF.Abs(vertVel)) / 0.02f;
+		// the suspension velocity within a single physics tick.
+		var maxDampForce = (effectiveMass * MathF.Abs(vertVel)) / Time.Delta;
 		dampForce = MathF.Sign(dampForce) * MathF.Min(MathF.Abs(dampForce), maxDampForce);
 
 		// Suspension can only push the chassis UP. Rebound damping shouldn't suck the car into the dirt!
@@ -226,37 +223,66 @@ public sealed class VehicleWheel : Component
 
 		// --- Pillar 1: LOAD-DEPENDENT GRIP ---
 		// The absolute limit of grip this tire has is dictated strictly by the weight currently pressing on it.
-		// A standard performance tire pulls ~1.2G max.
 		var normalForce = MathF.Max(springForce, 0f); 
-		var maxGrip = normalForce * LongitudinalFriction * 1.2f; 
+		var maxGrip = normalForce * LongitudinalFriction * 1.2f * TireGripCoefficient; 
 
 		// --- LONGITUDINAL FORCES (Drive / Brake) ---
 		var rawDrive = 0f;
+		bool isFriction = false;
+
 		if ( handbrakeFactor > 0f )
 		{
 			var kineticBrake = normalForce * HandbrakeSlidingFriction;
 			rawDrive = -MathF.Sign(forwardSpeed) * kineticBrake * handbrakeFactor;
+			isFriction = true;
 		}
-		else if ( IsDriven )
+		else 
 		{
-			if ( throttle > 0f ) rawDrive = throttle * accelerationForce * LongitudinalFriction;
-			else if ( brake > 0f ) rawDrive = -MathF.Sign(forwardSpeed) * brake * brakeForce * LongitudinalFriction;
-			else if ( throttle < 0f ) rawDrive = throttle * reverseForce * LongitudinalFriction;
+			if ( IsDriven && throttle > 0f ) 
+				rawDrive = throttle * accelerationForce * LongitudinalFriction;
+			else if ( brake > 0f ) 
+			{
+				rawDrive = -MathF.Sign(forwardSpeed) * brake * brakeForce * LongitudinalFriction;
+				isFriction = true;
+			}
+			else if ( IsDriven && throttle < 0f ) 
+				rawDrive = throttle * reverseForce * LongitudinalFriction;
+			else
+			{
+				// Natural rolling resistance to prevent infinite glides
+				var rollingDrag = normalForce * 0.015f; 
+				// Simulator idle engine braking (driveline drag)
+				if ( IsDriven ) rollingDrag += (accelerationForce * 0.05f); 
+				
+				rawDrive = -MathF.Sign(forwardSpeed) * rollingDrag * LongitudinalFriction;
+				isFriction = true;
+			}
 		}
 
 		// Cap longitudinal demand strictly at its absolute physical grip limit
 		var appliedDrive = rawDrive.Clamp(-maxGrip, maxGrip);
 
-		// Anti-spazz constraint (only applies when we are slowing down, don't cap hard acceleration requests)
-		if ( MathF.Sign(appliedDrive) != MathF.Sign(forwardSpeed) && MathF.Abs(appliedDrive) > 0f )
+		// Anti-spazz constraint (only applies to friction/braking so we don't cap hard acceleration requests)
+		if ( isFriction && MathF.Sign(appliedDrive) != MathF.Sign(forwardSpeed) && MathF.Abs(appliedDrive) > 0f )
 		{
-			var maxBrakeConstraint = (effectiveMass * MathF.Abs(forwardSpeed)) / (0.02f * 2.5f);
+			// The exact force required to cleanly zero the velocity in one tick without jitter
+			var maxBrakeConstraint = (effectiveMass * MathF.Abs(forwardSpeed)) / Time.Delta;
 			if ( MathF.Abs(appliedDrive) > maxBrakeConstraint )
 			{
 				appliedDrive = MathF.Sign(appliedDrive) * maxBrakeConstraint;
 			}
 		}
-		result.DriveForce = wheelForward * appliedDrive;
+
+		if ( isFriction )
+		{
+			result.FrictionForce = wheelForward * appliedDrive;
+			result.DriveForce = Vector3.Zero;
+		}
+		else
+		{
+			result.DriveForce = wheelForward * appliedDrive;
+			result.FrictionForce = Vector3.Zero;
+		}
 
 		// --- Pillar 2: THE FRICTION CIRCLE ---
 		// A tire has a finite grip budget. We subtract whatever grip the longitudinal forces (braking/accelerating) 
@@ -290,37 +316,15 @@ public sealed class VehicleWheel : Component
 			lateralMag = maxLateralGrip * (2f / MathF.PI) * MathF.Atan(normalizedSlip * MathF.PI / 2f);
 		}
 
-		// Prevent lateral slip-stick spazzing
-		var maxLatConstraint = (effectiveMass * MathF.Abs(lateralVel)) / (0.02f * 2.5f);
+		// Prevent lateral slip-stick spazzing by strictly capping lateral forces so they don't over-correct
+		var maxLatConstraint = (effectiveMass * MathF.Abs(lateralVel)) / Time.Delta;
 		lateralMag = MathF.Sign(lateralMag) * MathF.Min(MathF.Abs(lateralMag), maxLatConstraint);
 
 		result.LateralForce = -rightDir * lateralMag;
 
-		// --- Anti-Creep (Static Hold) ---
-		// Prevent infinite creeping on hills when the car is rolling at a microscopic crawl with no throttle.
-		// By deploying this on ALL wheels globally, we guarantee 100% gravity cancellation of the car's 
-		// total mass regardless of whether it's parked, braking, or just resting in neutral.
-		var wantToMove = MathF.Abs(throttle) > 0.05f;
-		var creepingSpeed = contactVelocity.WithZ(0).Length;
-		var parkingBlend = 1f - (creepingSpeed / 10f).Clamp(0f, 1f);
-
-		if ( parkingBlend > 0f && (!wantToMove || handbrakeFactor > 0.5f) )
-		{
-			var grav = Scene.PhysicsWorld?.Gravity ?? new Vector3(0,0,-800f);
-				
-			// Calculate the EXACT forces needed to mathematically freeze the tire in 1 frame
-			// ignoring rot inertia divisor (strict stopping) AND counteracting sloped gravity.
-			var gravForward = effectiveMass * Vector3.Dot( grav, wheelForward );
-			var strictDrive = -(effectiveMass * forwardSpeed / 0.02f) - gravForward;
-
-			var gravLateral = effectiveMass * Vector3.Dot( grav, rightDir );
-			var strictLateral = -(effectiveMass * lateralVel / 0.02f) - gravLateral;
-
-			// Overwrite the dynamic slip-friction forces with these rigid anchors as it slows to 0
-			var maxHold = MathF.Max(handbrakeForce, brakeForce);
-			result.DriveForce = Vector3.Lerp( result.DriveForce, wheelForward * strictDrive.Clamp(-maxHold, maxHold), parkingBlend );
-			result.LateralForce = Vector3.Lerp( result.LateralForce, rightDir * strictLateral.Clamp(-maxHold, maxHold), parkingBlend );
-		}
+		// (Anti-Creep Artificial Hill-Hold removed. Vehicles now rely entirely on their 
+		// physical weight and natural mechanical driveline friction. They WILL roll down steep 
+		// hills in neutral just like real physical objects and will react correctly if hit.)
 
 		return result;
 	}
