@@ -110,6 +110,36 @@ public class WalletService
         }
     }
 
+    public async Task<bool> SaveCharacterDataAsync( long steamId, CharacterDataDto data )
+    {
+        var player = await _context.Players.FirstOrDefaultAsync( p => p.SteamId == steamId );
+        if ( player == null )
+        {
+            _logger.LogWarning( "Player {SteamId} not found for character data save", steamId );
+            return false;
+        }
+
+        player.DisplayName = data.DisplayName;
+        player.Gender = data.Gender;
+        player.DateOfBirth = data.DateOfBirth;
+        player.SkinTone = data.SkinTone;
+        player.Height = data.Height;
+        player.Age = data.Age;
+        player.ClothingList = data.ClothingList;
+        player.HasCompletedCharacterCreation = true;
+        player.LastSeen = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation( "Saved character data for {SteamId}: {DisplayName}", steamId, data.DisplayName );
+        return true;
+    }
+
+    public async Task<bool> HasCompletedCharacterCreationAsync( long steamId )
+    {
+        var player = await _context.Players.FirstOrDefaultAsync( p => p.SteamId == steamId );
+        return player?.HasCompletedCharacterCreation ?? false;
+    }
+
     /// <summary>
     /// Deposit money into a wallet
     /// </summary>

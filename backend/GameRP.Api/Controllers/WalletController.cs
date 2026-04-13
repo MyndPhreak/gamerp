@@ -131,7 +131,33 @@ public class WalletController : ControllerBase
         }
     }
 
-    /// <summary> 
+    /// <summary>
+    /// Save character creation data for a player
+    /// </summary>
+    [HttpPost("{steamId}/character")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> SaveCharacterData( long steamId, [FromBody] CharacterDataDto data )
+    {
+        var result = await _walletService.SaveCharacterDataAsync( steamId, data );
+        if ( !result )
+            return NotFound( new { message = "Player not found" } );
+
+        return Ok( new { message = "Character data saved" } );
+    }
+
+    /// <summary>
+    /// Check if a player has completed character creation
+    /// </summary>
+    [HttpGet("{steamId}/character/status")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetCharacterStatus( long steamId )
+    {
+        var completed = await _walletService.HasCompletedCharacterCreationAsync( steamId );
+        return Ok( new { steamId, hasCompletedCharacterCreation = completed } );
+    }
+
+    /// <summary>
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]
