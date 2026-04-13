@@ -1,0 +1,39 @@
+// =====================================================
+// GameRP Design Tokens
+// Import: @import 'theme'; (from a sibling .razor.scss)
+// =====================================================
+
+// --- Accent (dark game UI: closet, ATM, HUD) ---
+$accent-start:    #667eea;
+$accent-end:      #764ba2;
+$accent-gradient: linear-gradient(135deg, $accent-start 0%, $accent-end 100%);
+
+// --- Surfaces (dark game UI) ---
+$panel-bg-top:    rgba(20, 20, 30, 0.95);
+$panel-bg-bottom: rgba(15, 15, 25, 0.98);
+$surface:         rgba(255, 255, 255, 0.05);
+$surface-hover:   rgba(255, 255, 255, 0.08);
+
+// --- Semantic ---
+$success:         #4CAF50;
+$danger:          #f44336;
+
+// --- Text ---
+$text-primary:    rgba(255, 255, 255, 1.0);
+$text-secondary:  rgba(255, 255, 255, 0.6);
+$text-muted:      rgba(255, 255, 255, 0.35);
+
+// --- Spacing ---
+$gap-sm:   6px;
+$gap-md:   12px;
+$gap-lg:   24px;
+$padding:  24px;
+
+// --- Shape ---
+$radius-sm:   8px;
+$radius-md:   12px;
+$radius-lg:   20px;
+$radius-pill: 20px;
+
+// --- Motion ---
+$transition: 0.15s ease;
