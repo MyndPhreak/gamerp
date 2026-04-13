@@ -1,7 +1,9 @@
 using Sandbox;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace GameRP.CharacterCreation;
 
@@ -14,11 +16,18 @@ public sealed class CharacterCreationManager : Component
 {
 	[Property] public GameObject CameraPosition { get; set; }
 	[Property] public GameObject LicenseStationPosition { get; set; }
+	[Property] public float CameraHeightOffset { get; set; } = 50f;
+	[Property] public float CameraDistance { get; set; } = 150f;
 
 	private RPPlayer _rpPlayer;
 	private PlayerController _playerController;
 	private CameraComponent _camera;
 	private SkinnedModelRenderer _bodyRenderer;
+
+	// Cached scene component references
+	private ClosetScreen _closetScreen;
+	private LicenseScreen _licenseScreen;
+	private Spawner _spawner;
 
 	// Wizard state carried between steps
 	private string _wizardGender = "Male";
@@ -50,6 +59,14 @@ public sealed class CharacterCreationManager : Component
 		_playerController = _rpPlayer.Components.Get<PlayerController>();
 		_camera = _rpPlayer.Components.GetInChildren<CameraComponent>();
 		_bodyRenderer = _rpPlayer.Components.GetInChildren<SkinnedModelRenderer>();
+
+		// Cache scene component references
+		_closetScreen = Scene.GetAllComponents<ClosetScreen>().FirstOrDefault();
+		_licenseScreen = Scene.GetAllComponents<LicenseScreen>().FirstOrDefault();
+		_spawner = Scene.GetAllComponents<Spawner>().FirstOrDefault();
+
+		if ( _closetScreen == null ) { Log.Error( "[CharacterCreation] No ClosetScreen found in scene!" ); return; }
+		if ( _licenseScreen == null ) { Log.Error( "[CharacterCreation] No LicenseScreen found in scene!" ); return; }
 
 		// Disable player movement
 		if ( _playerController != null )
@@ -85,8 +102,8 @@ public sealed class CharacterCreationManager : Component
 		var playerRot = _rpPlayer.GameObject.WorldRotation;
 		var camDir = playerRot.Forward;
 
-		var center = playerPos + Vector3.Up * 50f;
-		var camPos = center + camDir * 150f;
+		var center = playerPos + Vector3.Up * CameraHeightOffset;
+		var camPos = center + camDir * CameraDistance;
 
 		_camera.GameObject.WorldPosition = camPos;
 		_camera.GameObject.WorldRotation = Rotation.LookAt( center - camPos );
@@ -94,19 +111,20 @@ public sealed class CharacterCreationManager : Component
 
 	private void OpenClosetStep()
 	{
-		var closetScreen = Scene.GetAllComponents<ClosetScreen>().FirstOrDefault();
-		if ( closetScreen == null )
-		{
-			Log.Error( "[CharacterCreation] No ClosetScreen found in scene!" );
-			return;
-		}
+		if ( _closetScreen == null ) return;
 
-		closetScreen.OnWizardNext = OnClosetNext;
-		closetScreen.OpenWizard( _rpPlayer );
+		_closetScreen.OnWizardNext = OnClosetNext;
+		_closetScreen.OpenWizard( _rpPlayer );
 	}
 
 	private void OnClosetNext( string gender, float skinTone, float height, float age, Dictionary<string, string> clothing )
 	{
+		if ( _rpPlayer == null || !_rpPlayer.IsValid() )
+		{
+			Log.Error( "[CharacterCreation] RPPlayer was destroyed before wizard completed." );
+			return;
+		}
+
 		Log.Info( $"[CharacterCreation] Closet step complete: gender={gender}" );
 
 		// Store wizard state
@@ -137,90 +155,99 @@ public sealed class CharacterCreationManager : Component
 
 	private void OpenLicenseStep()
 	{
-		var licenseScreen = Scene.GetAllComponents<LicenseScreen>().FirstOrDefault();
-		if ( licenseScreen == null )
-		{
-			Log.Error( "[CharacterCreation] No LicenseScreen found in scene!" );
-			return;
-		}
+		if ( _licenseScreen == null ) return;
 
-		licenseScreen.OnBack = OnLicenseBack;
-		licenseScreen.OnPrintLicense = OnLicensePrint;
-		licenseScreen.Open( _rpPlayer, _wizardGender );
+		_licenseScreen.OnBack = OnLicenseBack;
+		_licenseScreen.OnPrintLicense = OnLicensePrint;
+		_licenseScreen.Open( _rpPlayer, _wizardGender );
 	}
 
 	private void OnLicenseBack()
 	{
+		if ( _rpPlayer == null || !_rpPlayer.IsValid() )
+		{
+			Log.Error( "[CharacterCreation] RPPlayer was destroyed before wizard completed." );
+			return;
+		}
+
 		Log.Info( "[CharacterCreation] Going back to closet step" );
 
 		// Always return player to spawner origin regardless of LicenseStationPosition
-		var spawner = Scene.GetAllComponents<Spawner>().FirstOrDefault();
-		if ( spawner != null )
+		if ( _spawner != null )
 		{
-			_rpPlayer.GameObject.WorldPosition = spawner.GameObject.WorldPosition;
-			_rpPlayer.GameObject.WorldRotation = spawner.GameObject.WorldRotation;
+			_rpPlayer.GameObject.WorldPosition = _spawner.GameObject.WorldPosition;
+			_rpPlayer.GameObject.WorldRotation = _spawner.GameObject.WorldRotation;
 		}
 		SetupCamera();
 
 		// Re-open closet with preserved state
-		var closetScreen = Scene.GetAllComponents<ClosetScreen>().FirstOrDefault();
-		if ( closetScreen != null )
+		if ( _closetScreen != null )
 		{
-			closetScreen.OnWizardNext = OnClosetNext;
-			closetScreen.ReopenWizard();
+			_closetScreen.OnWizardNext = OnClosetNext;
+			_closetScreen.ReopenWizard();
 		}
 	}
 
 	private async void OnLicensePrint( string displayName, string dateOfBirth, string gender )
 	{
-		Log.Info( $"[CharacterCreation] License printed for {displayName}" );
-
-		// Update RPPlayer with all final data
-		_rpPlayer.DisplayName = displayName;
-		_rpPlayer.DateOfBirth = dateOfBirth;
-		_rpPlayer.Gender = gender;
-		_rpPlayer.SkinTone = _wizardSkinTone;
-		_rpPlayer.Height = _wizardHeight;
-		_rpPlayer.Age = _wizardAge;
-		_rpPlayer.EquippedClothing = _wizardClothing.Values.ToList();
-		_rpPlayer.HasCompletedCharacterCreation = true;
-
-		// Apply appearance to dresser
-		_rpPlayer.ApplyClothingToDresser();
-		_rpPlayer.ApplyBodyToDresser();
-
-		// Save to database
-		var data = new PlayerData
+		try
 		{
-			SteamId = Game.SteamId,
-			DisplayName = displayName,
-			Gender = gender,
-			DateOfBirth = dateOfBirth,
-			SkinTone = _wizardSkinTone,
-			Height = _wizardHeight,
-			Age = _wizardAge,
-			Money = _rpPlayer.Money,
-			JobTitle = _rpPlayer.JobTitle,
-			ClothingList = JsonSerializer.Serialize( _rpPlayer.EquippedClothing ),
-			HasCompletedCharacterCreation = true,
-			LastSeen = System.DateTime.Now
-		};
+			if ( _rpPlayer == null || !_rpPlayer.IsValid() )
+			{
+				Log.Error( "[CharacterCreation] RPPlayer was destroyed before wizard completed." );
+				return;
+			}
 
-		DatabaseService.Instance?.SavePlayer( data );
+			Log.Info( $"[CharacterCreation] License printed for {displayName}" );
 
-		// Brief delay for the flash effect to complete, then load main scene
-		await Task.Delay( 500 );
+			// Update RPPlayer with all final data
+			_rpPlayer.DisplayName = displayName;
+			_rpPlayer.DateOfBirth = dateOfBirth;
+			_rpPlayer.Gender = gender;
+			_rpPlayer.SkinTone = _wizardSkinTone;
+			_rpPlayer.Height = _wizardHeight;
+			_rpPlayer.Age = _wizardAge;
+			_rpPlayer.EquippedClothing = _wizardClothing.Values.ToList();
+			_rpPlayer.HasCompletedCharacterCreation = true;
 
-		Log.Info( "[CharacterCreation] Loading main map..." );
-		Scene.Load( "scenes/minimal.scene" );
+			// Apply appearance to dresser
+			_rpPlayer.ApplyClothingToDresser();
+			_rpPlayer.ApplyBodyToDresser();
+
+			// Save to database
+			var data = new PlayerData
+			{
+				SteamId = Game.SteamId,
+				DisplayName = displayName,
+				Gender = gender,
+				DateOfBirth = dateOfBirth,
+				SkinTone = _wizardSkinTone,
+				Height = _wizardHeight,
+				Age = _wizardAge,
+				Money = _rpPlayer.Money,
+				JobTitle = _rpPlayer.JobTitle,
+				ClothingList = JsonSerializer.Serialize( _rpPlayer.EquippedClothing ),
+				HasCompletedCharacterCreation = true,
+				LastSeen = DateTime.Now
+			};
+
+			DatabaseService.Instance?.SavePlayer( data );
+
+			// Brief delay for the flash effect to complete, then load main scene
+			await Task.Delay( 500 );
+
+			Log.Info( "[CharacterCreation] Loading main map..." );
+			Scene.Load( "scenes/minimal.scene" );
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"[CharacterCreation] Failed to complete character creation: {ex.Message}" );
+		}
 	}
 
 	protected override void OnPreRender()
 	{
-		// Keep camera locked and body visible
 		if ( !_initialized ) return;
-
-		SetupCamera();
 
 		if ( _bodyRenderer != null )
 			_bodyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
