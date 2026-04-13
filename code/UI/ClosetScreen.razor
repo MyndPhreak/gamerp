@@ -12,33 +12,86 @@
     @if (_isOpen)
     {
         <!-- Left panel: clothing UI -->
-        <div style="position: absolute; left: 0; top: 0; width: 35%; height: 100%; background: linear-gradient(180deg, rgba(20,20,30,0.95) 0%, rgba(15,15,25,0.98) 100%); display: flex; flex-direction: column; padding: 32px; gap: 20px; pointer-events: all;">
+        <div style="position: absolute; left: 0; top: 0; width: 38%; height: 100%; background: linear-gradient(180deg, rgba(20,20,30,0.95) 0%, rgba(15,15,25,0.98) 100%); display: flex; flex-direction: column; padding: 24px; gap: 16px; pointer-events: all; overflow: hidden;">
 
             <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-size: 32px; font-weight: 700; color: white;">Closet</div>
+                <div style="font-size: 28px; font-weight: 700; color: white;">@(_wizardMode ? "Create Your Look" : "Closet")</div>
             </div>
 
+            @if (_wizardMode)
+            {
+                <!-- Gender selector -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Gender</div>
+                    <div style="display: flex; gap: 8px;">
+                        @foreach (var g in _genderOptions)
+                        {
+                            var isActive = g == _selectedGender;
+                            var gStyle = isActive
+                                ? "flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;"
+                                : "flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.08); text-align: center;";
+                            <div style="@gStyle" @onclick="@(() => SelectGender(g))">@g</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Body sliders -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Body</div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
+                            <span>Skin Tone</span>
+                            <span>@(_previewSkinTone.ToString("F2"))</span>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.01" value="@_previewSkinTone"
+                               @oninput="@(e => OnSkinToneChanged(e))"
+                               style="width: 100%; accent-color: #667eea;" />
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
+                            <span>Height</span>
+                            <span>@(_previewHeight.ToString("F2"))</span>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.01" value="@_previewHeight"
+                               @oninput="@(e => OnHeightChanged(e))"
+                               style="width: 100%; accent-color: #667eea;" />
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
+                            <span>Age</span>
+                            <span>@(_previewAge.ToString("F2"))</span>
+                        </div>
+                        <input type="range" min="0" max="1" step="0.01" value="@_previewAge"
+                               @oninput="@(e => OnAgeChanged(e))"
+                               style="width: 100%; accent-color: #667eea;" />
+                    </div>
+                </div>
+            }
+
             <!-- Category tabs -->
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                 @foreach (var category in _categories)
                 {
                     var isActive = category == _selectedCategory;
                     var tabStyle = isActive
-                        ? "padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                        : "padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.08);";
+                        ? "padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                        : "padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.08);";
                     <div style="@tabStyle" @onclick="@(() => SelectCategory(category))">@category</div>
                 }
             </div>
 
-            <!-- Item list -->
-            <div style="flex: 1; overflow: scroll; display: flex; flex-direction: column; gap: 4px;">
+            <!-- Item grid -->
+            <div style="flex: 1; overflow: scroll; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;">
                 <!-- "None" option to unequip -->
                 @{
                     var noneActive = !_previewClothing.ContainsKey(_selectedCategory);
                     var noneStyle = noneActive
-                        ? "padding: 14px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea;"
-                        : "padding: 14px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent;";
+                        ? "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea; text-align: center;"
+                        : "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent; text-align: center;";
                 }
                 <div style="@noneStyle" @onclick="@(() => PreviewItem(null))">None</div>
 
@@ -46,20 +99,29 @@
                 {
                     var isEquipped = _previewClothing.ContainsKey(_selectedCategory) && _previewClothing[_selectedCategory] == item.ResourcePath;
                     var itemStyle = isEquipped
-                        ? "padding: 14px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea;"
-                        : "padding: 14px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent;";
+                        ? "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+                        : "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;";
                     <div style="@itemStyle" @onclick="@(() => PreviewItem(item.ResourcePath))">@item.Title</div>
                 }
             </div>
 
+            <!-- Item count debug info -->
+            <div style="font-size: 11px; color: rgba(255,255,255,0.3);">
+                @GetItemsForCategory().Count items in @_selectedCategory | @_allClothing.Count total loaded
+            </div>
+
             <!-- Action buttons -->
             <div style="display: flex; gap: 12px;">
-                @if (!_showConfirmClose)
+                @if (_wizardMode)
                 {
-                    <div style="flex: 1; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); text-align: center;" @onclick="@OnCloseClicked">Close</div>
+                    <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;" @onclick="@OnNextClicked">Next</div>
+                }
+                else if (!_showConfirmClose)
+                {
+                    <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); text-align: center;" @onclick="@OnCloseClicked">Close</div>
                     @if (HasUnsavedChanges)
                     {
-                        <div style="flex: 1; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;" @onclick="@ApplyChanges">Apply</div>
+                        <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;" @onclick="@ApplyChanges">Apply</div>
                     }
                 }
                 else
@@ -81,46 +143,82 @@
 @code
 {
     private bool _isOpen;
+    private bool _wizardMode;
     private RPPlayer _rpPlayer;
     private GameRP.Entities.Closet _closet;
     private string _selectedCategory = "Hat";
     private bool _showConfirmClose;
 
-    // All clothing categories from Facepunch citizen model
+    // Gender
+    private readonly string[] _genderOptions = new[] { "Male", "Female", "Other" };
+    private string _selectedGender = "Male";
+
+    // Body params
+    private float _previewSkinTone = 0.5f;
+    private float _previewHeight = 0.5f;
+    private float _previewAge = 0.5f;
+
+    // All clothing categories
     private readonly string[] _categories = new[]
     {
         "Hat", "Hair", "Facial", "Tops", "Gloves", "Bottoms", "Footwear", "Skin"
     };
 
-    // Maps category → resource path of equipped item (no entry = nothing equipped in that slot)
+    // Maps category -> resource path of equipped item
     private Dictionary<string, string> _originalClothing = new();
     private Dictionary<string, string> _previewClothing = new();
 
     // All available clothing items cached on open
     private List<Sandbox.Clothing> _allClothing = new();
 
-    private string RootStyle => _isOpen
-        ? "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;"
-        : "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
+    // Callbacks for wizard mode
+    public Action<string, float, float, float, Dictionary<string, string>> OnWizardNext { get; set; }
+
+    private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
 
     private bool HasUnsavedChanges => !DictionariesEqual( _originalClothing, _previewClothing );
 
+    /// <summary>
+    /// Open in standalone mode (from in-world closet entity)
+    /// </summary>
     public void Open( RPPlayer rpPlayer, GameRP.Entities.Closet closet )
+    {
+        OpenInternal( rpPlayer, false );
+        _closet = closet;
+    }
+
+    /// <summary>
+    /// Open in wizard mode (from character creation)
+    /// </summary>
+    public void OpenWizard( RPPlayer rpPlayer )
+    {
+        OpenInternal( rpPlayer, true );
+    }
+
+    private void OpenInternal( RPPlayer rpPlayer, bool wizardMode )
     {
         if ( _isOpen ) return;
 
         _rpPlayer = rpPlayer;
-        _closet = closet;
+        _wizardMode = wizardMode;
         _isOpen = true;
         _showConfirmClose = false;
         _selectedCategory = "Hat";
+        _closet = null;
 
         // Cache all available clothing
         _allClothing = ResourceLibrary.GetAll<Sandbox.Clothing>().ToList();
+        Log.Info( $"[ClosetScreen] Loaded {_allClothing.Count} clothing items" );
 
         // Snapshot current clothing as original
         _originalClothing = BuildClothingMap( rpPlayer.EquippedClothing );
         _previewClothing = new Dictionary<string, string>( _originalClothing );
+
+        // Load body params
+        _selectedGender = rpPlayer.Gender;
+        _previewSkinTone = rpPlayer.SkinTone;
+        _previewHeight = rpPlayer.Height;
+        _previewAge = rpPlayer.Age;
 
         StateHasChanged();
     }
@@ -145,6 +243,12 @@
         _showConfirmClose = false;
     }
 
+    private void SelectGender( string gender )
+    {
+        _selectedGender = gender;
+        StateHasChanged();
+    }
+
     private List<Sandbox.Clothing> GetItemsForCategory()
     {
         return _allClothing
@@ -166,9 +270,48 @@
             _previewClothing[_selectedCategory] = resourcePath;
         }
 
-        // Apply preview to dresser immediately
         ApplyPreviewToDresser();
         StateHasChanged();
+    }
+
+    private void OnSkinToneChanged( PanelEvent e )
+    {
+        if ( float.TryParse( e.Value, out var val ) )
+        {
+            _previewSkinTone = val;
+            ApplyBodyToDresser();
+        }
+    }
+
+    private void OnHeightChanged( PanelEvent e )
+    {
+        if ( float.TryParse( e.Value, out var val ) )
+        {
+            _previewHeight = val;
+            ApplyBodyToDresser();
+        }
+    }
+
+    private void OnAgeChanged( PanelEvent e )
+    {
+        if ( float.TryParse( e.Value, out var val ) )
+        {
+            _previewAge = val;
+            ApplyBodyToDresser();
+        }
+    }
+
+    private void ApplyBodyToDresser()
+    {
+        if ( _rpPlayer == null ) return;
+
+        var dresser = _rpPlayer.Components.Get<Dresser>();
+        if ( dresser == null ) return;
+
+        dresser.ManualTint = _previewSkinTone;
+        dresser.ManualHeight = _previewHeight;
+        dresser.ManualAge = _previewAge;
+        dresser.Apply();
     }
 
     private void ApplyPreviewToDresser()
@@ -191,15 +334,26 @@
         dresser.Apply();
     }
 
+    private void OnNextClicked()
+    {
+        // Pass wizard data to the callback
+        OnWizardNext?.Invoke( _selectedGender, _previewSkinTone, _previewHeight, _previewAge, new Dictionary<string, string>( _previewClothing ) );
+
+        _isOpen = false;
+        StateHasChanged();
+    }
+
     private void ApplyChanges()
     {
         if ( _rpPlayer == null ) return;
 
-        // Save to RPPlayer
         _rpPlayer.EquippedClothing = _previewClothing.Values.ToList();
         _rpPlayer.ApplyClothingToDresser();
+        _rpPlayer.SkinTone = _previewSkinTone;
+        _rpPlayer.Height = _previewHeight;
+        _rpPlayer.Age = _previewAge;
+        _rpPlayer.ApplyBodyToDresser();
 
-        // Update original to match (no longer unsaved)
         _originalClothing = new Dictionary<string, string>( _previewClothing );
 
         StateHasChanged();
@@ -225,11 +379,8 @@
 
     private void ConfirmClose()
     {
-        // Revert to original clothing
         _previewClothing = new Dictionary<string, string>( _originalClothing );
         ApplyPreviewToDresser();
-
-        // Also revert RPPlayer's list
         _rpPlayer.EquippedClothing = _originalClothing.Values.ToList();
 
         DoClose();
@@ -240,6 +391,22 @@
         _isOpen = false;
         _showConfirmClose = false;
         _closet?.Close();
+        StateHasChanged();
+    }
+
+    public void CloseWizard()
+    {
+        _isOpen = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Re-open the closet in wizard mode with preserved state (when user clicks "Back" on the license)
+    /// </summary>
+    public void ReopenWizard()
+    {
+        _isOpen = true;
+        _wizardMode = true;
         StateHasChanged();
     }
 
@@ -256,6 +423,7 @@
 
     protected override int BuildHash() => System.HashCode.Combine(
         _isOpen, _selectedCategory, _showConfirmClose,
-        _previewClothing.Count, HasUnsavedChanges
+        _previewClothing.Count, HasUnsavedChanges, _wizardMode,
+        _selectedGender, _previewSkinTone.GetHashCode()
     );
 }
