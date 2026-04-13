@@ -286,7 +286,7 @@
 
     private void OnSkinToneChanged( PanelEvent e )
     {
-        if ( float.TryParse( e.Value, out var val ) )
+        if ( float.TryParse( e.Value?.ToString(), out var val ) )
         {
             _previewSkinTone = val;
             ApplyBodyToDresser();
@@ -295,7 +295,7 @@
 
     private void OnHeightChanged( PanelEvent e )
     {
-        if ( float.TryParse( e.Value, out var val ) )
+        if ( float.TryParse( e.Value?.ToString(), out var val ) )
         {
             _previewHeight = val;
             ApplyBodyToDresser();
@@ -304,7 +304,7 @@
 
     private void OnAgeChanged( PanelEvent e )
     {
-        if ( float.TryParse( e.Value, out var val ) )
+        if ( float.TryParse( e.Value?.ToString(), out var val ) )
         {
             _previewAge = val;
             ApplyBodyToDresser();

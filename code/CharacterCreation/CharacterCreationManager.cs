@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace GameRP.CharacterCreation;
-
 /// <summary>
 /// Orchestrates the character creation wizard flow.
 /// Place this component in the character-creation scene alongside a Spawner,
@@ -237,7 +235,11 @@ public sealed class CharacterCreationManager : Component
 			await Task.Delay( 500 );
 
 			Log.Info( "[CharacterCreation] Loading main map..." );
-			Scene.Load( "scenes/minimal.scene" );
+			var mainScene = ResourceLibrary.Get<SceneFile>( "scenes/minimal.scene" );
+			if ( mainScene != null )
+				Scene.Load( mainScene );
+			else
+				Log.Error( "[CharacterCreation] Could not find scenes/minimal.scene" );
 		}
 		catch ( Exception ex )
 		{

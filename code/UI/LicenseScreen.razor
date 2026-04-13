@@ -206,14 +206,14 @@
 
     private void OnNameChanged( PanelEvent e )
     {
-        _name = e.Value ?? "";
+        _name = e.Value?.ToString() ?? "";
         _nameError = _name.Length > 0 && _name.Length < 2 ? "Name must be at least 2 characters" : "";
         StateHasChanged();
     }
 
     private void OnDobMonthChanged( PanelEvent e )
     {
-        _dobMonth = e.Value ?? "";
+        _dobMonth = e.Value?.ToString() ?? "";
         // Reset day if it exceeds days in the new month
         if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
             _dobDay = "";
@@ -222,13 +222,13 @@
 
     private void OnDobDayChanged( PanelEvent e )
     {
-        _dobDay = e.Value ?? "";
+        _dobDay = e.Value?.ToString() ?? "";
         StateHasChanged();
     }
 
     private void OnDobYearChanged( PanelEvent e )
     {
-        _dobYear = e.Value ?? "";
+        _dobYear = e.Value?.ToString() ?? "";
         if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
             _dobDay = "";
         StateHasChanged();

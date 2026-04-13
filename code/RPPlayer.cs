@@ -115,7 +115,7 @@ public sealed class RPPlayer : Component
             var data = await db.GetPlayer( Game.SteamId );
 
             // Check if we're already in the character creation scene (evaluated after await to avoid stale state)
-            var inCreationScene = Scene.GetAllComponents<GameRP.CharacterCreation.CharacterCreationManager>().Any();
+            var inCreationScene = Scene.GetAllComponents<CharacterCreationManager>().Any();
 
             if ( !this.IsValid() ) return;
 
@@ -143,7 +143,9 @@ public sealed class RPPlayer : Component
                 if ( !data.HasCompletedCharacterCreation && !inCreationScene )
                 {
                     Log.Info( "[RPPlayer] Character creation not complete, loading creation scene..." );
-                    Scene.Load( "scenes/character-creation.scene" );
+                    var creationScene = ResourceLibrary.Get<SceneFile>( "scenes/character-creation.scene" );
+                    if ( creationScene != null ) Scene.Load( creationScene );
+                    else Log.Error( "[RPPlayer] Could not find scenes/character-creation.scene" );
                     return;
                 }
             }
@@ -156,7 +158,9 @@ public sealed class RPPlayer : Component
                 if ( !inCreationScene )
                 {
                     Log.Info( "[RPPlayer] New player, loading character creation scene..." );
-                    Scene.Load( "scenes/character-creation.scene" );
+                    var creationScene = ResourceLibrary.Get<SceneFile>( "scenes/character-creation.scene" );
+                    if ( creationScene != null ) Scene.Load( creationScene );
+                    else Log.Error( "[RPPlayer] Could not find scenes/character-creation.scene" );
                     return;
                 }
             }
