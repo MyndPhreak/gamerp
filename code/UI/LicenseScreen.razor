@@ -229,6 +229,8 @@
     private void OnDobYearChanged( PanelEvent e )
     {
         _dobYear = e.Value ?? "";
+        if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
+            _dobDay = "";
         StateHasChanged();
     }
 
