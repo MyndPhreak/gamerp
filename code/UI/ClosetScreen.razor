@@ -8,125 +8,104 @@
 @namespace GameRP.UI
 @inherits PanelComponent
 
-<root style="@RootStyle">
+<root>
     @if (_isOpen)
     {
-        <!-- Left panel: clothing UI -->
-        <div style="position: absolute; left: 0; top: 0; width: 38%; height: 100%; background: linear-gradient(180deg, rgba(20,20,30,0.95) 0%, rgba(15,15,25,0.98) 100%); display: flex; flex-direction: column; padding: 24px; gap: 16px; pointer-events: all; overflow: hidden;">
+        <div class="closet-panel">
 
             <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-size: 28px; font-weight: 700; color: white;">@(_wizardMode ? "Create Your Look" : "Closet")</div>
+            <div class="closet-header">
+                <div class="closet-title">@(_wizardMode ? "Create Your Look" : "Closet")</div>
             </div>
 
             @if (_wizardMode)
             {
                 <!-- Gender selector -->
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <div style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Gender</div>
-                    <div style="display: flex; gap: 8px;">
+                <div class="wizard-section">
+                    <div class="section-label">Gender</div>
+                    <div class="gender-buttons">
                         @foreach (var g in _genderOptions)
                         {
                             var isActive = g == _selectedGender;
-                            var gStyle = isActive
-                                ? "flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;"
-                                : "flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.08); text-align: center;";
-                            <div style="@gStyle" @onclick="@(() => SelectGender(g))">@g</div>
+                            <div class="gender-btn @(isActive ? "active" : "")" @onclick="@(() => SelectGender(g))">@g</div>
                         }
                     </div>
                 </div>
 
                 <!-- Body sliders -->
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Body</div>
-
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
-                            <span>Skin Tone</span>
-                            <span>@(_previewSkinTone.ToString("F2"))</span>
+                <div class="wizard-section">
+                    <div class="section-label">Body</div>
+                    <div class="body-sliders">
+                        <div class="slider-row">
+                            <div class="slider-label"><span>Skin Tone</span><span>@(_previewSkinTone.ToString("F2"))</span></div>
+                            <input type="range" min="0" max="1" step="0.01" value="@_previewSkinTone" @oninput="@(e => OnSkinToneChanged(e))" />
                         </div>
-                        <input type="range" min="0" max="1" step="0.01" value="@_previewSkinTone"
-                               @oninput="@(e => OnSkinToneChanged(e))"
-                               style="width: 100%; accent-color: #667eea;" />
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
-                            <span>Height</span>
-                            <span>@(_previewHeight.ToString("F2"))</span>
+                        <div class="slider-row">
+                            <div class="slider-label"><span>Height</span><span>@(_previewHeight.ToString("F2"))</span></div>
+                            <input type="range" min="0" max="1" step="0.01" value="@_previewHeight" @oninput="@(e => OnHeightChanged(e))" />
                         </div>
-                        <input type="range" min="0" max="1" step="0.01" value="@_previewHeight"
-                               @oninput="@(e => OnHeightChanged(e))"
-                               style="width: 100%; accent-color: #667eea;" />
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7);">
-                            <span>Age</span>
-                            <span>@(_previewAge.ToString("F2"))</span>
+                        <div class="slider-row">
+                            <div class="slider-label"><span>Age</span><span>@(_previewAge.ToString("F2"))</span></div>
+                            <input type="range" min="0" max="1" step="0.01" value="@_previewAge" @oninput="@(e => OnAgeChanged(e))" />
                         </div>
-                        <input type="range" min="0" max="1" step="0.01" value="@_previewAge"
-                               @oninput="@(e => OnAgeChanged(e))"
-                               style="width: 100%; accent-color: #667eea;" />
                     </div>
                 </div>
             }
 
             <!-- Category tabs -->
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <div class="category-tabs">
                 @foreach (var category in _categories)
                 {
                     var isActive = category == _selectedCategory;
-                    var tabStyle = isActive
-                        ? "padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
-                        : "padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.08);";
-                    <div style="@tabStyle" @onclick="@(() => SelectCategory(category))">@category</div>
+                    <div class="pill-tab @(isActive ? "active" : "")" @onclick="@(() => SelectCategory(category))">@category</div>
                 }
             </div>
 
             <!-- Item grid -->
-            <div style="flex: 1; overflow: scroll; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;">
-                <!-- "None" option to unequip -->
+            <div class="item-grid">
                 @{
-                    var noneActive = !_previewClothing.ContainsKey(_selectedCategory);
-                    var noneStyle = noneActive
-                        ? "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea; text-align: center;"
-                        : "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent; text-align: center;";
+                    var noneSelected = !_previewClothing.ContainsKey(_selectedCategory);
                 }
-                <div style="@noneStyle" @onclick="@(() => PreviewItem(null))">None</div>
+                <div class="item-card--none @(noneSelected ? "selected" : "")" @onclick="@(() => PreviewItem(null))">
+                    ✕
+                    <div class="card-name">None</div>
+                </div>
 
                 @foreach (var item in GetItemsForCategory())
                 {
                     var isEquipped = _previewClothing.ContainsKey(_selectedCategory) && _previewClothing[_selectedCategory] == item.ResourcePath;
-                    var itemStyle = isEquipped
-                        ? "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: rgba(102,126,234,0.3); border: 2px solid #667eea; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
-                        : "width: calc(50% - 4px); padding: 12px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); background-color: rgba(255,255,255,0.05); border: 2px solid transparent; text-align: center; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;";
-                    <div style="@itemStyle" @onclick="@(() => PreviewItem(item.ResourcePath))">@item.Title</div>
+                    <div class="item-card @(isEquipped ? "selected" : "")" @onclick="@(() => PreviewItem(item.ResourcePath))">
+                        @if (item.Icon != null)
+                        {
+                            <div class="card-thumb" style="background-image: url(@item.Icon.ResourcePath);"></div>
+                        }
+                        <div class="card-name">@item.Title</div>
+                    </div>
                 }
             </div>
 
             <!-- Action buttons -->
-            <div style="display: flex; gap: 12px;">
+            <div class="action-row">
                 @if (_wizardMode)
                 {
-                    <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;" @onclick="@OnNextClicked">Next</div>
+                    <div class="btn-primary" @onclick="@OnNextClicked">Next</div>
                 }
                 else if (!_showConfirmClose)
                 {
-                    <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); text-align: center;" @onclick="@OnCloseClicked">Close</div>
+                    <div class="btn-secondary" @onclick="@OnCloseClicked">Close</div>
                     @if (HasUnsavedChanges)
                     {
-                        <div style="flex: 1; padding: 16px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: white; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); text-align: center;" @onclick="@ApplyChanges">Apply</div>
+                        <div class="btn-success" @onclick="@ApplyChanges">Apply</div>
                     }
                 }
                 else
                 {
                     <!-- Unsaved changes confirmation -->
-                    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
-                        <div style="font-size: 14px; font-weight: 600; color: #f44336; text-align: center;">Your changes will not be saved. Are you sure?</div>
-                        <div style="display: flex; gap: 12px;">
-                            <div style="flex: 1; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: white; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); text-align: center;" @onclick="@CancelClose">No</div>
-                            <div style="flex: 1; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: white; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); text-align: center;" @onclick="@ConfirmClose">Yes</div>
+                    <div class="confirm-close">
+                        <div class="confirm-message">Your changes will not be saved. Are you sure?</div>
+                        <div class="confirm-buttons">
+                            <div class="btn-secondary" @onclick="@CancelClose">No</div>
+                            <div class="btn-danger" @onclick="@ConfirmClose">Yes</div>
                         </div>
                     </div>
                 }
@@ -141,7 +120,7 @@
     private bool _wizardMode;
     private RPPlayer _rpPlayer;
     private GameRP.Entities.Closet _closet;
-    private string _selectedCategory = "Hat";
+    private string _selectedCategory = string.Empty;
     private bool _showConfirmClose;
 
     // Gender
@@ -157,11 +136,8 @@
     private float _originalAge = 0.5f;
     private string _originalGender = "Male";
 
-    // All clothing categories
-    private readonly string[] _categories = new[]
-    {
-        "Hat", "Hair", "Facial", "Shirt", "Gloves", "Pants", "Shoes", "Skin"
-    };
+    // All clothing categories (derived from available items)
+    private string[] _categories = Array.Empty<string>();
 
     // Maps category -> resource path of equipped item
     private Dictionary<string, string> _originalClothing = new();
@@ -172,8 +148,6 @@
 
     // Callbacks for wizard mode
     public Action<string, float, float, float, Dictionary<string, string>> OnWizardNext { get; set; }
-
-    private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
 
     private bool HasUnsavedChanges =>
         !DictionariesEqual( _originalClothing, _previewClothing ) ||
@@ -207,12 +181,20 @@
         _wizardMode = wizardMode;
         _isOpen = true;
         _showConfirmClose = false;
-        _selectedCategory = "Hat";
         _closet = null;
 
         // Cache all available clothing
         _allClothing = ResourceLibrary.GetAll<Sandbox.Clothing>().ToList();
         Log.Info( $"[ClosetScreen] Loaded {_allClothing.Count} clothing items" );
+
+        // Derive categories from available items, sorted alphabetically
+        _categories = _allClothing
+            .Select( c => c.Category.ToString() )
+            .Distinct()
+            .OrderBy( s => s )
+            .ToArray();
+
+        _selectedCategory = _categories.Length > 0 ? _categories[0] : string.Empty;
 
         // Snapshot current clothing as original
         _originalClothing = BuildClothingMap( rpPlayer.EquippedClothing );
