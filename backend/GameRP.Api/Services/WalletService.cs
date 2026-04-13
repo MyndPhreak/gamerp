@@ -134,10 +134,12 @@ public class WalletService
         return true;
     }
 
-    public async Task<bool> HasCompletedCharacterCreationAsync( long steamId )
+    public async Task<bool> HasCompletedCharacterCreationAsync(long steamId)
     {
-        var player = await _context.Players.FirstOrDefaultAsync( p => p.SteamId == steamId );
-        return player?.HasCompletedCharacterCreation ?? false;
+        return await _context.Players
+            .Where(p => p.SteamId == steamId)
+            .Select(p => p.HasCompletedCharacterCreation)
+            .FirstOrDefaultAsync();
     }
 
     /// <summary>

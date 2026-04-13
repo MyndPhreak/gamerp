@@ -137,13 +137,21 @@ public class WalletController : ControllerBase
     [HttpPost("{steamId}/character")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult> SaveCharacterData( long steamId, [FromBody] CharacterDataDto data )
     {
-        var result = await _walletService.SaveCharacterDataAsync( steamId, data );
-        if ( !result )
-            return NotFound( new { message = "Player not found" } );
+        try
+        {
+            var result = await _walletService.SaveCharacterDataAsync( steamId, data );
+            if ( !result )
+                return NotFound( new { message = "Player not found" } );
 
-        return Ok( new { message = "Character data saved" } );
+            return Ok( new { message = "Character data saved" } );
+        }
+        catch ( Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException )
+        {
+            return Conflict( new { message = "Character data was modified by another request. Please retry." } );
+        }
     }
 
     /// <summary>
