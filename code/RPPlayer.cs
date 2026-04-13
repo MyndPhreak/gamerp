@@ -128,6 +128,7 @@ public sealed class RPPlayer : Component
         }
         else
         {
+            DisplayName = Game.SteamId.ToString(); // Temporary until character creation completes
             Log.Info( "No existing player data found, starting fresh." );
         }
     }
