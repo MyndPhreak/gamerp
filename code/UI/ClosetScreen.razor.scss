@@ -192,6 +192,8 @@ ClosetScreen {
     font-size: 18px;
 
     .card-name {
+        // position: absolute not inherited from .item-card — must be re-declared here
+        // because .item-card--none uses @include icon-card independently
         position: absolute;
         bottom: 0;
         left: 0;

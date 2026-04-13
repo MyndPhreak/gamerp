@@ -136,7 +136,8 @@
     private float _originalAge = 0.5f;
     private string _originalGender = "Male";
 
-    // All clothing categories (derived from available items)
+    // Categories derived at open-time from ResourceLibrary — automatically picks up any new
+    // clothing categories without requiring a hardcoded list update.
     private string[] _categories = Array.Empty<string>();
 
     // Maps category -> resource path of equipped item
