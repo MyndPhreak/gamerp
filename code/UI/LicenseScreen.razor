@@ -1,0 +1,299 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+
+@namespace GameRP.UI
+@inherits PanelComponent
+
+<root style="@RootStyle">
+    @if (_isOpen)
+    {
+        <!-- Flash overlay -->
+        @if (_showFlash)
+        {
+            <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-color: white; opacity: @_flashOpacity; z-index: 200; pointer-events: none;"></div>
+        }
+
+        <!-- License card centered on screen -->
+        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 700px; pointer-events: all; z-index: 150;">
+
+            <!-- License card -->
+            <div style="background: linear-gradient(135deg, #f5f5dc 0%, #e8e4d0 100%); border-radius: 16px; border: 3px solid #8b7d6b; padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+
+                <!-- Header bar -->
+                <div style="background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px;">State of San Andreas</div>
+                    <div style="font-size: 16px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 3px;">Driver License</div>
+                </div>
+
+                <!-- Card body -->
+                <div style="display: flex; padding: 20px 24px; gap: 24px;">
+
+                    <!-- Left: Photo area -->
+                    <div style="flex-shrink: 0; width: 180px; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="width: 180px; height: 220px; background-color: #d4cfc0; border: 2px solid #8b7d6b; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            @if (_faceTexture != null)
+                            {
+                                <img src="@_faceTexture" style="width: 100%; height: 100%; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div style="font-size: 12px; color: #8b7d6b; text-align: center;">Photo<br/>Preview</div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Right: Form fields -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
+
+                        <!-- Full Name -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Full Name</div>
+                            <input type="text" value="@_name" placeholder="Enter your name..."
+                                   @oninput="@(e => OnNameChanged(e))"
+                                   maxlength="100"
+                                   style="padding: 10px 12px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 16px; font-weight: 600; color: #2c2c2c; font-family: inherit;" />
+                            @if (!string.IsNullOrEmpty(_nameError))
+                            {
+                                <div style="font-size: 11px; color: #d32f2f; font-weight: 500;">@_nameError</div>
+                            }
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Date of Birth</div>
+                            <div style="display: flex; gap: 8px;">
+                                <!-- Month -->
+                                <select value="@_dobMonth" @onchange="@(e => OnDobMonthChanged(e))"
+                                        style="flex: 2; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
+                                    <option value="">Month</option>
+                                    @for (int m = 1; m <= 12; m++)
+                                    {
+                                        var monthName = new DateTime(2000, m, 1).ToString("MMMM");
+                                        <option value="@m">@monthName</option>
+                                    }
+                                </select>
+                                <!-- Day -->
+                                <select value="@_dobDay" @onchange="@(e => OnDobDayChanged(e))"
+                                        style="flex: 1; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
+                                    <option value="">Day</option>
+                                    @for (int d = 1; d <= 31; d++)
+                                    {
+                                        <option value="@d">@d</option>
+                                    }
+                                </select>
+                                <!-- Year -->
+                                <select value="@_dobYear" @onchange="@(e => OnDobYearChanged(e))"
+                                        style="flex: 1.5; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
+                                    <option value="">Year</option>
+                                    @for (int y = 2008; y >= 1940; y--)
+                                    {
+                                        <option value="@y">@y</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Gender (pre-filled, editable) -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Gender</div>
+                            <div style="display: flex; gap: 8px;">
+                                @foreach (var g in _genderOptions)
+                                {
+                                    var isActive = g == _gender;
+                                    var gStyle = isActive
+                                        ? "flex: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: #1a3a5c; text-align: center;"
+                                        : "flex: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #2c2c2c; background-color: rgba(255,255,255,0.5); border: 2px solid #c4b99a; text-align: center;";
+                                    <div style="@gStyle" @onclick="@(() => { _gender = g; StateHasChanged(); })">@g</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer with buttons -->
+                <div style="padding: 16px 24px; border-top: 2px solid #c4b99a; display: flex; gap: 12px; justify-content: flex-end;">
+                    <div style="padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: #8b7d6b; background-color: transparent; border: 2px solid #c4b99a; text-align: center;" @onclick="@OnBackClicked">Back</div>
+                    <div style="padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: white; background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); text-align: center; @(_isValid ? "" : "opacity: 0.5; pointer-events: none;")" @onclick="@OnPrintClicked">Print License</div>
+                </div>
+            </div>
+        </div>
+    }
+</root>
+
+@code
+{
+    private bool _isOpen;
+    private bool _showFlash;
+    private float _flashOpacity = 0f;
+    private RPPlayer _rpPlayer;
+
+    // Form fields
+    private string _name = "";
+    private string _nameError = "";
+    private string _dobMonth = "";
+    private string _dobDay = "";
+    private string _dobYear = "";
+    private string _gender = "Male";
+
+    private readonly string[] _genderOptions = new[] { "Male", "Female", "Other" };
+
+    // Face camera texture (placeholder for SceneCamera render target)
+    private Texture _faceTexture;
+
+    // Scene camera for face photo
+    private SceneCamera _faceCamera;
+
+    // Callbacks
+    public Action OnBack { get; set; }
+    public Action<string, string, string> OnPrintLicense { get; set; }
+
+    private bool _isValid => _name.Length >= 2 && !string.IsNullOrEmpty( _dobMonth ) && !string.IsNullOrEmpty( _dobDay ) && !string.IsNullOrEmpty( _dobYear );
+
+    private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
+
+    public void Open( RPPlayer rpPlayer, string prefilledGender )
+    {
+        if ( _isOpen ) return;
+
+        _rpPlayer = rpPlayer;
+        _isOpen = true;
+        _showFlash = false;
+        _flashOpacity = 0f;
+        _gender = prefilledGender;
+        _name = "";
+        _nameError = "";
+        _dobMonth = "";
+        _dobDay = "";
+        _dobYear = "";
+
+        SetupFaceCamera();
+
+        StateHasChanged();
+    }
+
+    private void SetupFaceCamera()
+    {
+        if ( _rpPlayer == null ) return;
+
+        // Find the player's body renderer to position the camera at head height
+        var bodyRenderer = _rpPlayer.Components.GetInChildren<SkinnedModelRenderer>();
+        if ( bodyRenderer == null ) return;
+
+        var headPos = _rpPlayer.GameObject.WorldPosition + Vector3.Up * 64f;
+        var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Forward * 40f;
+
+        // Create a render target texture for the face camera
+        _faceTexture = Texture.CreateRenderTarget()
+            .WithSize( 360, 440 )
+            .Create();
+
+        // Create a scene camera for rendering the face
+        _faceCamera = new SceneCamera( "FaceCamera" );
+        _faceCamera.World = _rpPlayer.Scene.SceneWorld;
+        _faceCamera.Position = camPos;
+        _faceCamera.Rotation = Rotation.LookAt( headPos - camPos );
+        _faceCamera.FieldOfView = 30f;
+        _faceCamera.ZNear = 1f;
+        _faceCamera.ZFar = 500f;
+    }
+
+    private void OnNameChanged( PanelEvent e )
+    {
+        _name = e.Value ?? "";
+        _nameError = _name.Length > 0 && _name.Length < 2 ? "Name must be at least 2 characters" : "";
+        StateHasChanged();
+    }
+
+    private void OnDobMonthChanged( PanelEvent e )
+    {
+        _dobMonth = e.Value ?? "";
+        StateHasChanged();
+    }
+
+    private void OnDobDayChanged( PanelEvent e )
+    {
+        _dobDay = e.Value ?? "";
+        StateHasChanged();
+    }
+
+    private void OnDobYearChanged( PanelEvent e )
+    {
+        _dobYear = e.Value ?? "";
+        StateHasChanged();
+    }
+
+    private void OnBackClicked()
+    {
+        _isOpen = false;
+        CleanupFaceCamera();
+        OnBack?.Invoke();
+        StateHasChanged();
+    }
+
+    private async void OnPrintClicked()
+    {
+        if ( !_isValid ) return;
+
+        var dob = $"{_dobMonth}/{_dobDay}/{_dobYear}";
+
+        // Play flash effect
+        _showFlash = true;
+        _flashOpacity = 1f;
+        StateHasChanged();
+
+        // Fade out flash over ~1.5 seconds
+        await Task.Delay( 200 );
+        _flashOpacity = 0.7f;
+        StateHasChanged();
+
+        await Task.Delay( 300 );
+        _flashOpacity = 0.3f;
+        StateHasChanged();
+
+        await Task.Delay( 300 );
+        _flashOpacity = 0f;
+        _showFlash = false;
+        StateHasChanged();
+
+        // Brief pause before transition
+        await Task.Delay( 700 );
+
+        CleanupFaceCamera();
+
+        // Invoke callback with form data
+        OnPrintLicense?.Invoke( _name, dob, _gender );
+
+        _isOpen = false;
+        StateHasChanged();
+    }
+
+    private void CleanupFaceCamera()
+    {
+        _faceCamera = null;
+        _faceTexture = null;
+    }
+
+    protected override void OnPreRender()
+    {
+        if ( !_isOpen || _faceCamera == null || _faceTexture == null ) return;
+
+        // Update face camera position to track player head
+        if ( _rpPlayer != null )
+        {
+            var headPos = _rpPlayer.GameObject.WorldPosition + Vector3.Up * 64f;
+            var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Forward * 40f;
+            _faceCamera.Position = camPos;
+            _faceCamera.Rotation = Rotation.LookAt( headPos - camPos );
+        }
+
+        // Render face camera to texture
+        Graphics.RenderToTexture( _faceCamera, _faceTexture );
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(
+        _isOpen, _name, _dobMonth, _dobDay, _dobYear, _gender, _showFlash, _flashOpacity
+    );
+}
