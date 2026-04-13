@@ -43,7 +43,7 @@
     position: relative;
 
     &:hover {
-        border-color: rgba(102, 126, 234, 0.6); // $accent-start with opacity
+        border-color: rgba($accent-start, 0.6);
     }
 }
 

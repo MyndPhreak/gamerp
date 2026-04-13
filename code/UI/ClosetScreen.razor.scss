@@ -1,4 +1,4 @@
-@import 'theme';
+@import 'theme'; // explicit: S&Box compiler may not resolve theme transitively through _mixins
 @import 'mixins';
 
 ClosetScreen {
