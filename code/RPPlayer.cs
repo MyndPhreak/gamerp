@@ -104,51 +104,66 @@ public sealed class RPPlayer : Component
 
     private async void CheckAndRoutePlayer()
     {
-        var data = await DatabaseService.Instance?.GetPlayer( Game.SteamId );
-
-        // Check if we're already in the character creation scene
-        var inCreationScene = Scene.GetAllComponents<GameRP.CharacterCreation.CharacterCreationManager>().Any();
-
-        if ( data != null )
+        try
         {
-            // Load existing player data
-            DisplayName = data.DisplayName;
-            Gender = data.Gender;
-            DateOfBirth = data.DateOfBirth;
-            SkinTone = data.SkinTone;
-            Height = data.Height;
-            Age = data.Age;
-            Money = data.Money;
-            JobTitle = data.JobTitle;
-            HasCompletedCharacterCreation = data.HasCompletedCharacterCreation;
-            if ( !string.IsNullOrEmpty( data.ClothingList ) )
+            var db = DatabaseService.Instance;
+            if ( db == null )
             {
-                EquippedClothing = JsonSerializer.Deserialize<List<string>>( data.ClothingList ) ?? new();
-                ApplyClothingToDresser();
-            }
-            ApplyBodyToDresser();
-            Log.Info( $"Loaded player data for {data.DisplayName}: ${data.Money}" );
-
-            // If character creation not done and we're not already in the creation scene, redirect
-            if ( !data.HasCompletedCharacterCreation && !inCreationScene )
-            {
-                Log.Info( "[RPPlayer] Character creation not complete, loading creation scene..." );
-                Scene.Load( "scenes/character-creation.scene" );
+                Log.Warning( "[RPPlayer] DatabaseService not available, cannot load player data." );
                 return;
+            }
+            var data = await db.GetPlayer( Game.SteamId );
+
+            // Check if we're already in the character creation scene (evaluated after await to avoid stale state)
+            var inCreationScene = Scene.GetAllComponents<GameRP.CharacterCreation.CharacterCreationManager>().Any();
+
+            if ( !this.IsValid() ) return;
+
+            if ( data != null )
+            {
+                // Load existing player data
+                DisplayName = data.DisplayName;
+                Gender = data.Gender;
+                DateOfBirth = data.DateOfBirth;
+                SkinTone = data.SkinTone;
+                Height = data.Height;
+                Age = data.Age;
+                Money = data.Money;
+                JobTitle = data.JobTitle;
+                HasCompletedCharacterCreation = data.HasCompletedCharacterCreation;
+                if ( !string.IsNullOrEmpty( data.ClothingList ) )
+                {
+                    EquippedClothing = JsonSerializer.Deserialize<List<string>>( data.ClothingList ) ?? new();
+                    ApplyClothingToDresser();
+                }
+                ApplyBodyToDresser();
+                Log.Info( $"Loaded player data for {data.DisplayName}: ${data.Money}" );
+
+                // If character creation not done and we're not already in the creation scene, redirect
+                if ( !data.HasCompletedCharacterCreation && !inCreationScene )
+                {
+                    Log.Info( "[RPPlayer] Character creation not complete, loading creation scene..." );
+                    Scene.Load( "scenes/character-creation.scene" );
+                    return;
+                }
+            }
+            else
+            {
+                DisplayName = Game.SteamId.ToString();
+                Log.Info( "No existing player data found, starting fresh." );
+
+                // New player — send to character creation if not already there
+                if ( !inCreationScene )
+                {
+                    Log.Info( "[RPPlayer] New player, loading character creation scene..." );
+                    Scene.Load( "scenes/character-creation.scene" );
+                    return;
+                }
             }
         }
-        else
+        catch ( Exception ex )
         {
-            DisplayName = Game.SteamId.ToString();
-            Log.Info( "No existing player data found, starting fresh." );
-
-            // New player — send to character creation if not already there
-            if ( !inCreationScene )
-            {
-                Log.Info( "[RPPlayer] New player, loading character creation scene..." );
-                Scene.Load( "scenes/character-creation.scene" );
-                return;
-            }
+            Log.Error( $"[RPPlayer] Failed to load or route player: {ex.Message}" );
         }
     }
 
