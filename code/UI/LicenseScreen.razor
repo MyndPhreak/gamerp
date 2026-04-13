@@ -34,14 +34,12 @@
                     <!-- Left: Photo area -->
                     <div style="flex-shrink: 0; width: 180px; display: flex; flex-direction: column; gap: 12px;">
                         <div style="width: 180px; height: 220px; background-color: #d4cfc0; border: 2px solid #8b7d6b; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            @if (_faceTexture != null)
-                            {
-                                <img src="@_faceTexture" style="width: 100%; height: 100%; object-fit: cover;" />
-                            }
-                            else
-                            {
-                                <div style="font-size: 12px; color: #8b7d6b; text-align: center;">Photo<br/>Preview</div>
-                            }
+                            <panel @ref="_photoPanel" style="width: 100%; height: 100%; background-size: cover; background-position: center;">
+                                @if (_faceTexture == null)
+                                {
+                                    <div style="font-size: 12px; color: #8b7d6b; text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">Photo<br/>Preview</div>
+                                }
+                            </panel>
                         </div>
                     </div>
 
@@ -79,7 +77,7 @@
                                 <select value="@_dobDay" @onchange="@(e => OnDobDayChanged(e))"
                                         style="flex: 1; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
                                     <option value="">Day</option>
-                                    @for (int d = 1; d <= 31; d++)
+                                    @for (int d = 1; d <= DaysInSelectedMonth; d++)
                                     {
                                         <option value="@d">@d</option>
                                     }
@@ -142,6 +140,7 @@
 
     // Face camera texture (placeholder for SceneCamera render target)
     private Texture _faceTexture;
+    private Panel _photoPanel;
 
     // Scene camera for face photo
     private SceneCamera _faceCamera;
@@ -151,6 +150,11 @@
     public Action<string, string, string> OnPrintLicense { get; set; }
 
     private bool _isValid => _name.Length >= 2 && !string.IsNullOrEmpty( _dobMonth ) && !string.IsNullOrEmpty( _dobDay ) && !string.IsNullOrEmpty( _dobYear );
+
+    private int DaysInSelectedMonth =>
+        int.TryParse( _dobMonth, out var m ) && int.TryParse( _dobYear, out var y ) && m >= 1 && m <= 12
+            ? DateTime.DaysInMonth( y, m )
+            : 31;
 
     private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
 
@@ -210,6 +214,9 @@
     private void OnDobMonthChanged( PanelEvent e )
     {
         _dobMonth = e.Value ?? "";
+        // Reset day if it exceeds days in the new month
+        if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
+            _dobDay = "";
         StateHasChanged();
     }
 
@@ -237,43 +244,53 @@
     {
         if ( !_isValid ) return;
 
-        var dob = $"{_dobMonth}/{_dobDay}/{_dobYear}";
+        try
+        {
+            var dob = $"{_dobMonth}/{_dobDay}/{_dobYear}";
 
-        // Play flash effect
-        _showFlash = true;
-        _flashOpacity = 1f;
-        StateHasChanged();
+            // Play flash effect
+            _showFlash = true;
+            _flashOpacity = 1f;
+            StateHasChanged();
 
-        // Fade out flash over ~1.5 seconds
-        await Task.Delay( 200 );
-        _flashOpacity = 0.7f;
-        StateHasChanged();
+            await Task.Delay( 200 );
+            _flashOpacity = 0.7f;
+            StateHasChanged();
 
-        await Task.Delay( 300 );
-        _flashOpacity = 0.3f;
-        StateHasChanged();
+            await Task.Delay( 300 );
+            _flashOpacity = 0.3f;
+            StateHasChanged();
 
-        await Task.Delay( 300 );
-        _flashOpacity = 0f;
-        _showFlash = false;
-        StateHasChanged();
+            await Task.Delay( 300 );
+            _flashOpacity = 0f;
+            _showFlash = false;
+            StateHasChanged();
 
-        // Brief pause before transition
-        await Task.Delay( 700 );
+            await Task.Delay( 700 );
 
-        CleanupFaceCamera();
+            // Invoke callback with form data
+            OnPrintLicense?.Invoke( _name, dob, _gender );
 
-        // Invoke callback with form data
-        OnPrintLicense?.Invoke( _name, dob, _gender );
-
-        _isOpen = false;
-        StateHasChanged();
+            _isOpen = false;
+            StateHasChanged();
+        }
+        catch ( Exception ex )
+        {
+            Log.Error( $"[LicenseScreen] OnPrintClicked failed: {ex}" );
+        }
+        finally
+        {
+            CleanupFaceCamera();
+        }
     }
 
     private void CleanupFaceCamera()
     {
         _faceCamera = null;
+        _faceTexture?.Dispose();
         _faceTexture = null;
+        if ( _photoPanel != null )
+            _photoPanel.Style.BackgroundImage = null;
     }
 
     protected override void OnPreRender()
@@ -291,6 +308,20 @@
 
         // Render face camera to texture
         Graphics.RenderToTexture( _faceCamera, _faceTexture );
+
+        // Update panel background with rendered texture
+        if ( _photoPanel != null && _faceTexture != null )
+        {
+            _photoPanel.Style.BackgroundImage = _faceTexture;
+        }
+    }
+
+    public void Close()
+    {
+        if ( !_isOpen ) return;
+        _isOpen = false;
+        CleanupFaceCamera();
+        StateHasChanged();
     }
 
     protected override int BuildHash() => System.HashCode.Combine(
