@@ -153,17 +153,14 @@ public sealed class CharacterCreationManager : Component
 	{
 		Log.Info( "[CharacterCreation] Going back to closet step" );
 
-		// Move player back if needed
-		if ( LicenseStationPosition != null )
+		// Always return player to spawner origin regardless of LicenseStationPosition
+		var spawner = Scene.GetAllComponents<Spawner>().FirstOrDefault();
+		if ( spawner != null )
 		{
-			var spawner = Scene.GetAllComponents<Spawner>().FirstOrDefault();
-			if ( spawner != null )
-			{
-				_rpPlayer.GameObject.WorldPosition = spawner.GameObject.WorldPosition;
-				_rpPlayer.GameObject.WorldRotation = spawner.GameObject.WorldRotation;
-			}
-			SetupCamera();
+			_rpPlayer.GameObject.WorldPosition = spawner.GameObject.WorldPosition;
+			_rpPlayer.GameObject.WorldRotation = spawner.GameObject.WorldRotation;
 		}
+		SetupCamera();
 
 		// Re-open closet with preserved state
 		var closetScreen = Scene.GetAllComponents<ClosetScreen>().FirstOrDefault();
