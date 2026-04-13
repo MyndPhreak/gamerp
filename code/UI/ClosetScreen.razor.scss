@@ -133,7 +133,7 @@ ClosetScreen {
 // =====================================================
 .item-grid {
     flex: 1;
-    overflow: scroll;
+    overflow: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
     gap: $gap-sm;
@@ -192,6 +192,10 @@ ClosetScreen {
     font-size: 18px;
 
     .card-name {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
         opacity: 1;
         background: none;
         color: $text-muted;
