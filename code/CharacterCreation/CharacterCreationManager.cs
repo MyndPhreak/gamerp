@@ -236,11 +236,11 @@ public sealed class CharacterCreationManager : Component
 			await Task.Delay( 500 );
 
 			Log.Info( "[CharacterCreation] Loading main map..." );
-			var mainScene = ResourceLibrary.Get<SceneFile>( "scenes/minimal.scene" );
+			var mainScene = ResourceLibrary.Get<SceneFile>( "Assets/scenes/minimal.scene" );
 			if ( mainScene != null )
 				Scene.Load( mainScene );
 			else
-				Log.Error( "[CharacterCreation] Could not find scenes/minimal.scene" );
+				Log.Error( "[CharacterCreation] Could not find Assets/scenes/minimal.scene" );
 		}
 		catch ( Exception ex )
 		{
