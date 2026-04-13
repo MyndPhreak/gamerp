@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using GameRP.Inventory;
 
 /// <summary>
 /// RP-specific player logic (economy, database, jobs).
@@ -17,6 +18,14 @@ public sealed class RPPlayer : Component
     [Property] public Color JobColor { get; set; } = Color.Gray;
 
     [Property] public List<string> EquippedClothing { get; set; } = new();
+
+    [Property] public string DisplayName { get; set; } = "";
+    [Property] public string Gender { get; set; } = "Male";
+    [Property] public string DateOfBirth { get; set; } = "";
+    [Property] public float SkinTone { get; set; } = 0.5f;
+    [Property] public float Height { get; set; } = 0.5f;
+    [Property] public float Age { get; set; } = 0.5f;
+    [Property] public bool HasCompletedCharacterCreation { get; set; }
 
     private PlayerController _playerController;
     private Dresser _dresser;
@@ -51,10 +60,16 @@ public sealed class RPPlayer : Component
         var data = new PlayerData
         {
             SteamId = Game.SteamId,
-            Name = Game.SteamId.ToString(), // TODO: Get display name
+            DisplayName = string.IsNullOrEmpty( DisplayName ) ? Game.SteamId.ToString() : DisplayName,
+            Gender = Gender,
+            DateOfBirth = DateOfBirth,
+            SkinTone = SkinTone,
+            Height = Height,
+            Age = Age,
             Money = Money,
             JobTitle = JobTitle,
             ClothingList = JsonSerializer.Serialize( EquippedClothing ),
+            HasCompletedCharacterCreation = HasCompletedCharacterCreation,
             LastSeen = DateTime.Now
         };
 
@@ -77,6 +92,16 @@ public sealed class RPPlayer : Component
         _dresser.Apply();
     }
 
+    public void ApplyBodyToDresser()
+    {
+        if ( _dresser == null ) return;
+
+        _dresser.ManualTint = SkinTone;
+        _dresser.ManualHeight = Height;
+        _dresser.ManualAge = Age;
+        _dresser.Apply();
+    }
+
     private async void LoadFromDatabase()
     {
         if ( IsProxy ) return;
@@ -84,14 +109,22 @@ public sealed class RPPlayer : Component
         var data = await DatabaseService.Instance?.GetPlayer( Game.SteamId );
         if ( data != null )
         {
+            DisplayName = data.DisplayName;
+            Gender = data.Gender;
+            DateOfBirth = data.DateOfBirth;
+            SkinTone = data.SkinTone;
+            Height = data.Height;
+            Age = data.Age;
             Money = data.Money;
             JobTitle = data.JobTitle;
+            HasCompletedCharacterCreation = data.HasCompletedCharacterCreation;
             if ( !string.IsNullOrEmpty( data.ClothingList ) )
             {
                 EquippedClothing = JsonSerializer.Deserialize<List<string>>( data.ClothingList ) ?? new();
                 ApplyClothingToDresser();
             }
-            Log.Info( $"Loaded player data for {data.Name}: ${data.Money}" );
+            ApplyBodyToDresser();
+            Log.Info( $"Loaded player data for {data.DisplayName}: ${data.Money}" );
         }
         else
         {
@@ -112,6 +145,10 @@ public sealed class RPPlayer : Component
         {
             Log.Warning( "[RPPlayer] No Dresser found - clothing system won't work" );
         }
+
+        // Ensure inventory components exist (fallback if prefab doesn't load them)
+        Components.GetOrCreate<PlayerInventory>();
+        Components.GetOrCreate<HotbarSelector>();
     }
 
     protected override void OnStart()

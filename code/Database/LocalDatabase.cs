@@ -26,7 +26,7 @@ public class LocalDatabase : IPlayerDatabase
 		}
 
 		_players[data.SteamId] = data;
-		Log.Info( $"[LocalDatabase] Saved player {data.Name} (SteamID: {data.SteamId})" );
+		Log.Info( $"[LocalDatabase] Saved player {data.DisplayName} (SteamID: {data.SteamId})" );
 
 		// TODO: In a real implementation, persist to FileSystem when available
 		// For now, this is in-memory only
