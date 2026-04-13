@@ -102,13 +102,16 @@ public sealed class RPPlayer : Component
         _dresser.Apply();
     }
 
-    private async void LoadFromDatabase()
+    private async void CheckAndRoutePlayer()
     {
-        if ( IsProxy ) return;
-
         var data = await DatabaseService.Instance?.GetPlayer( Game.SteamId );
+
+        // Check if we're already in the character creation scene
+        var inCreationScene = Scene.GetAllComponents<GameRP.CharacterCreation.CharacterCreationManager>().Any();
+
         if ( data != null )
         {
+            // Load existing player data
             DisplayName = data.DisplayName;
             Gender = data.Gender;
             DateOfBirth = data.DateOfBirth;
@@ -125,11 +128,27 @@ public sealed class RPPlayer : Component
             }
             ApplyBodyToDresser();
             Log.Info( $"Loaded player data for {data.DisplayName}: ${data.Money}" );
+
+            // If character creation not done and we're not already in the creation scene, redirect
+            if ( !data.HasCompletedCharacterCreation && !inCreationScene )
+            {
+                Log.Info( "[RPPlayer] Character creation not complete, loading creation scene..." );
+                Scene.Load( "scenes/character-creation.scene" );
+                return;
+            }
         }
         else
         {
-            DisplayName = Game.SteamId.ToString(); // Temporary until character creation completes
+            DisplayName = Game.SteamId.ToString();
             Log.Info( "No existing player data found, starting fresh." );
+
+            // New player — send to character creation if not already there
+            if ( !inCreationScene )
+            {
+                Log.Info( "[RPPlayer] New player, loading character creation scene..." );
+                Scene.Load( "scenes/character-creation.scene" );
+                return;
+            }
         }
     }
 
@@ -156,7 +175,7 @@ public sealed class RPPlayer : Component
     {
         if ( !IsProxy )
         {
-            LoadFromDatabase();
+            CheckAndRoutePlayer();
         }
     }
 
