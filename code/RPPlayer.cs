@@ -163,7 +163,7 @@ public sealed class RPPlayer : Component
         }
         catch ( Exception ex )
         {
-            Log.Error( $"[RPPlayer] Failed to load or route player: {ex.Message}" );
+            Log.Error( $"[RPPlayer] Failed to load or route player: {ex}" );
         }
     }
 
