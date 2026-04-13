@@ -39,6 +39,9 @@ public class Player : BaseEntity
 
     public bool HasCompletedCharacterCreation { get; set; }
 
+    [MaxLength(100)]
+    public string JobTitle { get; set; } = "Unemployed";
+
     // Navigation properties
     public Wallet? Wallet { get; set; }
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

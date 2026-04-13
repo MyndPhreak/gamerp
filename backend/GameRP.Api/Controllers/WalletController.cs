@@ -165,6 +165,27 @@ public class WalletController : ControllerBase
         return Ok( new { steamId, hasCompletedCharacterCreation = completed } );
     }
 
+    /// <summary>Get full player profile (all persisted fields)</summary>
+    [HttpGet("{steamId}/profile")]
+    [ProducesResponseType(typeof(PlayerProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PlayerProfileDto>> GetPlayerProfile(long steamId)
+    {
+        var profile = await _walletService.GetPlayerProfileAsync(steamId);
+        if (profile == null)
+            return NotFound(new { message = "Player not found" });
+        return Ok(profile);
+    }
+
+    /// <summary>Save (upsert) full player profile</summary>
+    [HttpPut("{steamId}/profile")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> SavePlayerProfile(long steamId, [FromBody] SavePlayerProfileDto dto)
+    {
+        await _walletService.SavePlayerProfileAsync(steamId, dto);
+        return Ok(new { message = "Player profile saved" });
+    }
+
     /// <summary>
     /// Health check endpoint
     /// </summary>

@@ -142,6 +142,68 @@ public class WalletService
             .FirstOrDefaultAsync();
     }
 
+    public async Task<PlayerProfileDto?> GetPlayerProfileAsync(long steamId)
+    {
+        var player = await _context.Players
+            .Include(p => p.Wallet)
+            .FirstOrDefaultAsync(p => p.SteamId == steamId);
+
+        if (player == null) return null;
+
+        return new PlayerProfileDto
+        {
+            SteamId = player.SteamId,
+            DisplayName = player.DisplayName,
+            Gender = player.Gender ?? string.Empty,
+            DateOfBirth = player.DateOfBirth ?? string.Empty,
+            SkinTone = player.SkinTone,
+            Height = player.Height,
+            Age = player.Age,
+            Money = (int)(player.Wallet?.Balance ?? 100),
+            JobTitle = player.JobTitle ?? "Unemployed",
+            ClothingList = player.ClothingList ?? "[]",
+            HasCompletedCharacterCreation = player.HasCompletedCharacterCreation,
+            LastSeen = player.LastSeen
+        };
+    }
+
+    public async Task SavePlayerProfileAsync(long steamId, SavePlayerProfileDto dto)
+    {
+        var player = await _context.Players
+            .Include(p => p.Wallet)
+            .FirstOrDefaultAsync(p => p.SteamId == steamId);
+
+        if (player == null)
+        {
+            player = new Player
+            {
+                SteamId = steamId,
+                DisplayName = dto.DisplayName,
+                FirstSeen = DateTime.UtcNow,
+                LastSeen = DateTime.UtcNow
+            };
+            _context.Players.Add(player);
+        }
+
+        player.DisplayName = dto.DisplayName;
+        player.Gender = dto.Gender;
+        player.DateOfBirth = dto.DateOfBirth;
+        player.SkinTone = dto.SkinTone;
+        player.Height = dto.Height;
+        player.Age = dto.Age;
+        player.JobTitle = dto.JobTitle;
+        player.ClothingList = dto.ClothingList;
+        player.HasCompletedCharacterCreation = dto.HasCompletedCharacterCreation;
+        player.LastSeen = DateTime.UtcNow;
+
+        // Update wallet balance if wallet exists; don't create wallet here (GetOrCreateWallet handles that)
+        if (player.Wallet != null)
+            player.Wallet.Balance = dto.Money;
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Saved player profile for {SteamId}: {DisplayName}", steamId, dto.DisplayName);
+    }
+
     /// <summary>
     /// Deposit money into a wallet
     /// </summary>

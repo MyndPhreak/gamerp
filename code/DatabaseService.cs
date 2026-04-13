@@ -43,8 +43,8 @@ public sealed class DatabaseService : Component
 		}
 		else if ( Provider == ProviderType.External )
 		{
-			// TODO: Implement ExternalDatabase provider
-			Log.Warning( "External Database Provider selected but not yet implemented" );
+			_activeProvider = new ExternalDatabase( ExternalConnectionString ?? "http://localhost:8080/api" );
+			Log.Info( "Database initialized with External Provider" );
 		}
 	}
 
