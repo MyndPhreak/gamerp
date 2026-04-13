@@ -280,6 +280,42 @@
           "OnComponentUpdate": null
         },
         {
+          "__type": "GameRP.UI.ShopScreen",
+          "__guid": "b3f21a4e-7c89-4d5a-a6e2-1f4b8c3d9e0a",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "GameRP.UI.HotbarBar",
+          "__guid": "c4d5e6f7-8901-2345-6789-abcdef012345",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "GameRP.UI.InventoryScreen",
+          "__guid": "d5e6f789-0123-4567-89ab-cdef01234567",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
           "__type": "GameRP.UI.FedReserveScreen",
           "__guid": "80f94093-6cfb-471f-af17-488eeae679be",
           "__enabled": true,

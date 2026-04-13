@@ -1,0 +1,99 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using GameRP.Inventory;
+@using System;
+@using System.Linq;
+
+@namespace GameRP.UI
+@inherits PanelComponent
+
+<root>
+    @if (_inventory != null && _inventory.Hotbar != null)
+    {
+        <div class="hotbar">
+            @for (int i = 0; i < _inventory.Hotbar.SlotCount; i++)
+            {
+                var idx = i;
+                var isSelected = _selector?.SelectedIndex == idx;
+                <ItemSlotPanel Container=@_inventory.Hotbar SlotIndex=@idx IsSelected=@isSelected OnSlotClicked=@OnSlotClicked />
+            }
+        </div>
+
+        @if (_selector?.SelectedItem != null)
+        {
+            <div class="selected-name">
+                <label style="color: @(_selector.SelectedItem.GetDefinition()?.Rarity.GetHex() ?? "#ffffff");">
+                    @_selector.SelectedItem.GetDisplayName()
+                </label>
+            </div>
+        }
+    }
+</root>
+
+<style>
+    HotbarBar {
+        position: absolute;
+        bottom: 24px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        pointer-events: none;
+        z-index: 50;
+    }
+
+    .hotbar {
+        flex-direction: row;
+        gap: 4px;
+        padding: 6px;
+        background-color: rgba(0,0,0,0.5);
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.08);
+        pointer-events: all;
+    }
+
+    .selected-name {
+        background-color: rgba(0,0,0,0.6);
+        padding: 4px 12px;
+        border-radius: 4px;
+
+        label {
+            font-size: 13px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px black;
+        }
+    }
+</style>
+
+@code
+{
+    private PlayerInventory _inventory;
+    private HotbarSelector _selector;
+
+    protected override void OnUpdate()
+    {
+        if ( _inventory == null )
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+            if ( player != null )
+            {
+                _inventory = player.Components.Get<PlayerInventory>();
+                _selector = player.Components.Get<HotbarSelector>();
+            }
+        }
+    }
+
+    void OnSlotClicked( ItemContainer container, int slotIndex, bool rightClick )
+    {
+        if ( _selector != null )
+            _selector.Select( slotIndex );
+    }
+
+    protected override int BuildHash() => HashCode.Combine(
+        _inventory?.Hotbar?.SlotCount,
+        _selector?.SelectedIndex,
+        _selector?.SelectedItem?.InstanceId,
+        _selector?.SelectedItem?.Quantity
+    );
+}

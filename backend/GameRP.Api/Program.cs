@@ -16,6 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add Services
 builder.Services.AddScoped<WalletService>();
 builder.Services.AddScoped<FederalReserveService>();
+builder.Services.AddScoped<InventoryService>();
 
 // Add CORS for S&Box
 builder.Services.AddCors(options =>

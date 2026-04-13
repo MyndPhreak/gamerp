@@ -1,0 +1,685 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using GameRP.Shops;
+@using GameRP.Inventory;
+@using GameRP.Systems;
+@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Threading.Tasks;
+
+@namespace GameRP.UI
+@attribute [StyleSheet]
+@inherits PanelComponent
+
+<root class="@(IsOpen ? "shop-open" : "shop-closed")">
+    <div class="shop-backdrop" @onclick=@Close></div>
+
+    <div class="shop-body">
+        <!-- Header -->
+        <div class="shop-header">
+            <div class="shop-title">@_shop?.ShopName</div>
+            <div class="shop-cash">
+                <label class="cash-label">YOUR CASH</label>
+                <label class="cash-value">$@CashOnHand.ToString("N0")</label>
+            </div>
+        </div>
+
+        <!-- Mode tabs -->
+        <div class="shop-tabs">
+            @if (_shop?.Listings?.Any(l => l.CanBuy) == true)
+            {
+                <div class="tab @(_mode == ShopMode.Buy ? "active" : "")" @onclick=@(() => SetMode(ShopMode.Buy))>
+                    <label>Buy</label>
+                </div>
+            }
+            @if (_shop?.Listings?.Any(l => l.CanSell) == true)
+            {
+                <div class="tab sell @(_mode == ShopMode.Sell ? "active" : "")" @onclick=@(() => SetMode(ShopMode.Sell))>
+                    <label>Sell</label>
+                </div>
+            }
+        </div>
+
+        <div class="shop-content">
+            <!-- Category sidebar -->
+            <div class="shop-categories">
+                <div class="cat-item @(_selectedCategory == null ? "active" : "")" @onclick=@(() => SelectCategory(null))>
+                    <icon style="font-family: 'Material Icons'; font-size: 14px; color: white;">apps</icon>
+                    <label>All</label>
+                </div>
+                @foreach (var cat in GetCategories())
+                {
+                    <div class="cat-item @(_selectedCategory == cat ? "active" : "")" @onclick=@(() => SelectCategory(cat))>
+                        <icon style="font-family: 'Material Icons'; font-size: 14px; color: @GetIconColor(cat);">@GetCategoryIcon(cat)</icon>
+                        <label>@cat</label>
+                    </div>
+                }
+            </div>
+
+            <!-- Item list -->
+            <div class="shop-items">
+                @foreach (var listing in GetFilteredListings())
+                {
+                    var def = ItemRegistry.Get(listing.ItemId);
+                    if (def == null) continue;
+
+                    var name = !string.IsNullOrEmpty(listing.NameOverride) ? listing.NameOverride : def.Name;
+                    var price = _mode == ShopMode.Buy ? _shop.GetPriceWithTax(listing.BuyPrice) : listing.SellPrice;
+                    var isSelected = _selectedItemId == listing.ItemId;
+                    var canAfford = _mode == ShopMode.Buy ? CashOnHand >= price : HasItem(listing.ItemId);
+
+                    <div class="item-row @(isSelected ? "selected" : "") @(!canAfford ? "disabled" : "")" @onclick=@(() => SelectItem(listing.ItemId))>
+                        <div class="item-icon">
+                            <icon style="font-family: 'Material Icons'; font-size: 18px; color: @GetIconColor(def.Category);">@def.Icon</icon>
+                        </div>
+                        <div class="item-info">
+                            <label class="item-name">@name</label>
+                            <label class="item-desc">@def.Description</label>
+                        </div>
+                        @if (listing.Stock >= 0)
+                        {
+                            <label class="item-stock @(listing.Stock == 0 ? "out" : "")">
+                                @(listing.Stock > 0 ? $"x{listing.Stock}" : "SOLD OUT")
+                            </label>
+                        }
+                        <label class="item-price @(_mode == ShopMode.Buy ? "buy" : "sell")">$@price.ToString("N0")</label>
+                    </div>
+                }
+
+                @if (!GetFilteredListings().Any())
+                {
+                    <label class="empty-msg">No items available</label>
+                }
+            </div>
+        </div>
+
+        <!-- Footer: selected item + action -->
+        <div class="shop-footer">
+            @if (_selectedDef != null)
+            {
+                <div class="selected-info">
+                    <label class="selected-name">@_selectedDef.Name</label>
+                    <label class="selected-desc">@_selectedDef.Description</label>
+                    @if (_mode == ShopMode.Buy && _shop.TaxRate > 0)
+                    {
+                        <label class="selected-tax">Includes @((_shop.TaxRate * 100).ToString("0"))% tax</label>
+                    }
+                </div>
+
+                @if (_isProcessing)
+                {
+                    <div class="action-btn processing"><label>Processing...</label></div>
+                }
+                else if (_mode == ShopMode.Buy && _selectedListing.CanBuy)
+                {
+                    var price = _shop.GetPriceWithTax(_selectedListing.BuyPrice);
+                    var canDo = CashOnHand >= price;
+                    <div class="action-btn buy @(!canDo ? "disabled" : "")" @onclick=@BuySelected>
+                        <label>Buy — $@price.ToString("N0")</label>
+                    </div>
+                }
+                else if (_mode == ShopMode.Sell && _selectedListing.CanSell && HasItem(_selectedItemId))
+                {
+                    <div class="action-btn sell" @onclick=@SellSelected>
+                        <label>Sell — $@_selectedListing.SellPrice.ToString("N0")</label>
+                    </div>
+                }
+            }
+            else
+            {
+                <label class="footer-hint">Select an item to @(_mode == ShopMode.Buy ? "purchase" : "sell")</label>
+            }
+
+            @if (!string.IsNullOrEmpty(_message))
+            {
+                <label class="footer-msg @_messageClass">@_message</label>
+            }
+        </div>
+    </div>
+</root>
+
+<style>
+    ShopScreen {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        z-index: 100;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &.shop-open {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+
+    .shop-backdrop {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .shop-body {
+        position: absolute;
+        left: 50%; top: 50%;
+        transform: translate(-50%,-50%);
+        width: 700px; height: 520px;
+        background-color: #1e2028;
+        border-radius: 14px;
+        border: 2px solid rgba(255,255,255,0.06);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* ===== HEADER ===== */
+    .shop-header {
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .shop-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .cash-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.35);
+        letter-spacing: 1px;
+    }
+
+    .cash-value {
+        font-size: 20px;
+        font-weight: 800;
+        color: #4ade80;
+        font-family: 'Consolas', monospace;
+    }
+
+    .shop-cash {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+    }
+
+    /* ===== TABS ===== */
+    .shop-tabs {
+        padding: 10px 24px 0;
+        display: flex;
+        gap: 6px;
+    }
+
+    .tab {
+        padding: 8px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: rgba(255,255,255,0.04);
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            pointer-events: none;
+        }
+
+        &:hover { background-color: rgba(255,255,255,0.08); }
+
+        &.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            label { color: white; }
+        }
+
+        &.sell.active {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+        }
+    }
+
+    /* ===== CONTENT ===== */
+    .shop-content {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Categories */
+    .shop-categories {
+        width: 130px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow-y: scroll;
+    }
+
+    .cat-item {
+        padding: 7px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        label {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.4);
+            pointer-events: none;
+        }
+
+        &:hover { background-color: rgba(255,255,255,0.04); }
+
+        &.active {
+            background-color: rgba(102,126,234,0.2);
+            label { color: white; font-weight: 600; }
+        }
+    }
+
+    /* Items */
+    .shop-items {
+        flex: 1;
+        padding: 12px 24px 12px 8px;
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .item-row {
+        display: flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        gap: 12px;
+        background-color: rgba(255,255,255,0.02);
+
+        &:hover { background-color: rgba(255,255,255,0.05); }
+
+        &.selected {
+            background-color: rgba(102,126,234,0.15);
+            border-color: rgba(102,126,234,0.4);
+        }
+
+        &.disabled { opacity: 0.35; }
+    }
+
+    .item-icon {
+        width: 34px; height: 34px;
+        border-radius: 6px;
+        background-color: rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        label {
+            font-size: 15px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.3);
+            pointer-events: none;
+        }
+    }
+
+    .item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+    }
+
+    .item-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .item-desc {
+        font-size: 10px;
+        color: rgba(255,255,255,0.3);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .item-stock {
+        font-size: 11px;
+        color: rgba(255,255,255,0.35);
+        flex-shrink: 0;
+
+        &.out { color: #ef4444; }
+    }
+
+    .item-price {
+        font-size: 15px;
+        font-weight: 700;
+        flex-shrink: 0;
+        font-family: 'Consolas', monospace;
+
+        &.buy { color: #fbbf24; }
+        &.sell { color: #4ade80; }
+    }
+
+    .empty-msg {
+        padding: 40px;
+        text-align: center;
+        font-size: 13px;
+        color: rgba(255,255,255,0.2);
+    }
+
+    /* ===== FOOTER ===== */
+    .shop-footer {
+        padding: 14px 24px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 56px;
+    }
+
+    .selected-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .selected-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+    }
+
+    .selected-desc {
+        font-size: 11px;
+        color: rgba(255,255,255,0.35);
+    }
+
+    .selected-tax {
+        font-size: 10px;
+        color: rgba(255,255,255,0.2);
+    }
+
+    .footer-hint {
+        flex: 1;
+        font-size: 12px;
+        color: rgba(255,255,255,0.2);
+    }
+
+    .footer-msg {
+        font-size: 12px;
+        font-weight: 600;
+
+        &.success { color: #4ade80; }
+        &.error { color: #f87171; }
+    }
+
+    .action-btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.12s;
+
+        label {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            pointer-events: none;
+        }
+
+        &.buy {
+            background-color: #22863a;
+            &:hover { background-color: #2ea44f; }
+        }
+
+        &.sell {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            &:hover { opacity: 0.9; }
+        }
+
+        &.processing {
+            background-color: rgba(255,255,255,0.08);
+            label { color: rgba(255,255,255,0.4); }
+        }
+
+        &.disabled {
+            background-color: rgba(255,255,255,0.04);
+            cursor: default;
+            label { color: rgba(255,255,255,0.2); }
+        }
+    }
+</style>
+
+@code
+{
+    enum ShopMode { Buy, Sell }
+
+    private bool IsOpen;
+    private ShopKeeper _shop;
+    private ShopMode _mode = ShopMode.Buy;
+    private string _selectedCategory;
+    private string _selectedItemId;
+    private ItemDefinition _selectedDef;
+    private ShopListing _selectedListing;
+    private bool _isProcessing;
+    private string _message;
+    private string _messageClass;
+    private TimeSince _messageTimer;
+
+    private int CashOnHand
+    {
+        get
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+            return player?.Money ?? 0;
+        }
+    }
+
+    private PlayerInventory GetPlayerInventory()
+    {
+        var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+        return player?.Components.Get<PlayerInventory>();
+    }
+
+    private bool HasItem( string itemId )
+    {
+        return GetPlayerInventory()?.Has( itemId ) == true;
+    }
+
+    public void Open( ShopKeeper shop )
+    {
+        _shop = shop;
+        IsOpen = true;
+        _selectedItemId = null;
+        _selectedDef = null;
+        _selectedCategory = null;
+        _mode = shop.Listings.Any( l => l.CanBuy ) ? ShopMode.Buy : ShopMode.Sell;
+        _message = null;
+        Mouse.Visibility = MouseVisibility.Visible;
+    }
+
+    private void Close()
+    {
+        IsOpen = false;
+        _shop = null;
+        _selectedItemId = null;
+        _selectedDef = null;
+        _message = null;
+        Mouse.Visibility = MouseVisibility.Auto;
+    }
+
+    void SetMode( ShopMode mode )
+    {
+        _mode = mode;
+        _selectedItemId = null;
+        _selectedDef = null;
+        _message = null;
+    }
+
+    void SelectCategory( string category )
+    {
+        _selectedCategory = category;
+    }
+
+    void SelectItem( string itemId )
+    {
+        _selectedItemId = itemId;
+        _selectedDef = ItemRegistry.Get( itemId );
+
+        int idx = _shop.FindListingIndex( itemId );
+        if ( idx >= 0 )
+            _selectedListing = _shop.Listings[idx];
+
+        _message = null;
+    }
+
+    IEnumerable<string> GetCategories()
+    {
+        if ( _shop == null ) return Enumerable.Empty<string>();
+        return _shop.GetCategories( _mode == ShopMode.Buy );
+    }
+
+    IEnumerable<ShopListing> GetFilteredListings()
+    {
+        if ( _shop == null ) return Enumerable.Empty<ShopListing>();
+
+        var listings = _mode == ShopMode.Buy ? _shop.GetBuyableListings() : _shop.GetSellableListings();
+
+        if ( _selectedCategory != null )
+            listings = listings.Where( l => ItemRegistry.Get( l.ItemId )?.Category == _selectedCategory );
+
+        return listings.OrderBy( l => ItemRegistry.Get( l.ItemId )?.Category ).ThenBy( l => l.BuyPrice );
+    }
+
+    string GetCategoryIcon( string category )
+    {
+        return category switch
+        {
+            "Food" => "restaurant",
+            "Tools" => "build",
+            "Materials" => "category",
+            "Weapons" => "gpp_maybe",
+            "Ammo" => "trip_origin",
+            _ => "inventory_2"
+        };
+    }
+
+    string GetIconColor( string category )
+    {
+        return category switch
+        {
+            "Food" => "#4ade80",
+            "Tools" => "#60a5fa",
+            "Materials" => "#a78bfa",
+            "Weapons" => "#f87171",
+            "Ammo" => "#fbbf24",
+            _ => "#94a3b8"
+        };
+    }
+
+    async void BuySelected()
+    {
+        if ( _selectedItemId == null || _shop == null || _isProcessing ) return;
+
+        var inv = GetPlayerInventory();
+        if ( inv == null )
+        {
+            ShowMessage( "No inventory!", "error" );
+            return;
+        }
+
+        _isProcessing = true;
+        StateHasChanged();
+
+        var success = await _shop.TryBuyItem( _selectedItemId, Game.SteamId, inv );
+
+        if ( success )
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+            var cost = _shop.GetPriceWithTax( _selectedListing.BuyPrice );
+            player?.RecordTransaction( $"Bought {_selectedDef?.Name}", -cost );
+
+            // Refresh the listing in case stock changed
+            int idx = _shop.FindListingIndex( _selectedItemId );
+            if ( idx >= 0 ) _selectedListing = _shop.Listings[idx];
+
+            ShowMessage( $"Purchased {_selectedDef?.Name}!", "success" );
+        }
+        else
+        {
+            ShowMessage( "Purchase failed", "error" );
+        }
+
+        _isProcessing = false;
+        StateHasChanged();
+    }
+
+    async void SellSelected()
+    {
+        if ( _selectedItemId == null || _shop == null || _isProcessing ) return;
+
+        var inv = GetPlayerInventory();
+        if ( inv == null )
+        {
+            ShowMessage( "No inventory!", "error" );
+            return;
+        }
+
+        _isProcessing = true;
+        StateHasChanged();
+
+        var success = await _shop.TrySellItem( _selectedItemId, Game.SteamId, inv );
+
+        if ( success )
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+            player?.RecordTransaction( $"Sold {_selectedDef?.Name}", _selectedListing.SellPrice );
+
+            int idx = _shop.FindListingIndex( _selectedItemId );
+            if ( idx >= 0 ) _selectedListing = _shop.Listings[idx];
+
+            ShowMessage( $"Sold {_selectedDef?.Name}!", "success" );
+        }
+        else
+        {
+            ShowMessage( "Sale failed", "error" );
+        }
+
+        _isProcessing = false;
+        StateHasChanged();
+    }
+
+    void ShowMessage( string msg, string cls )
+    {
+        _message = msg;
+        _messageClass = cls;
+        _messageTimer = 0;
+    }
+
+    protected override void OnUpdate()
+    {
+        if ( !IsOpen ) return;
+
+        if ( !string.IsNullOrEmpty( _message ) && _messageTimer > 3f )
+            _message = null;
+
+        if ( Input.EscapePressed )
+            Close();
+    }
+
+    protected override int BuildHash() => HashCode.Combine( IsOpen, _mode, _selectedItemId, _selectedCategory, CashOnHand, _isProcessing, _message, _shop?.Listings?.Count );
+}

@@ -1,0 +1,309 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using GameRP.Inventory;
+@using System;
+@using System.Linq;
+
+@namespace GameRP.UI
+@inherits PanelComponent
+
+<root class="@(_isOpen ? "open" : "closed")">
+    <div class="backdrop" @onclick=@Close></div>
+
+    <div class="inventory-window">
+        <!-- Header -->
+        <div class="inv-header">
+            <label class="inv-title">Inventory</label>
+            <div class="inv-actions">
+                <div class="action-btn" @onclick=@SortInventory>
+                    <icon style="font-family: 'Material Icons'; font-size: 14px;">sort</icon>
+                    <label>Sort</label>
+                </div>
+                <div class="action-btn close" @onclick=@Close>
+                    <icon style="font-family: 'Material Icons'; font-size: 14px;">close</icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main grid -->
+        <div class="inv-grid">
+            @if (_inventory != null && _inventory.Main != null)
+            {
+                @for (int i = 0; i < _inventory.Main.SlotCount; i++)
+                {
+                    var idx = i;
+                    <ItemSlotPanel Container=@_inventory.Main SlotIndex=@idx OnSlotClicked=@OnSlotClicked />
+                }
+            }
+        </div>
+
+        <!-- Divider -->
+        <div class="hotbar-divider"></div>
+
+        <!-- Hotbar -->
+        <div class="inv-hotbar">
+            @if (_inventory != null && _inventory.Hotbar != null)
+            {
+                @for (int i = 0; i < _inventory.Hotbar.SlotCount; i++)
+                {
+                    var idx = i;
+                    var isSelected = _selector?.SelectedIndex == idx;
+                    <ItemSlotPanel Container=@_inventory.Hotbar SlotIndex=@idx IsSelected=@isSelected OnSlotClicked=@OnSlotClicked />
+                }
+            }
+        </div>
+
+        <!-- Footer with weight/slot info -->
+        <div class="inv-footer">
+            <label class="footer-stat">@(_inventory?.UsedSlots ?? 0) / @(_inventory?.TotalSlots ?? 0) slots</label>
+            @if (_inventory != null && _inventory.MaxWeight > 0)
+            {
+                <label class="footer-stat">@_inventory.TotalWeight.ToString("0.#") / @_inventory.MaxWeight.ToString("0.#") kg</label>
+            }
+        </div>
+    </div>
+
+    <!-- Drag ghost: follows cursor while dragging -->
+    @if (_controller?.IsDragging == true && _controller.HeldItem != null)
+    {
+        var def = _controller.HeldItem.GetDefinition();
+        if (def != null)
+        {
+            var rarityHex = def.Rarity.GetHex();
+            <div class="drag-ghost" style="left: @((Mouse.Position.x - 28))px; top: @((Mouse.Position.y - 28))px;">
+                <icon style="font-family: 'Material Icons'; font-size: 32px; color: @rarityHex;">@def.Icon</icon>
+                @if (_controller.HeldItem.Quantity > 1)
+                {
+                    <label class="ghost-qty">@_controller.HeldItem.Quantity</label>
+                }
+            </div>
+        }
+    }
+</root>
+
+<style>
+    InventoryScreen {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        z-index: 90;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+
+        &.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+
+    .backdrop {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.6);
+    }
+
+    .inventory-window {
+        position: absolute;
+        left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #1e2028;
+        border: 2px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        padding: 16px;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    }
+
+    .inv-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 4px 8px 4px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .inv-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .inv-actions {
+        flex-direction: row;
+        gap: 6px;
+    }
+
+    .action-btn {
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        background-color: rgba(255,255,255,0.05);
+        border-radius: 5px;
+        cursor: pointer;
+
+        label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            pointer-events: none;
+        }
+
+        icon { color: rgba(255,255,255,0.6); }
+
+        &:hover {
+            background-color: rgba(255,255,255,0.1);
+            label, icon { color: white; }
+        }
+
+        &.close icon { color: rgba(255,100,100,0.8); }
+    }
+
+    .inv-grid {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 540px;
+        gap: 4px;
+        padding: 8px 0;
+    }
+
+    .hotbar-divider {
+        height: 1px;
+        background-color: rgba(255,255,255,0.08);
+        margin: 6px 0;
+    }
+
+    .inv-hotbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 540px;
+        gap: 4px;
+        padding: 4px 0 8px 0;
+    }
+
+    .inv-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        padding-top: 6px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .footer-stat {
+        font-size: 11px;
+        color: rgba(255,255,255,0.4);
+        font-weight: 600;
+    }
+
+    /* Drag ghost */
+    .drag-ghost {
+        position: absolute;
+        width: 56px;
+        height: 56px;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0.85;
+        z-index: 1000;
+    }
+
+    .ghost-qty {
+        position: absolute;
+        right: 4px;
+        bottom: 2px;
+        font-size: 13px;
+        font-weight: 800;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+    }
+</style>
+
+@code
+{
+    private bool _isOpen;
+    private PlayerInventory _inventory;
+    private HotbarSelector _selector;
+    private InventoryController _controller;
+
+    protected override void OnUpdate()
+    {
+        // Find player components
+        if ( _inventory == null )
+        {
+            var player = Scene.GetAll<RPPlayer>().FirstOrDefault( p => !p.IsProxy );
+            if ( player != null )
+            {
+                _inventory = player.Components.Get<PlayerInventory>();
+                _selector = player.Components.Get<HotbarSelector>();
+                _controller = player.Components.GetOrCreate<InventoryController>();
+            }
+        }
+
+        // Toggle inventory with I
+        if ( Input.Pressed( "Inventory" ) )
+        {
+            Toggle();
+        }
+
+        if ( _isOpen && Input.EscapePressed )
+        {
+            Close();
+        }
+    }
+
+    public void Toggle()
+    {
+        if ( _isOpen ) Close();
+        else Open();
+    }
+
+    public void Open()
+    {
+        _isOpen = true;
+        Mouse.Visibility = MouseVisibility.Visible;
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        // Return any held item to source on close
+        _controller?.ReturnToSource();
+        Mouse.Visibility = MouseVisibility.Hidden;
+    }
+
+    void OnSlotClicked( ItemContainer container, int slotIndex, bool rightClick )
+    {
+        if ( _controller == null ) return;
+
+        if ( rightClick )
+        {
+            _controller.RightClick( container, slotIndex );
+            return;
+        }
+
+        if ( _controller.IsDragging )
+        {
+            _controller.Drop( container, slotIndex );
+        }
+        else
+        {
+            _controller.PickUp( container, slotIndex );
+        }
+    }
+
+    void SortInventory()
+    {
+        _inventory?.Main?.Sort();
+    }
+
+    protected override int BuildHash() => HashCode.Combine(
+        _isOpen,
+        _inventory?.Main?.UsedSlots,
+        _inventory?.Hotbar?.UsedSlots,
+        _controller?.HeldItem?.InstanceId,
+        _controller?.HeldItem?.Quantity,
+        _selector?.SelectedIndex
+    );
+}

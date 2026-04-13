@@ -103,6 +103,34 @@
         "OnComponentUpdate": null
       },
       {
+        "__type": "GameRP.Inventory.PlayerInventory",
+        "__guid": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+        "__enabled": true,
+        "Flags": 0,
+        "InventorySlots": 27,
+        "HotbarSlots": 9,
+        "MaxWeight": 0,
+        "InventoryTickInterval": 1.0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      },
+      {
+        "__type": "GameRP.Inventory.HotbarSelector",
+        "__guid": "a2b3c4d5-e6f7-8901-bcde-f23456789012",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      },
+      {
         "__type": "Sandbox.CharacterController",
         "__guid": "896a890c-3294-4549-988c-269e522907b2",
         "__enabled": true,
