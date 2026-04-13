@@ -1,0 +1,112 @@
+@import 'theme';
+
+// =====================================================
+// dark-panel
+// Usage: @include dark-panel;
+// Dark glass panel background for in-world UI screens.
+// =====================================================
+@mixin dark-panel {
+    background: linear-gradient(180deg, $panel-bg-top 0%, $panel-bg-bottom 100%);
+}
+
+// =====================================================
+// pill-tab / pill-tab--active
+// Usage: apply .pill-tab class, add .active for selected state
+// =====================================================
+@mixin pill-tab {
+    padding: 8px 14px;
+    border-radius: $radius-pill;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: $text-secondary;
+    background: $surface-hover;
+}
+
+@mixin pill-tab--active {
+    color: $text-primary;
+    background: $accent-gradient;
+}
+
+// =====================================================
+// icon-card / icon-card--selected
+// Usage: square thumbnail cards (clothing, inventory, etc.)
+// =====================================================
+@mixin icon-card {
+    aspect-ratio: 1;
+    border-radius: $radius-sm;
+    border: 2px solid transparent;
+    background: $surface;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color $transition;
+    position: relative;
+
+    &:hover {
+        border-color: rgba(102, 126, 234, 0.6); // $accent-start with opacity
+    }
+}
+
+@mixin icon-card--selected {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: $accent-start;
+}
+
+// =====================================================
+// btn-primary / btn-secondary / btn-danger / btn-success
+// Usage: action buttons (Apply, Next, Close, Confirm)
+// =====================================================
+@mixin btn-primary {
+    flex: 1;
+    padding: 16px;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $text-primary;
+    background: $accent-gradient;
+    text-align: center;
+}
+
+@mixin btn-secondary {
+    flex: 1;
+    padding: 16px;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+@mixin btn-danger {
+    flex: 1;
+    padding: 14px;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: $text-primary;
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    text-align: center;
+}
+
+@mixin btn-success {
+    flex: 1;
+    padding: 16px;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $text-primary;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    text-align: center;
+}
