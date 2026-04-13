@@ -27,7 +27,7 @@ ClosetScreen {
     display: flex;
     flex-direction: column;
     padding: $padding;
-    gap: $gap-lg;
+    gap: $gap-lg; // intentionally wider than the original 16px — adjust to $gap-md if sections clip
     pointer-events: all;
     overflow: hidden;
 }
