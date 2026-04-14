@@ -5,11 +5,7 @@
 @namespace GameRP.UI
 @inherits PanelComponent
 
-<root class="orbit-overlay @(_isDragging ? "is-dragging" : "")"
-      @onmousedown="@OnMouseDown"
-      @onmousemove="@OnMouseMove"
-      @onmouseup="@OnMouseUp"
-      @onmouseleave="@OnMouseLeave">
+<root class="orbit-overlay @(_isDragging ? "is-dragging" : "")">
 </root>
 
 @code {
@@ -20,44 +16,35 @@
     private bool _isDragging;
     private Vector2 _lastMousePos;
 
-    private void OnMouseDown( MousePanelEvent e )
-    {
-        if ( !IsActive ) return;
-        if ( e.Button != "mouseright" ) return;
-        _isDragging = true;
-        _lastMousePos = Mouse.Position;
-        StateHasChanged();
-    }
-
-    private void OnMouseMove( MousePanelEvent e )
-    {
-        if ( !IsActive || !_isDragging ) return;
-        var current = Mouse.Position;
-        var delta = current - _lastMousePos;
-        _lastMousePos = current;
-        if ( delta.LengthSquared > 0.001f )
-            OnOrbitDelta?.Invoke( delta.x, delta.y );
-    }
-
-    private void OnMouseUp( MousePanelEvent e )
-    {
-        if ( !_isDragging ) return;
-        _isDragging = false;
-        StateHasChanged();
-    }
-
-    private void OnMouseLeave( MousePanelEvent e )
-    {
-        if ( !_isDragging ) return;
-        _isDragging = false;
-        StateHasChanged();
-    }
-
     protected override void OnUpdate()
     {
         if ( !IsActive ) return;
+
+        // Scroll zoom
         var wheel = Input.MouseWheel.y;
         if ( MathF.Abs( wheel ) > 0.001f )
             OnScrollZoom?.Invoke( wheel );
+
+        // Right-click orbit via game input — avoids panel button string ambiguity
+        if ( Input.Pressed( "attack2" ) )
+        {
+            _isDragging = true;
+            _lastMousePos = Mouse.Position;
+            StateHasChanged();
+        }
+        else if ( Input.Released( "attack2" ) )
+        {
+            _isDragging = false;
+            StateHasChanged();
+        }
+
+        if ( _isDragging )
+        {
+            var current = Mouse.Position;
+            var delta = current - _lastMousePos;
+            _lastMousePos = current;
+            if ( delta.LengthSquared > 0.001f )
+                OnOrbitDelta?.Invoke( delta.x, delta.y );
+        }
     }
 }
