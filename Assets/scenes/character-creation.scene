@@ -71,7 +71,7 @@
           "__version": 2,
           "Flags": 0,
           "Name": "LicenseStationPosition",
-          "Position": "0,0,7.537273",
+          "Position": "0,0,0",
           "Rotation": "0,0,0,1",
           "Scale": "1,1,1",
           "Tags": "",
@@ -497,13 +497,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "6e11f2f1-4707-4ebf-9815-fb2d68c8c29b"
-        }
-      },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "2090eadf-b71e-408c-bb22-967b82fc5d3b"
+        }
       }
     }
   },
