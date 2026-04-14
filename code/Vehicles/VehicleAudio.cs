@@ -8,6 +8,9 @@ public sealed class VehicleAudio : Component, Component.ICollisionListener
 	[Property, Group( "Configuration" )] public VehicleController Controller { get; set; }
 	[Property, Group( "Configuration" )] public bool IsElectric { get; set; } = false;
 	
+	/// <summary>Looping idle rumble. Plays at constant pitch, fades out as RPM rises.</summary>
+	[Property, Group( "Engine Sounds" )] public SoundEvent IdleSound { get; set; }
+	/// <summary>Looping drive/rev sound. Fades in as RPM rises, pitch-shifted across a narrow range.</summary>
 	[Property, Group( "Engine Sounds" )] public SoundEvent EngineSound { get; set; }
 	[Property, Group( "Engine Sounds" ), ShowIf( "IsElectric", false )] public SoundEvent ShiftSound { get; set; }
 	[Property, Group( "Engine Sounds" )] public SoundEvent IgnitionSound { get; set; }
@@ -19,9 +22,12 @@ public sealed class VehicleAudio : Component, Component.ICollisionListener
 	[Property, Group( "Brake Sounds" )] public SoundEvent AirbrakeReleaseSound { get; set; }
 	[Property, Group( "Brake Sounds" )] public SoundEvent BrakeSquealSound { get; set; }
 
-	[Property, Group( "Tuning" )] public float MinimumPitch { get; set; } = 0.8f;
-	[Property, Group( "Tuning" )] public float MaximumPitch { get; set; } = 2.0f;
+	/// <summary>Drive loop pitch at idle RPM. Keep close to 1.0 for natural sound.</summary>
+	[Property, Group( "Tuning" )] public float MinimumPitch { get; set; } = 0.9f;
+	/// <summary>Drive loop pitch at redline. 1.3–1.6 sounds natural; above 1.8 gets chipmunky.</summary>
+	[Property, Group( "Tuning" )] public float MaximumPitch { get; set; } = 1.5f;
 	
+	private SoundHandle _idleHandle;
 	private SoundHandle _engineHandle;
 	private int _lastGear = 1;
 	private TimeSince _timeSinceLastCrash;
@@ -38,24 +44,15 @@ public sealed class VehicleAudio : Component, Component.ICollisionListener
 
 	protected override void OnStart()
 	{
-		if ( EngineSound != null )
-		{
-			_engineHandle = Sound.Play( EngineSound, Transform.Position );
-			if ( _engineHandle != null )
-			{
-				_engineHandle.ListenLocal = false; // Make sure it's spatialized 3D
-			}
-		}
+		// Engine sounds are started when a driver enters, not on spawn.
 	}
 
 	protected override void OnUpdate()
 	{
-		if ( _engineHandle != null )
-		{
-			// Keep the sound localized to the vehicle
-			_engineHandle.Position = Transform.Position;
-		}
-			
+		// Keep sounds localized to the vehicle
+		if ( _idleHandle != null ) _idleHandle.Position = Transform.Position;
+		if ( _engineHandle != null ) _engineHandle.Position = Transform.Position;
+
 		UpdateEngineSound();
 		UpdateBrakeSounds();
 	}
@@ -116,7 +113,7 @@ public sealed class VehicleAudio : Component, Component.ICollisionListener
 		// Handle Driver Entry (Ignition)
 		if ( isDriven && !_wasDriven )
 		{
-			if ( IgnitionSound != null ) 
+			if ( IgnitionSound != null )
 			{
 				_ignitionHandle = Sound.Play( IgnitionSound, Transform.Position );
 			}
@@ -125,71 +122,87 @@ public sealed class VehicleAudio : Component, Component.ICollisionListener
 		else if ( !isDriven && _wasDriven )
 		{
 			if ( ShutoffSound != null ) Sound.Play( ShutoffSound, Transform.Position );
-			
-			// Kill the continuous engine loop immediately
+
+			_idleHandle?.Stop();
+			_idleHandle = null;
 			_engineHandle?.Stop();
 			_engineHandle = null;
-			
-			// Also kill ignition if they get out before it finishes
 			_ignitionHandle?.Stop();
 			_ignitionHandle = null;
 		}
 
 		_wasDriven = isDriven;
 
-		// When nobody is driving, the engine loop is fully dead
 		if ( !isDriven ) return;
 
-		// Wait for the ignition sound to finish before starting the main engine loop
+		// Wait for the ignition sound to finish before starting the engine loops
 		if ( _ignitionHandle != null && _ignitionHandle.IsPlaying ) return;
 
-		// Safely restart the sound if it finished (e.g., if a non-looping .wav was provided instead of a looping .sound event)
+		// Ensure both loops are playing (restart if a non-looping clip ended)
+		if ( IdleSound != null && (_idleHandle == null || !_idleHandle.IsPlaying) )
+		{
+			_idleHandle = Sound.Play( IdleSound, Transform.Position );
+			if ( _idleHandle != null ) _idleHandle.ListenLocal = false;
+		}
 		if ( EngineSound != null && (_engineHandle == null || !_engineHandle.IsPlaying) )
 		{
 			_engineHandle = Sound.Play( EngineSound, Transform.Position );
 			if ( _engineHandle != null ) _engineHandle.ListenLocal = false;
 		}
 
-		if ( _engineHandle == null ) return;
-
-		float targetPitch;
-		float targetVolume;
+		// Smooth lerp factor (clamped to prevent overshoot at low framerates)
+		float lerpT = Math.Clamp( Time.Delta * 15f, 0f, 1f );
 
 		if ( IsElectric )
 		{
-			// EVs don't usually map to geared RPM, they map to raw velocity
-			var speedFrac = Math.Clamp( MathF.Abs(Controller.CurrentSpeed) / 1500f, 0f, 1f );
-			targetPitch = MathX.Lerp( MinimumPitch, MaximumPitch, speedFrac );
-			targetVolume = MathX.Lerp( 0.4f, 1.0f, speedFrac );
+			var speedFrac = Math.Clamp( MathF.Abs( Controller.CurrentSpeed ) / 1500f, 0f, 1f );
+
+			if ( _idleHandle != null )
+				_idleHandle.Volume = MathX.Lerp( _idleHandle.Volume, 1f - speedFrac, lerpT );
+
+			if ( _engineHandle != null )
+			{
+				_engineHandle.Pitch = MathX.Lerp( _engineHandle.Pitch, MathX.Lerp( MinimumPitch, MaximumPitch, speedFrac ), lerpT );
+				_engineHandle.Volume = MathX.Lerp( _engineHandle.Volume, speedFrac, lerpT );
+			}
 		}
 		else
 		{
-			// True Internal Combustion Engine mapping using physical RPM 
+			// Shift sound
 			if ( Controller.CurrentGear > _lastGear )
 			{
 				if ( ShiftSound != null ) Sound.Play( ShiftSound, Transform.Position );
 			}
 			_lastGear = Controller.CurrentGear;
 
-			// Normalize physical Engine RPM into a 0.0 -> 1.0 fraction
+			// Normalize Engine RPM into 0–1
 			float rpmRange = Controller.MaxRPM - Controller.IdleRPM;
 			float rpmFrac = Math.Clamp( (Controller.EngineRPM - Controller.IdleRPM) / (rpmRange > 0f ? rpmRange : 1f), 0f, 1f );
-			
-			targetPitch = MathX.Lerp( MinimumPitch, MaximumPitch, rpmFrac );
-			
-			// Add slight volume rumbling boost if throttle is applied
-			bool hasThrottleInput = Input.Down( "Forward" ) || Input.Down( "Backward" );
-			targetVolume = MathX.Lerp( 0.5f, 1.0f, rpmFrac ) + (hasThrottleInput ? 0.2f : 0f);
-		}
 
-		// Smoothly lerp towards target pitch and volume, but violently fast to avoid double-lerping sluggishness.
-		// Clamp t to [0,1] to prevent overshoot when framerate is low (e.g. Delta * 30 > 1 below ~30fps causes crackling).
-		_engineHandle.Pitch = MathX.Lerp( _engineHandle.Pitch, targetPitch, Math.Clamp( Time.Delta * 30f, 0f, 1f ) );
-		_engineHandle.Volume = Math.Clamp( MathX.Lerp( _engineHandle.Volume, Math.Clamp( targetVolume, 0f, 1f ), Math.Clamp( Time.Delta * 15f, 0f, 1f ) ), 0f, 1f );
+			bool hasThrottle = Input.Down( "Forward" ) || Input.Down( "Backward" );
+
+			// --- Idle layer: constant pitch, fades out as RPM rises ---
+			if ( _idleHandle != null )
+			{
+				float idleVolume = (1f - rpmFrac) * (hasThrottle ? 0.7f : 1f);
+				_idleHandle.Volume = MathX.Lerp( _idleHandle.Volume, Math.Clamp( idleVolume, 0f, 1f ), lerpT );
+			}
+
+			// --- Drive layer: pitch rises with RPM, fades in as RPM rises ---
+			if ( _engineHandle != null )
+			{
+				float drivePitch = MathX.Lerp( MinimumPitch, MaximumPitch, rpmFrac );
+				float driveVolume = rpmFrac + (hasThrottle ? 0.15f : 0f);
+
+				_engineHandle.Pitch = MathX.Lerp( _engineHandle.Pitch, drivePitch, lerpT );
+				_engineHandle.Volume = MathX.Lerp( _engineHandle.Volume, Math.Clamp( driveVolume, 0f, 1f ), lerpT );
+			}
+		}
 	}
 
 	protected override void OnDestroy()
 	{
+		_idleHandle?.Stop();
 		_engineHandle?.Stop();
 		_brakeSquealHandle?.Stop();
 	}

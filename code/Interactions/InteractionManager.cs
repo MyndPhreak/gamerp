@@ -50,6 +50,8 @@ public sealed class InteractionManager : Component, PlayerController.IEvents
 	{
 		if ( IsProxy ) return;
 
+		Mouse.Visibility = MouseVisibility.Hidden;
+
 		var camera = Camera ?? Scene.Camera;
 		if ( camera != null )
 		{

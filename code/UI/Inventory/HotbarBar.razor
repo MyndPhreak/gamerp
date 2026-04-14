@@ -91,6 +91,7 @@
     }
 
     protected override int BuildHash() => HashCode.Combine(
+        _inventory != null,
         _inventory?.Hotbar?.SlotCount,
         _selector?.SelectedIndex,
         _selector?.SelectedItem?.InstanceId,

@@ -120,43 +120,56 @@ public sealed class PlayerInventory : Component
 
 	public async void LoadFromBackend()
 	{
-		var dto = await InventorySystem.Api.GetInventoryAsync( Game.SteamId );
-		if ( dto == null )
+		try
 		{
-			Log.Warning( "[Inventory] Failed to load from backend" );
-			return;
-		}
-
-		// Apply slot counts (resize containers if changed)
-		if ( dto.MainSlots != Main.SlotCount )
-			Main.Resize( dto.MainSlots );
-		if ( dto.HotbarSlots != Hotbar.SlotCount )
-			Hotbar.Resize( dto.HotbarSlots );
-
-		// Clear and refill
-		Main.Clear();
-		Hotbar.Clear();
-
-		foreach ( var itemDto in dto.Items )
-		{
-			var instance = new ItemInstance
+			Log.Info( $"[Inventory] Loading inventory for SteamId: {Game.SteamId}" );
+			var dto = await InventorySystem.Api.GetInventoryAsync( Game.SteamId );
+			if ( dto == null )
 			{
-				InstanceId = itemDto.InstanceId,
-				ItemId = itemDto.ItemId,
-				Quantity = itemDto.Quantity,
-				Durability = itemDto.Durability,
-				Nbt = ItemNbt.Deserialize( itemDto.NbtJson )
-			};
+				Log.Warning( "[Inventory] Failed to load from backend (null response)" );
+				return;
+			}
 
-			var container = itemDto.Container == "hotbar" ? Hotbar : Main;
-			var slot = container.GetSlot( itemDto.SlotIndex );
-			if ( slot != null )
-				slot.Item = instance;
+			Log.Info( $"[Inventory] Backend returned: MainSlots={dto.MainSlots}, HotbarSlots={dto.HotbarSlots}, Items={dto.Items?.Count ?? -1}" );
+
+			// Only resize if the backend returned valid slot counts (> 0)
+			if ( dto.MainSlots > 0 && dto.MainSlots != Main.SlotCount )
+				Main.Resize( dto.MainSlots );
+			if ( dto.HotbarSlots > 0 && dto.HotbarSlots != Hotbar.SlotCount )
+				Hotbar.Resize( dto.HotbarSlots );
+
+			// Clear and refill
+			Main.Clear();
+			Hotbar.Clear();
+
+			if ( dto.Items != null )
+			{
+				foreach ( var itemDto in dto.Items )
+				{
+					var instance = new ItemInstance
+					{
+						InstanceId = itemDto.InstanceId,
+						ItemId = itemDto.ItemId,
+						Quantity = itemDto.Quantity,
+						Durability = itemDto.Durability,
+						Nbt = ItemNbt.Deserialize( itemDto.NbtJson )
+					};
+
+					var container = itemDto.Container == "hotbar" ? Hotbar : Main;
+					var slot = container.GetSlot( itemDto.SlotIndex );
+					if ( slot != null )
+						slot.Item = instance;
+				}
+			}
+
+			_rowVersion = dto.RowVersion ?? "";
+			OnChanged?.Invoke();
+			Log.Info( $"[Inventory] Loaded {dto.Items?.Count ?? 0} items. Slots: {Main.SlotCount} main, {Hotbar.SlotCount} hotbar" );
 		}
-
-		_rowVersion = dto.RowVersion;
-		OnChanged?.Invoke();
-		Log.Info( $"[Inventory] Loaded {dto.Items.Count} items from backend" );
+		catch ( Exception ex )
+		{
+			Log.Warning( $"[Inventory] LoadFromBackend exception: {ex.Message}" );
+		}
 	}
 
 	public async Task SaveToBackend()

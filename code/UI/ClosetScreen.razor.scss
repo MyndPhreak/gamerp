@@ -1,4 +1,4 @@
-@import 'theme'; // explicit: S&Box compiler may not resolve theme transitively through _mixins
+@import 'theme';
 @import 'mixins';
 
 // =====================================================
@@ -27,7 +27,7 @@ ClosetScreen {
     display: flex;
     flex-direction: column;
     padding: $padding;
-    gap: $gap-lg; // intentionally wider than the original 16px — adjust to $gap-md if sections clip
+    gap: $gap-lg;
     pointer-events: all;
     overflow: hidden;
 }
@@ -77,7 +77,7 @@ ClosetScreen {
     font-size: 14px;
     font-weight: 500;
     color: $text-secondary;
-    background: $surface-hover;
+    background-color: $surface-hover;
     text-align: center;
 
     &.active {
@@ -107,7 +107,77 @@ ClosetScreen {
 
     input[type="range"] {
         width: 100%;
-        accent-color: $accent-start;
+        // accent-color not supported in S&Box
+    }
+}
+
+// =====================================================
+// 3D item preview
+// =====================================================
+.item-preview {
+    width: 100%;
+    height: 280px;
+    flex-shrink: 0;
+    border-radius: $radius-md;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.preview-scene {
+    width: 100%;
+    height: 100%;
+}
+
+// =====================================================
+// Main category icon tabs
+// =====================================================
+.main-category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-sm;
+    flex-shrink: 0;
+}
+
+.main-cat-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 10px;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    background-color: $surface-hover;
+    border: 2px solid transparent;
+    min-width: 56px;
+    transition: border-color $transition;
+
+    .main-cat-icon {
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .main-cat-label {
+        font-size: 9px;
+        font-weight: 600;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    &.active {
+        background: $accent-gradient;
+        border-color: transparent;
+
+        .main-cat-label {
+            color: $text-primary;
+        }
+    }
+
+    &:hover {
+        border-color: $accent-hover-border;
     }
 }
 
@@ -118,6 +188,7 @@ ClosetScreen {
     display: flex;
     flex-wrap: wrap;
     gap: $gap-sm;
+    flex-shrink: 0;
 }
 
 .pill-tab {
@@ -130,32 +201,34 @@ ClosetScreen {
 
 // =====================================================
 // Item grid
+// S&Box has no CSS grid — use flex + wrap.
+// Cards are fixed 128x128 so they never grow huge with few items.
 // =====================================================
 .item-grid {
     flex: 1;
-    overflow: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: $gap-sm;
     align-content: flex-start;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 // =====================================================
 // Item cards
+// No clothing thumbnail available at S&Box runtime.
+// Cards show name text, always visible.
 // =====================================================
 .item-card {
     @include icon-card;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
     &.selected {
         @include icon-card--selected;
-    }
-
-    .card-thumb {
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
     }
 
     .card-name {
@@ -181,27 +254,21 @@ ClosetScreen {
     }
 }
 
-// "None" card — name always visible, no gradient needed
+// "None" card
 .item-card--none {
     @include icon-card;
-
-    color: $text-muted;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    color: $text-muted;
     font-size: 18px;
 
     .card-name {
-        // position: absolute not inherited from .item-card — must be re-declared here
-        // because .item-card--none uses @include icon-card independently
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        opacity: 1;
-        background: none;
-        color: $text-muted;
         font-size: 9px;
+        font-weight: 600;
+        color: $text-muted;
     }
 
     &.selected {
@@ -220,6 +287,7 @@ ClosetScreen {
 .action-row {
     display: flex;
     gap: $gap-md;
+    flex-shrink: 0;
 }
 
 .btn-primary   { @include btn-primary; }

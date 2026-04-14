@@ -300,6 +300,7 @@
 
     protected override int BuildHash() => HashCode.Combine(
         _isOpen,
+        _inventory != null,
         _inventory?.Main?.UsedSlots,
         _inventory?.Hotbar?.UsedSlots,
         _controller?.HeldItem?.InstanceId,

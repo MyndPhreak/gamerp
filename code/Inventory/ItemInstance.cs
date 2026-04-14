@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 
 namespace GameRP.Inventory;
 
@@ -37,7 +36,9 @@ public class ItemInstance
 	/// <summary>
 	/// Time accumulator for tick events. Reset by ItemTickSystem.
 	/// </summary>
-	[System.Text.Json.Serialization.JsonIgnore]
+	/// <summary>
+	/// Runtime only — not persisted
+	/// </summary>
 	public float TickAccumulator { get; set; } = 0f;
 
 	public ItemInstance() { }

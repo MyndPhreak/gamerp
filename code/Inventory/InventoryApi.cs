@@ -68,7 +68,10 @@ public class InventoryApiClient : IInventoryApi
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
-			return Json.Deserialize<InventoryDto>( json );
+			Log.Info( $"[InventoryAPI] Raw JSON: {json}" );
+			var dto = Json.Deserialize<InventoryDto>( json );
+			Log.Info( $"[InventoryAPI] Deserialized: MainSlots={dto?.MainSlots}, HotbarSlots={dto?.HotbarSlots}" );
+			return dto;
 		}
 		catch ( Exception ex )
 		{

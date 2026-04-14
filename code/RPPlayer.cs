@@ -143,9 +143,9 @@ public sealed class RPPlayer : Component
                 if ( !data.HasCompletedCharacterCreation && !inCreationScene )
                 {
                     Log.Info( "[RPPlayer] Character creation not complete, loading creation scene..." );
-                    var creationScene = ResourceLibrary.Get<SceneFile>( "scenes/character-creation.scene" );
+                    var creationScene = ResourceLibrary.Get<SceneFile>( "Assets/scenes/character-creation.scene" );
                     if ( creationScene != null ) Scene.Load( creationScene );
-                    else Log.Error( "[RPPlayer] Could not find scenes/character-creation.scene" );
+                    else Log.Error( "[RPPlayer] Could not find Assets/scenes/character-creation.scene" );
                     return;
                 }
             }
@@ -158,9 +158,9 @@ public sealed class RPPlayer : Component
                 if ( !inCreationScene )
                 {
                     Log.Info( "[RPPlayer] New player, loading character creation scene..." );
-                    var creationScene = ResourceLibrary.Get<SceneFile>( "scenes/character-creation.scene" );
+                    var creationScene = ResourceLibrary.Get<SceneFile>( "Assets/scenes/character-creation.scene" );
                     if ( creationScene != null ) Scene.Load( creationScene );
-                    else Log.Error( "[RPPlayer] Could not find scenes/character-creation.scene" );
+                    else Log.Error( "[RPPlayer] Could not find Assets/scenes/character-creation.scene" );
                     return;
                 }
             }

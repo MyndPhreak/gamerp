@@ -5,8 +5,72 @@ using System.Linq;
 
 namespace GameRP.Vehicles;
 
+public enum SpeedUnit
+{
+	Mph,
+	Kmh
+}
+
 public sealed class VehicleController : Component
 {
+	// --- Quick Setup ---
+	[Property, Group("Quick Setup")] public SpeedUnit TopSpeedUnit { get; set; } = SpeedUnit.Mph;
+	[Property, Group("Quick Setup")] public float TopSpeed { get; set; } = 120f;
+	/// <summary>Ratio between 1st and top gear. Low (2-3) = sporty close-ratio, High (6-8) = truck/economy wide-ratio.</summary>
+	[Property, Group("Quick Setup"), Range( 2f, 8f )] public float GearSpread { get; set; } = 4.5f;
+	/// <summary>Number of forward gears. 5-6 for cars, 10-18 for heavy trucks.</summary>
+	[Property, Group("Quick Setup"), Range( 2, 18 )] public int NumGears { get; set; } = 6;
+
+	[Button( "Calculate Gears" ), Group( "Quick Setup" )]
+	public void CalculateGearRatios()
+	{
+		// Step 1: Get wheel radius from axles (editor-safe — doesn't rely on _allWheels cache)
+		var axles = Components.GetAll<VehicleAxle>( FindMode.InChildren ).ToList();
+		float wheelRadius = axles.FirstOrDefault()?.WheelRadius ?? 14f;
+
+		// Step 2: Convert top speed to inches/sec (S&Box units)
+		float vMax = TopSpeedUnit == SpeedUnit.Mph
+			? TopSpeed * 17.6f       // 1 mph = 17.6 in/s
+			: TopSpeed * 10.936f;    // 1 km/h = 10.936 in/s
+
+		if ( vMax < 1f )
+		{
+			Log.Warning( "[VehicleController] TopSpeed too low — cannot calculate gears." );
+			return;
+		}
+
+		// Step 3: Solve FinalDrive targeting topGearRatio = 0.75 (realistic overdrive)
+		float topGearRatio = 0.75f;
+		float wheelCircumference = 2f * MathF.PI * wheelRadius;
+		float calculatedFinalDrive = (MaxRPM * wheelCircumference) / (60f * topGearRatio * vMax);
+		FinalDrive = calculatedFinalDrive.Clamp( 2f, 7f );
+
+		// Step 4: Compute gear ratios (geometric progression)
+		int numGears = NumGears.Clamp( 2, 18 );
+
+		float firstGear = topGearRatio * GearSpread;
+		var newRatios = new List<float>( numGears );
+
+		for ( int i = 0; i < numGears; i++ )
+		{
+			float t = (float)i / (numGears - 1);
+			float ratio = firstGear * MathF.Pow( topGearRatio / firstGear, t );
+			newRatios.Add( MathF.Round( ratio, 2 ) );
+		}
+
+		GearRatios = newRatios;
+
+		// Step 5: Set shift points relative to MaxRPM
+		UpshiftRPM = MathF.Round( MaxRPM * 0.90f );
+		DownshiftRPM = MathF.Round( MaxRPM * 0.40f );
+
+		// Step 6: Log results
+		var gearStr = string.Join( ", ", GearRatios.Select( r => r.ToString( "F2" ) ) );
+		Log.Info( $"[VehicleController] Calculated: FinalDrive={FinalDrive:F2}, Gears=[{gearStr}]" );
+		Log.Info( $"[VehicleController] Shift points: Up={UpshiftRPM:F0}, Down={DownshiftRPM:F0}" );
+		Log.Info( $"[VehicleController] Target: {TopSpeed} {TopSpeedUnit}, WheelRadius={wheelRadius:F1}, Spread={GearSpread:F1}" );
+	}
+
 	// --- Drivetrain ---
 	[Property, Group("Drivetrain")] public float Horsepower { get; set; } = 250f;
 	[Property, Group("Drivetrain")] public float PeakHpRPM { get; set; } = 6500f;
@@ -297,7 +361,7 @@ public sealed class VehicleController : Component
 		}
 
 		// Calculate Peak Torque from HP
-		float peakTorque = (Horsepower * 5252f) / PeakHpRPM;
+		float peakTorque = (Horsepower * 5252f) / PeakHpRPM * 1.356f; // lb·ft → N·m
 
 		// Simple parabolic torque curve: peaks at PeakTorqueRPM and drops off toward redline
 		float rpmFrac = (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM);
@@ -380,8 +444,15 @@ public sealed class VehicleController : Component
 			_body.PhysicsBody.ApplyImpulseAt( r.GroundContact, r.FrictionForce * Time.Delta );
 		}
 
-		// (Artificial Parking Drag originally went here - removed to ensure empty vehicles
-		// behave purely organically according to collision bounds and tire friction)
+		// --- Parking drag (no driver) ---
+		// Without a driver, decay velocity so parked cars don't roll on slopes indefinitely.
+		// The car still reacts to collisions — ParkingDrag only damps existing velocity.
+		if ( !hasDriver )
+		{
+			var decay = (1f - ParkingDrag * Time.Delta).Clamp( 0f, 1f );
+			_body.Velocity *= decay;
+			_body.AngularVelocity *= decay;
+		}
 
 		// --- Per-axle anti-roll ---
 		foreach ( var axle in _axles )

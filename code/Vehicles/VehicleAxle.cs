@@ -137,16 +137,14 @@ public sealed class VehicleAxle : Component
 		// → torque = Forward * negative = negative roll around Forward = right side rises. ✓
 		var compressionDiff = LeftWheel.SuspensionCompression - RightWheel.SuspensionCompression;
 		
-		// Ensure anti-roll automatically scales with vehicle weight and width.
-		// A standard 1G cornering load rolls the car with force relative to its mass.
+		// Scale anti-roll stiffness linearly with vehicle mass.
+		// Reference: 1000 kg car at AntiRollStrength 1.0 = 5000 torque units (empirically stable).
+		// Gravity is intentionally excluded — the ARB is a torsional spring responding to
+		// differential suspension compression, not gravitational load.
 		var mass = body.PhysicsBody?.Mass ?? 1000f;
-		var gravity = MathF.Abs(Scene.PhysicsWorld?.Gravity.z ?? 800f);
-		
-		// Base restoring torque capable of supporting half the car's weight at the edge of the wheels
-		var baseTorque = (mass * gravity) * (Width * 0.5f);
-		
-		// Apply user multiplier (1.0 = rigid enough to keep the car mostly flat, 0 = no anti-roll)
-		// CRITICAL: Clamp to max 10 to protect against old "5000" saved values exploding the physics engine
+		var baseTorque = (mass / 1000f) * 5000f;
+
+		// Apply user multiplier (1.0 = standard road car, 0 = disabled, 10 = max stiffness)
 		var safeStrength = AntiRollStrength.Clamp(0f, 10f);
 		var torque = GameObject.WorldRotation.Forward * (compressionDiff * baseTorque * safeStrength);
 		

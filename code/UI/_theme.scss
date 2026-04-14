@@ -37,3 +37,8 @@ $radius-pill: 20px;
 
 // --- Motion ---
 $transition: 0.15s ease;
+
+// --- Pre-computed rgba pairs ---
+// S&Box SCSS doesn't evaluate rgba($hex-variable, alpha) — use these instead.
+$accent-selected-bg:  rgba(102, 126, 234, 0.2);  // $accent-start at 20% opacity
+$accent-hover-border: rgba(102, 126, 234, 0.6);  // $accent-start at 60% opacity

@@ -20,90 +20,79 @@
         <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 700px; pointer-events: all; z-index: 150;">
 
             <!-- License card -->
-            <div style="background: linear-gradient(135deg, #f5f5dc 0%, #e8e4d0 100%); border-radius: 16px; border: 3px solid #8b7d6b; padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+            <div style="background: linear-gradient(135deg, #f5f5dc 0%, #e8e4d0 100%); border-radius: 16px; border: 3px solid #8b7d6b; padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: flex; flex-direction: column;">
 
                 <!-- Header bar -->
-                <div style="background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px;">State of San Andreas</div>
+                <div style="background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); padding: 12px 24px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px;">DEPARTMENT OF MOTOR VEHICLES</div>
                     <div style="font-size: 16px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 3px;">Driver License</div>
                 </div>
 
                 <!-- Card body -->
-                <div style="display: flex; padding: 20px 24px; gap: 24px;">
+                <div style="display: flex; flex-direction: row; padding: 20px 24px; gap: 24px;">
 
                     <!-- Left: Photo area -->
-                    <div style="flex-shrink: 0; width: 180px; display: flex; flex-direction: column; gap: 12px;">
-                        <div style="width: 180px; height: 220px; background-color: #d4cfc0; border: 2px solid #8b7d6b; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <div style="flex-shrink: 0; width: 180px;">
+                        <div style="width: 180px; height: 220px; background-color: #d4cfc0; border: 2px solid #8b7d6b; border-radius: 4px; overflow: hidden;">
                             <panel @ref="_photoPanel" style="width: 100%; height: 100%; background-size: cover; background-position: center;">
                                 @if (_faceTexture == null)
                                 {
-                                    <div style="font-size: 12px; color: #8b7d6b; text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">Photo<br/>Preview</div>
+                                    <div style="font-size: 12px; color: #8b7d6b; text-align: center; padding-top: 90px;">Photo<br/>Preview</div>
                                 }
                             </panel>
                         </div>
                     </div>
 
                     <!-- Right: Form fields -->
-                    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px;">
 
                         <!-- Full Name -->
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Full Name</div>
-                            <input type="text" value="@_name" placeholder="Enter your name..."
-                                   @oninput="@(e => OnNameChanged(e))"
-                                   maxlength="100"
-                                   style="padding: 10px 12px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 16px; font-weight: 600; color: #2c2c2c; font-family: inherit;" />
+                        <div style="flex-direction: column;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Full Name</div>
+                            <TextEntry @ref="_nameEntry" placeholder="Enter your name..."
+                                   MaxLength="@(100)"
+                                   style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 16px; font-weight: 600; color: #2c2c2c;" />
                             @if (!string.IsNullOrEmpty(_nameError))
                             {
-                                <div style="font-size: 11px; color: #d32f2f; font-weight: 500;">@_nameError</div>
+                                <div style="font-size: 11px; color: #d32f2f; font-weight: 500; margin-top: 2px;">@_nameError</div>
                             }
                         </div>
 
                         <!-- Date of Birth -->
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Date of Birth</div>
-                            <div style="display: flex; gap: 8px;">
-                                <!-- Month -->
-                                <select value="@_dobMonth" @onchange="@(e => OnDobMonthChanged(e))"
-                                        style="flex: 2; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
-                                    <option value="">Month</option>
-                                    @for (int m = 1; m <= 12; m++)
-                                    {
-                                        var monthName = new DateTime(2000, m, 1).ToString("MMMM");
-                                        <option value="@m">@monthName</option>
-                                    }
-                                </select>
-                                <!-- Day -->
-                                <select value="@_dobDay" @onchange="@(e => OnDobDayChanged(e))"
-                                        style="flex: 1; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
-                                    <option value="">Day</option>
-                                    @for (int d = 1; d <= DaysInSelectedMonth; d++)
-                                    {
-                                        <option value="@d">@d</option>
-                                    }
-                                </select>
-                                <!-- Year -->
-                                <select value="@_dobYear" @onchange="@(e => OnDobYearChanged(e))"
-                                        style="flex: 1.5; padding: 10px 8px; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); font-size: 14px; color: #2c2c2c;">
-                                    <option value="">Year</option>
-                                    @for (int y = 2008; y >= 1940; y--)
-                                    {
-                                        <option value="@y">@y</option>
-                                    }
-                                </select>
+                        <div style="flex-direction: column;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Date of Birth</div>
+                            <div style="display: flex; flex-direction: row; gap: 8px;">
+                                <!-- Month stepper -->
+                                <div style="display: flex; flex-direction: row; align-items: center; flex-grow: 2; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); overflow: hidden;">
+                                    <div style="padding: 8px 10px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@DecrementMonth">‹</div>
+                                    <div style="flex-grow: 1; text-align: center; font-size: 13px; color: #2c2c2c; font-weight: 600;">@(_dobMonth == 0 ? "Month" : new DateTime(2000, _dobMonth, 1).ToString("MMM"))</div>
+                                    <div style="padding: 8px 10px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@IncrementMonth">›</div>
+                                </div>
+                                <!-- Day stepper -->
+                                <div style="display: flex; flex-direction: row; align-items: center; flex-grow: 1; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); overflow: hidden;">
+                                    <div style="padding: 8px 8px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@DecrementDay">‹</div>
+                                    <div style="flex-grow: 1; text-align: center; font-size: 13px; color: #2c2c2c; font-weight: 600;">@(_dobDay == 0 ? "Day" : _dobDay.ToString())</div>
+                                    <div style="padding: 8px 8px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@IncrementDay">›</div>
+                                </div>
+                                <!-- Year stepper -->
+                                <div style="display: flex; flex-direction: row; align-items: center; flex-grow: 2; border-radius: 6px; border: 2px solid #c4b99a; background-color: rgba(255,255,255,0.8); overflow: hidden;">
+                                    <div style="padding: 8px 8px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@DecrementYear">‹</div>
+                                    <div style="flex-grow: 1; text-align: center; font-size: 13px; color: #2c2c2c; font-weight: 600;">@(_dobYear == 0 ? "Year" : _dobYear.ToString())</div>
+                                    <div style="padding: 8px 8px; cursor: pointer; font-size: 16px; color: #8b7d6b; font-weight: 700;" @onclick="@IncrementYear">›</div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Gender (pre-filled, editable) -->
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px;">Gender</div>
-                            <div style="display: flex; gap: 8px;">
+                        <!-- Gender -->
+                        <div style="flex-direction: column;">
+                            <div style="font-size: 10px; font-weight: 700; color: #8b7d6b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Gender</div>
+                            <div style="display: flex; flex-direction: row; gap: 8px;">
                                 @foreach (var g in _genderOptions)
                                 {
                                     var isActive = g == _gender;
                                     var gStyle = isActive
-                                        ? "flex: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: #1a3a5c; text-align: center;"
-                                        : "flex: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #2c2c2c; background-color: rgba(255,255,255,0.5); border: 2px solid #c4b99a; text-align: center;";
+                                        ? "flex-grow: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: white; background-color: #1a3a5c; text-align: center;"
+                                        : "flex-grow: 1; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #2c2c2c; background-color: rgba(255,255,255,0.5); border: 2px solid #c4b99a; text-align: center;";
                                     <div style="@gStyle" @onclick="@(() => { _gender = g; StateHasChanged(); })">@g</div>
                                 }
                             </div>
@@ -112,9 +101,11 @@
                 </div>
 
                 <!-- Footer with buttons -->
-                <div style="padding: 16px 24px; border-top: 2px solid #c4b99a; display: flex; gap: 12px; justify-content: flex-end;">
+                <div style="padding: 16px 24px; border-top: 2px solid #c4b99a; display: flex; flex-direction: row; gap: 12px; justify-content: flex-end;">
                     <div style="padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: #8b7d6b; background-color: transparent; border: 2px solid #c4b99a; text-align: center;" @onclick="@OnBackClicked">Back</div>
-                    <div style="padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: white; background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); text-align: center; @(_isValid ? "" : "opacity: 0.5; pointer-events: none;")" @onclick="@OnPrintClicked">Print License</div>
+                    <div style="padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; color: white; background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%); text-align: center; pointer-events: @(_isValid ? "all" : "none"); opacity: @(_isValid ? 1f : 0.5f);" @onclick="@OnPrintClicked">
+                        @(_isValid ? "Print License" : $"Invalid ({_name.Length}, {_dobMonth}, {_dobDay}, {_dobYear})")
+                    </div>
                 </div>
             </div>
         </div>
@@ -131,9 +122,10 @@
     // Form fields
     private string _name = "";
     private string _nameError = "";
-    private string _dobMonth = "";
-    private string _dobDay = "";
-    private string _dobYear = "";
+    private TextEntry _nameEntry;
+    private int _dobMonth = 0;
+    private int _dobDay = 0;
+    private int _dobYear = 0;
     private string _gender = "Male";
 
     private readonly string[] _genderOptions = new[] { "Male", "Female", "Other" };
@@ -142,18 +134,19 @@
     private Texture _faceTexture;
     private Panel _photoPanel;
 
-    // Scene camera for face photo
-    private SceneCamera _faceCamera;
+    // Camera component for face photo
+    private CameraComponent _faceCamera;
+    private GameObject _faceCameraObject;
 
     // Callbacks
     public Action OnBack { get; set; }
     public Action<string, string, string> OnPrintLicense { get; set; }
 
-    private bool _isValid => _name.Length >= 2 && !string.IsNullOrEmpty( _dobMonth ) && !string.IsNullOrEmpty( _dobDay ) && !string.IsNullOrEmpty( _dobYear );
+    private bool _isValid => _name.Length >= 2 && _dobMonth > 0 && _dobDay > 0 && _dobYear > 0;
 
     private int DaysInSelectedMonth =>
-        int.TryParse( _dobMonth, out var m ) && int.TryParse( _dobYear, out var y ) && m >= 1 && m <= 12
-            ? DateTime.DaysInMonth( y, m )
+        _dobMonth >= 1 && _dobMonth <= 12 && _dobYear >= 1940
+            ? DateTime.DaysInMonth( _dobYear, _dobMonth )
             : 31;
 
     private string RootStyle => "position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; pointer-events: none;";
@@ -169,9 +162,10 @@
         _gender = prefilledGender;
         _name = "";
         _nameError = "";
-        _dobMonth = "";
-        _dobDay = "";
-        _dobYear = "";
+        if ( _nameEntry != null ) _nameEntry.Text = "";
+        _dobMonth = 0;
+        _dobDay = 0;
+        _dobYear = 0;
 
         SetupFaceCamera();
 
@@ -187,51 +181,39 @@
         if ( bodyRenderer == null ) return;
 
         var headPos = _rpPlayer.GameObject.WorldPosition + Vector3.Up * 64f;
-        var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Forward * 40f;
+        var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Left * 40f;
 
         // Create a render target texture for the face camera
         _faceTexture = Texture.CreateRenderTarget()
             .WithSize( 360, 440 )
             .Create();
 
-        // Create a scene camera for rendering the face
-        _faceCamera = new SceneCamera( "FaceCamera" );
-        _faceCamera.World = _rpPlayer.Scene.SceneWorld;
-        _faceCamera.Position = camPos;
-        _faceCamera.Rotation = Rotation.LookAt( headPos - camPos );
+        // Create a temporary GameObject with a CameraComponent for rendering the face
+        _faceCameraObject = new GameObject( false, "FaceCamera" );
+        _faceCameraObject.WorldPosition = camPos;
+        _faceCameraObject.WorldRotation = Rotation.LookAt( headPos - camPos );
+
+        _faceCamera = _faceCameraObject.Components.Create<CameraComponent>( false );
         _faceCamera.FieldOfView = 30f;
         _faceCamera.ZNear = 1f;
         _faceCamera.ZFar = 500f;
+
+        _faceCameraObject.Enabled = true;
+        _faceCamera.Enabled = true;
     }
 
-    private void OnNameChanged( PanelEvent e )
-    {
-        _name = e.Value?.ToString() ?? "";
-        _nameError = _name.Length > 0 && _name.Length < 2 ? "Name must be at least 2 characters" : "";
-        StateHasChanged();
-    }
 
-    private void OnDobMonthChanged( PanelEvent e )
-    {
-        _dobMonth = e.Value?.ToString() ?? "";
-        // Reset day if it exceeds days in the new month
-        if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
-            _dobDay = "";
-        StateHasChanged();
-    }
+    private void IncrementMonth() { _dobMonth = _dobMonth >= 12 ? 1 : _dobMonth + 1; ClampDay(); StateHasChanged(); }
+    private void DecrementMonth() { _dobMonth = _dobMonth <= 1 ? 12 : _dobMonth - 1; ClampDay(); StateHasChanged(); }
+    private void IncrementDay() { _dobDay = _dobDay >= DaysInSelectedMonth ? 1 : _dobDay + 1; StateHasChanged(); }
+    private void DecrementDay() { _dobDay = _dobDay <= 1 ? DaysInSelectedMonth : _dobDay - 1; StateHasChanged(); }
+    private void IncrementYear() { _dobYear = _dobYear >= 2008 ? 1940 : (_dobYear == 0 ? 1990 : _dobYear + 1); ClampDay(); StateHasChanged(); }
+    private void DecrementYear() { _dobYear = _dobYear <= 1940 ? 2008 : (_dobYear == 0 ? 1990 : _dobYear - 1); ClampDay(); StateHasChanged(); }
 
-    private void OnDobDayChanged( PanelEvent e )
+    private void ClampDay()
     {
-        _dobDay = e.Value?.ToString() ?? "";
-        StateHasChanged();
-    }
-
-    private void OnDobYearChanged( PanelEvent e )
-    {
-        _dobYear = e.Value?.ToString() ?? "";
-        if ( int.TryParse( _dobDay, out var d ) && d > DaysInSelectedMonth )
-            _dobDay = "";
-        StateHasChanged();
+        if ( _dobDay > DaysInSelectedMonth )
+            _dobDay = DaysInSelectedMonth;
     }
 
     private void OnBackClicked()
@@ -248,7 +230,7 @@
 
         try
         {
-            var dob = $"{_dobMonth}/{_dobDay}/{_dobYear}";
+            var dob = $"{_dobMonth:D2}/{_dobDay:D2}/{_dobYear}";
 
             // Play flash effect
             _showFlash = true;
@@ -289,6 +271,8 @@
     private void CleanupFaceCamera()
     {
         _faceCamera = null;
+        _faceCameraObject?.Destroy();
+        _faceCameraObject = null;
         _faceTexture?.Dispose();
         _faceTexture = null;
         if ( _photoPanel != null )
@@ -297,19 +281,32 @@
 
     protected override void OnPreRender()
     {
-        if ( !_isOpen || _faceCamera == null || _faceTexture == null ) return;
+        if ( !_isOpen ) return;
+
+        if ( _nameEntry != null )
+        {
+            var currentName = _nameEntry.Text ?? "";
+            if ( _name != currentName )
+            {
+                _name = currentName;
+                _nameError = _name.Length > 0 && _name.Length < 2 ? "Name must be at least 2 characters" : "";
+                StateHasChanged();
+            }
+        }
+
+        if ( _faceCamera == null || _faceTexture == null ) return;
 
         // Update face camera position to track player head
-        if ( _rpPlayer != null )
+        if ( _rpPlayer != null && _faceCameraObject != null )
         {
             var headPos = _rpPlayer.GameObject.WorldPosition + Vector3.Up * 64f;
-            var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Forward * 40f;
-            _faceCamera.Position = camPos;
-            _faceCamera.Rotation = Rotation.LookAt( headPos - camPos );
+            var camPos = headPos + _rpPlayer.GameObject.WorldRotation.Left * 40f;
+            _faceCameraObject.WorldPosition = camPos;
+            _faceCameraObject.WorldRotation = Rotation.LookAt( headPos - camPos );
         }
 
         // Render face camera to texture
-        Graphics.RenderToTexture( _faceCamera, _faceTexture );
+        _faceCamera.RenderToTexture( _faceTexture );
 
         // Update panel background with rendered texture
         if ( _photoPanel != null && _faceTexture != null )
@@ -327,6 +324,6 @@
     }
 
     protected override int BuildHash() => System.HashCode.Combine(
-        _isOpen, _name, _dobMonth, _dobDay, _dobYear, _gender, _showFlash, _flashOpacity
+        _isOpen, _name, _dobMonth, _dobDay, _dobYear, _gender, _showFlash
     );
 }

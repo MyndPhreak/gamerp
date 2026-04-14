@@ -6,7 +6,8 @@
 // Dark glass panel background for in-world UI screens.
 // =====================================================
 @mixin dark-panel {
-    background: linear-gradient(180deg, $panel-bg-top 0%, $panel-bg-bottom 100%);
+    // background-color used (not background:) — S&Box treats background as image-only
+    background-color: rgba(15, 15, 25, 0.98);
 }
 
 // =====================================================
@@ -20,12 +21,12 @@
     font-size: 12px;
     font-weight: 600;
     color: $text-secondary;
-    background: $surface-hover;
+    background-color: $surface-hover;
 }
 
 @mixin pill-tab--active {
     color: $text-primary;
-    background: $accent-gradient;
+    background: $accent-gradient; // linear-gradient — valid as background image
 }
 
 // =====================================================
@@ -33,22 +34,23 @@
 // Usage: square thumbnail cards (clothing, inventory, etc.)
 // =====================================================
 @mixin icon-card {
-    aspect-ratio: 1;
+    width: 128px;
+    height: 128px;
     border-radius: $radius-sm;
     border: 2px solid transparent;
-    background: $surface;
+    background-color: $surface;
     cursor: pointer;
     overflow: hidden;
     transition: border-color $transition;
     position: relative;
 
     &:hover {
-        border-color: rgba($accent-start, 0.6);
+        border-color: $accent-hover-border; // pre-computed rgba (not rgba($var, alpha))
     }
 }
 
 @mixin icon-card--selected {
-    background: rgba($accent-start, 0.2);
+    background-color: $accent-selected-bg; // pre-computed rgba
     border-color: $accent-start;
 }
 
@@ -80,7 +82,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     color: $text-primary;
-    background: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
     text-align: center;
 }

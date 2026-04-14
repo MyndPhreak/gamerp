@@ -1,6 +1,5 @@
+using Sandbox;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace GameRP.Inventory;
 
@@ -68,13 +67,13 @@ public class ItemNbt
 
 	public string Serialize()
 	{
-		return JsonSerializer.Serialize( this );
+		return Json.Serialize( this );
 	}
 
 	public static ItemNbt Deserialize( string json )
 	{
 		if ( string.IsNullOrEmpty( json ) ) return new ItemNbt();
-		try { return JsonSerializer.Deserialize<ItemNbt>( json ) ?? new ItemNbt(); }
+		try { return Json.Deserialize<ItemNbt>( json ) ?? new ItemNbt(); }
 		catch { return new ItemNbt(); }
 	}
 }

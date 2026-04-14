@@ -52,14 +52,34 @@
                 </div>
             }
 
-            <!-- Category tabs -->
-            <div class="category-tabs">
-                @foreach (var category in _categories)
+            <!-- Character preview -->
+            <div class="item-preview">
+                <ScenePanel @ref="_previewPanel" class="preview-scene" />
+            </div>
+
+            <!-- Main category icon tabs -->
+            <div class="main-category-tabs">
+                @foreach (var main in _activeMainCategories)
                 {
-                    var isActive = category == _selectedCategory;
-                    <div class="pill-tab @(isActive ? "active" : "")" @onclick="@(() => SelectCategory(category))">@category</div>
+                    var isMainActive = main == _selectedMainCategory;
+                    <div class="main-cat-btn @(isMainActive ? "active" : "")" @onclick="@(() => SelectMainCategory(main))">
+                        <div class="main-cat-icon">@GetMainCategoryIcon(main)</div>
+                        <div class="main-cat-label">@main</div>
+                    </div>
                 }
             </div>
+
+            <!-- Sub-category pill tabs (hidden when only one sub exists) -->
+            @if (_subCategoriesForMain.Length > 1)
+            {
+                <div class="category-tabs">
+                    @foreach (var sub in _subCategoriesForMain)
+                    {
+                        var isSubActive = sub == _selectedCategory;
+                        <div class="pill-tab @(isSubActive ? "active" : "")" @onclick="@(() => SelectCategory(sub))">@sub</div>
+                    }
+                </div>
+            }
 
             <!-- Item grid -->
             <div class="item-grid">
@@ -74,12 +94,7 @@
                 @foreach (var item in GetItemsForCategory())
                 {
                     var isEquipped = _previewClothing.ContainsKey(_selectedCategory) && _previewClothing[_selectedCategory] == item.ResourcePath;
-                    <div class="item-card @(isEquipped ? "selected" : "")" @onclick="@(() => PreviewItem(item.ResourcePath))">
-                        @if (item.Icon != null)
-                        {
-                            @* dynamic value — background-image cannot be a static CSS class *@
-                            <div class="card-thumb" style="background-image: url(@item.Icon.ResourcePath);"></div>
-                        }
+                    <div class="item-card @(isEquipped ? "selected" : "")" style="background-image: url(@item.ResourcePath)" @onclick="@(() => PreviewItem(item.ResourcePath))">
                         <div class="card-name">@item.Title</div>
                     </div>
                 }
@@ -124,6 +139,12 @@
     private string _selectedCategory = string.Empty;
     private bool _showConfirmClose;
 
+    // 3D preview scene
+    private ScenePanel _previewPanel;
+    private SceneWorld _previewWorld;
+    private SceneModel _baseModel;
+    private List<SceneModel> _clothingModels = new();
+
     // Gender
     private readonly string[] _genderOptions = new[] { "Male", "Female", "Other" };
     private string _selectedGender = "Male";
@@ -137,9 +158,31 @@
     private float _originalAge = 0.5f;
     private string _originalGender = "Male";
 
-    // Categories derived at open-time from ResourceLibrary — automatically picks up any new
-    // clothing categories without requiring a hardcoded list update.
+    // Raw clothing categories derived at open-time from ResourceLibrary.
     private string[] _categories = Array.Empty<string>();
+
+    // Two-tier category navigation
+    private string[] _activeMainCategories = Array.Empty<string>();
+    private string _selectedMainCategory = string.Empty;
+    private string[] _subCategoriesForMain = Array.Empty<string>();
+
+    // Main category → (emoji icon, sub-category names)
+    private static readonly Dictionary<string, (string Icon, string[] Subs)> _mainCategoryDefs = new()
+    {
+        ["Tops"]         = ("👕", new[] { "Shirt", "TShirt", "Tops", "Knitwear", "Hoodie", "Vest" }),
+        ["Outerwear"]    = ("🧥", new[] { "Jacket", "Cardigan", "Gilet", "Coat" }),
+        ["Bottoms"]      = ("👖", new[] { "Jeans", "Trousers", "Shorts", "Skirt" }),
+        ["Full Outfits"] = ("👗", new[] { "Dress", "Suit", "Costume" }),
+        ["Underwear"]    = ("🩲", new[] { "Underwear", "Bra" }),
+        ["Footwear"]     = ("👟", new[] { "Boots", "Shoes", "Footwear", "Heels", "Slippers", "Trainers" }),
+        ["Headwear"]     = ("🎩", new[] { "Hat", "HatBeanie", "HatCostume", "HatFormal", "Hatuniform" }),
+        ["Hair"]         = ("💇", new[] { "Hair", "HairShort", "HairMedium", "HairLong", "HairlJpdo" }),
+        ["Facial Hair"]  = ("🧔", new[] { "FacialHairBeard", "FacialHairGoatee", "FacialHairMustache", "FacialHairSideburns" }),
+        ["Makeup"]       = ("💄", new[] { "Eyebrows", "Eyelashes", "MakeupEyeshadow", "MakeupLips", "MakeupSpecial" }),
+        ["Skin"]         = ("🎨", new[] { "Skin", "ComplexionFreckles", "ComplexionScars" }),
+        ["Accessories"]  = ("💎", new[] { "GlassesEye", "GlassesSun", "Gloves", "NecklacePendant", "Wristwatch" }),
+        ["Head Special"] = ("🥽", new[] { "HeadTech", "HeadSpecial" }),
+    };
 
     // Maps category -> resource path of equipped item
     private Dictionary<string, string> _originalClothing = new();
@@ -187,16 +230,26 @@
 
         // Cache all available clothing
         _allClothing = ResourceLibrary.GetAll<Sandbox.Clothing>().ToList();
-        Log.Info( $"[ClosetScreen] Loaded {_allClothing.Count} clothing items" );
 
-        // Derive categories from available items, sorted alphabetically
+        // Derive raw categories from available items
         _categories = _allClothing
             .Select( c => c.Category.ToString() )
             .Distinct()
             .OrderBy( s => s )
             .ToArray();
 
-        _selectedCategory = _categories.Length > 0 ? _categories[0] : string.Empty;
+        // Build two-tier navigation: only show main groups that have at least one available sub
+        var allMappedSubs = _mainCategoryDefs.Values.SelectMany( d => d.Subs ).ToHashSet();
+        var hasOther = _categories.Any( c => !allMappedSubs.Contains( c ) );
+
+        _activeMainCategories = _mainCategoryDefs.Keys
+            .Where( main => _mainCategoryDefs[main].Subs.Any( s => _categories.Contains( s ) ) )
+            .Concat( hasOther ? new[] { "Other" } : Array.Empty<string>() )
+            .ToArray();
+
+        _selectedMainCategory = _activeMainCategories.Length > 0 ? _activeMainCategories[0] : string.Empty;
+        _subCategoriesForMain = _selectedMainCategory != string.Empty ? GetSubCategoriesForMain( _selectedMainCategory ) : Array.Empty<string>();
+        _selectedCategory = _subCategoriesForMain.Length > 0 ? _subCategoriesForMain[0] : string.Empty;
 
         // Snapshot current clothing as original
         _originalClothing = BuildClothingMap( rpPlayer.EquippedClothing );
@@ -229,6 +282,29 @@
         }
         return map;
     }
+
+    private void SelectMainCategory( string main )
+    {
+        _selectedMainCategory = main;
+        _subCategoriesForMain = GetSubCategoriesForMain( main );
+        _selectedCategory = _subCategoriesForMain.Length > 0 ? _subCategoriesForMain[0] : string.Empty;
+        _showConfirmClose = false;
+        StateHasChanged();
+    }
+
+    private string[] GetSubCategoriesForMain( string main )
+    {
+        if ( !_mainCategoryDefs.TryGetValue( main, out var def ) )
+        {
+            // "Other" bucket — categories not covered by any main group
+            var allMapped = _mainCategoryDefs.Values.SelectMany( d => d.Subs ).ToHashSet();
+            return _categories.Where( c => !allMapped.Contains( c ) ).OrderBy( s => s ).ToArray();
+        }
+        return def.Subs.Where( s => _categories.Contains( s ) ).OrderBy( s => s ).ToArray();
+    }
+
+    private string GetMainCategoryIcon( string main ) =>
+        _mainCategoryDefs.TryGetValue( main, out var def ) ? def.Icon : "?";
 
     private void SelectCategory( string category )
     {
@@ -265,7 +341,68 @@
         }
 
         ApplyPreviewToDresser();
+        UpdatePlayerPreview();
         StateHasChanged();
+    }
+
+    private void EnsurePreviewScene()
+    {
+        if ( _previewWorld != null || _previewPanel == null ) return;
+
+        _previewWorld = new SceneWorld();
+
+        // Key light from front-left, fill from right
+        new ScenePointLight( _previewWorld, new Vector3( -60, 120, 150 ), 600, Color.White );
+        new ScenePointLight( _previewWorld, new Vector3( 80, 60, 80 ), 300, Color.White * 0.4f );
+
+        // Framed for full-body: character is ~72 units tall, camera looks at torso height
+        _ = new SceneCamera
+        {
+            World = _previewWorld,
+            Position = new Vector3( 0, 160, 55 ),
+            Angles = new Angles( 8, 180, 0 ),
+            FieldOfView = 30,
+            ZNear = 1,
+            ZFar = 1000
+        };
+
+        _previewPanel.World = _previewWorld;
+    }
+
+    /// <summary>
+    /// Rebuild the character mannequin in the preview scene using the current preview clothing.
+    /// Creates a base body model at the origin then overlays each equipped clothing item.
+    /// All models share T-pose at default transform, so clothing designed for the citizen
+    /// skeleton aligns correctly without requiring explicit bone merging.
+    /// </summary>
+    private void UpdatePlayerPreview()
+    {
+        EnsurePreviewScene();
+        if ( _previewWorld == null || _rpPlayer == null ) return;
+
+        // Tear down previous models
+        _baseModel?.Delete();
+        _baseModel = null;
+        foreach ( var m in _clothingModels ) m?.Delete();
+        _clothingModels.Clear();
+
+        // Use the player's actual body model so the preview matches their character
+        var renderer = _rpPlayer.Components.Get<SkinnedModelRenderer>();
+        var bodyPath = renderer?.Model?.ResourcePath ?? "models/citizen/citizen.vmdl";
+
+        // Rotate 180° so the character faces toward the camera
+        var facingCamera = new Transform( Vector3.Zero, Rotation.FromYaw( 180 ) );
+
+        _baseModel = new SceneModel( _previewWorld, bodyPath, facingCamera );
+
+        // Overlay each equipped clothing item at the same transform (T-pose alignment)
+        foreach ( var path in _previewClothing.Values )
+        {
+            var clothing = ResourceLibrary.Get<Sandbox.Clothing>( path );
+            if ( clothing == null || string.IsNullOrEmpty( clothing.Model ) ) continue;
+
+            _clothingModels.Add( new SceneModel( _previewWorld, clothing.Model, facingCamera ) );
+        }
     }
 
     private void OnSkinToneChanged( PanelEvent e )
@@ -388,6 +525,14 @@
 
     private void DoClose()
     {
+        // Clean up 3D preview scene
+        _baseModel?.Delete();
+        _baseModel = null;
+        foreach ( var m in _clothingModels ) m?.Delete();
+        _clothingModels.Clear();
+        _previewWorld?.Delete();
+        _previewWorld = null;
+
         _isOpen = false;
         _showConfirmClose = false;
         _closet?.Close();
@@ -410,6 +555,14 @@
         StateHasChanged();
     }
 
+    // Initialize the preview scene after the tree is first built (panel ref isn't ready until after render)
+    protected override void OnTreeFirstBuilt()
+    {
+        base.OnTreeFirstBuilt();
+        if ( _isOpen && _previewPanel != null && _previewWorld == null )
+            UpdatePlayerPreview();
+    }
+
     private static bool DictionariesEqual( Dictionary<string, string> a, Dictionary<string, string> b )
     {
         if ( a.Count != b.Count ) return false;
@@ -422,8 +575,8 @@
     }
 
     protected override int BuildHash() => System.HashCode.Combine(
-        System.HashCode.Combine( _isOpen, _selectedCategory, _showConfirmClose, _wizardMode ),
-        System.HashCode.Combine( _previewClothing.Count, HasUnsavedChanges ),
+        System.HashCode.Combine( _isOpen, _selectedMainCategory, _selectedCategory, _showConfirmClose ),
+        System.HashCode.Combine( _wizardMode, _previewClothing.Count, HasUnsavedChanges ),
         System.HashCode.Combine( _selectedGender,
             _previewSkinTone.GetHashCode(),
             _previewHeight.GetHashCode(),
