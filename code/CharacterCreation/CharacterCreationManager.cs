@@ -17,6 +17,14 @@ public sealed class CharacterCreationManager : Component
 	[Property] public GameObject LicenseStationPosition { get; set; }
 	[Property] public float CameraHeightOffset { get; set; } = 50f;
 	[Property] public float CameraDistance { get; set; } = 150f;
+	[Property] public float CameraOffset { get; set; } = 100f;
+	[Property] public float CameraRotationOffset { get; set; } = 180f;
+	[Property] public float CameraPitch { get; set; } = 0f;
+	[Property] public float MinCameraDistance { get; set; } = 50f;
+	[Property] public float MaxCameraDistance { get; set; } = 500f;
+	[Property] public float OrbitSensitivity { get; set; } = 0.3f;
+	[Property] public float ZoomSensitivity { get; set; } = 0.05f;
+
 
 	private RPPlayer _rpPlayer;
 	private PlayerController _playerController;
@@ -36,6 +44,7 @@ public sealed class CharacterCreationManager : Component
 	private Dictionary<string, string> _wizardClothing = new();
 
 	private bool _initialized;
+	private Rotation _basePlayerRotation;
 
 	protected override void OnUpdate()
 	{
@@ -54,6 +63,7 @@ public sealed class CharacterCreationManager : Component
 	private void StartWizard()
 	{
 		Log.Info( "[CharacterCreation] Starting character creation wizard" );
+		_basePlayerRotation = _rpPlayer.GameObject.WorldRotation;
 
 		_playerController = _rpPlayer.Components.Get<PlayerController>();
 		_camera = _rpPlayer.Components.GetInChildren<CameraComponent>();
@@ -96,16 +106,23 @@ public sealed class CharacterCreationManager : Component
 	{
 		if ( _camera == null || _rpPlayer == null ) return;
 
-		// Position camera to view the player from the front
 		var playerPos = _rpPlayer.GameObject.WorldPosition;
 		var playerRot = _rpPlayer.GameObject.WorldRotation;
-		var camDir = playerRot.Forward;
 
-		var center = playerPos + Vector3.Up * CameraHeightOffset;
+		// Apply the CameraRotationOffset as a yaw to orbit the rig around the character
+		var orbitRot = playerRot * Rotation.FromYaw( CameraRotationOffset );
+
+		// The citizen model faces opposite to the entity's Forward axis. We preserve
+		// the original relative math but evaluate it against the new pivoted offset.
+		var camDir = -orbitRot.Right;
+
+		var center = playerPos + Vector3.Up * CameraHeightOffset + orbitRot.Forward * CameraOffset;
 		var camPos = center + camDir * CameraDistance;
 
 		_camera.GameObject.WorldPosition = camPos;
-		_camera.GameObject.WorldRotation = Rotation.LookAt( center - camPos );
+		
+		var baseLookRtn = Rotation.LookAt( center - camPos );
+		_camera.GameObject.WorldRotation = baseLookRtn * Rotation.From( CameraPitch, 0f, 0f );
 	}
 
 	private void OpenClosetStep()
@@ -254,5 +271,9 @@ public sealed class CharacterCreationManager : Component
 
 		if ( _bodyRenderer != null )
 			_bodyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
+
+		// Re-apply camera placement every frame — PlayerController.OnUpdate repositions
+		// the camera each tick, so we must override it here (OnPreRender wins the race).
+		SetupCamera();
 	}
 }
