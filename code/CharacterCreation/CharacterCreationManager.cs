@@ -107,7 +107,7 @@ public sealed class CharacterCreationManager : Component
 		if ( _camera == null || _rpPlayer == null ) return;
 
 		var playerPos = _rpPlayer.GameObject.WorldPosition;
-		var playerRot = _rpPlayer.GameObject.WorldRotation;
+		var playerRot = _basePlayerRotation;
 
 		// Apply the CameraRotationOffset as a yaw to orbit the rig around the character
 		var orbitRot = playerRot * Rotation.FromYaw( CameraRotationOffset );
