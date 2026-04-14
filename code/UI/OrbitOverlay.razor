@@ -50,9 +50,10 @@
                 OnOrbitDelta?.Invoke( delta.x, delta.y );
         }
 
-        // Middle-click drag — adjust camera height offset
+        // Middle-click height drag
         if ( Input.Pressed( "iv_zoom" ) )
         {
+            Log.Info( "[OrbitOverlay] iv_zoom pressed" );
             _isHeightDragging = true;
             _lastHeightY = Mouse.Position.y;
         }
@@ -66,6 +67,7 @@
             var currentY = Mouse.Position.y;
             var dy = currentY - _lastHeightY;
             _lastHeightY = currentY;
+            Log.Info( $"[OrbitOverlay] height dy={dy:F1}" );
             if ( MathF.Abs( dy ) > 0.001f )
                 OnHeightDelta?.Invoke( dy );
         }
