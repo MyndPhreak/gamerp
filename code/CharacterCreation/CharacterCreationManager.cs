@@ -126,12 +126,16 @@ public sealed class CharacterCreationManager : Component
 		var camDir = -orbitRot.Right;
 
 		var center = playerPos + Vector3.Up * CameraHeightOffset + orbitRot.Forward * CameraOffset;
-		var camPos = center + camDir * CameraDistance;
+
+		// Pitch as vertical orbit: camera moves on a sphere around center
+		var pitchRad = CameraPitch * MathF.PI / 180f;
+		var horizontalDist = CameraDistance * MathF.Cos( pitchRad );
+		var verticalOffset = CameraDistance * MathF.Sin( pitchRad );
+
+		var camPos = center + camDir * horizontalDist + Vector3.Up * verticalOffset;
 
 		_camera.GameObject.WorldPosition = camPos;
-
-		var baseLookRtn = Rotation.LookAt( center - camPos );
-		_camera.GameObject.WorldRotation = baseLookRtn * Rotation.From( CameraPitch, 0f, 0f );
+		_camera.GameObject.WorldRotation = Rotation.LookAt( center - camPos, Vector3.Up );
 	}
 
 	private void UpdatePlayerFacing()
