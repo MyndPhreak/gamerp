@@ -51,12 +51,12 @@
         }
 
         // Middle-click drag — adjust camera height offset
-        if ( Input.Pressed( "mouse3" ) )
+        if ( Input.Pressed( "iv_zoom" ) )
         {
             _isHeightDragging = true;
             _lastHeightY = Mouse.Position.y;
         }
-        else if ( Input.Released( "mouse3" ) )
+        else if ( Input.Released( "iv_zoom" ) )
         {
             _isHeightDragging = false;
         }
