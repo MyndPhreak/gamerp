@@ -155,6 +155,22 @@ public sealed class CharacterCreationManager : Component
 		}
 	}
 
+	private void HandleOrbitDelta( float dx, float dy )
+	{
+		CameraRotationOffset += dx * OrbitSensitivity;
+		// Drag up tilts camera down to look up at character (natural feel)
+		CameraPitch = Math.Clamp( CameraPitch - dy * OrbitSensitivity, -60f, 60f );
+	}
+
+	private void HandleScrollZoom( float delta )
+	{
+		// Positive deltaY = scroll down = zoom out; negative = scroll up = zoom in
+		CameraDistance = Math.Clamp(
+			CameraDistance + delta * ZoomSensitivity,
+			MinCameraDistance,
+			MaxCameraDistance );
+	}
+
 	private void OpenClosetStep()
 	{
 		if ( _closetScreen == null ) return;
