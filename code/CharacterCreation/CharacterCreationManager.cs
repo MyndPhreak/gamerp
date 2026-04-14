@@ -45,6 +45,7 @@ public sealed class CharacterCreationManager : Component
 
 	private bool _initialized;
 	private Rotation _basePlayerRotation;
+	private OrbitOverlay _orbitOverlay;
 
 	protected override void OnUpdate()
 	{
@@ -73,9 +74,17 @@ public sealed class CharacterCreationManager : Component
 		_closetScreen = Scene.GetAllComponents<ClosetScreen>().FirstOrDefault();
 		_licenseScreen = Scene.GetAllComponents<LicenseScreen>().FirstOrDefault();
 		_spawner = Scene.GetAllComponents<Spawner>().FirstOrDefault();
+		_orbitOverlay = Scene.GetAllComponents<OrbitOverlay>().FirstOrDefault();
 
 		if ( _closetScreen == null ) { Log.Error( "[CharacterCreation] No ClosetScreen found in scene!" ); return; }
 		if ( _licenseScreen == null ) { Log.Error( "[CharacterCreation] No LicenseScreen found in scene!" ); return; }
+
+		if ( _orbitOverlay != null )
+		{
+			_orbitOverlay.OnOrbitDelta = HandleOrbitDelta;
+			_orbitOverlay.OnScrollZoom = HandleScrollZoom;
+			_orbitOverlay.IsActive = true;
+		}
 
 		// Disable player movement
 		if ( _playerController != null )
