@@ -162,6 +162,7 @@ public sealed class CharacterCreationManager : Component
 		{
 			_rpPlayer.GameObject.WorldPosition = LicenseStationPosition.WorldPosition;
 			_rpPlayer.GameObject.WorldRotation = LicenseStationPosition.WorldRotation;
+			_basePlayerRotation = LicenseStationPosition.WorldRotation;
 			SetupCamera();
 		}
 
@@ -193,6 +194,7 @@ public sealed class CharacterCreationManager : Component
 		{
 			_rpPlayer.GameObject.WorldPosition = _spawner.GameObject.WorldPosition;
 			_rpPlayer.GameObject.WorldRotation = _spawner.GameObject.WorldRotation;
+			_basePlayerRotation = _spawner.GameObject.WorldRotation;
 		}
 		SetupCamera();
 
