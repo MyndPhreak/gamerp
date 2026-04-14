@@ -23,7 +23,7 @@
     private void OnMouseDown( MousePanelEvent e )
     {
         if ( !IsActive ) return;
-        if ( e.Button != MouseButtons.Right ) return;
+        if ( e.Button != "mouseright" ) return;
         _isDragging = true;
         _lastMousePos = Mouse.Position;
         StateHasChanged();
@@ -53,9 +53,11 @@
         StateHasChanged();
     }
 
-    protected override void OnMouseWheel( float delta )
+    protected override void OnUpdate()
     {
         if ( !IsActive ) return;
-        OnScrollZoom?.Invoke( delta );
+        var wheel = Input.MouseWheel;
+        if ( MathF.Abs( wheel ) > 0.001f )
+            OnScrollZoom?.Invoke( wheel );
     }
 }
