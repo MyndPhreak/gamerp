@@ -56,7 +56,7 @@
     protected override void OnUpdate()
     {
         if ( !IsActive ) return;
-        var wheel = Input.MouseWheel;
+        var wheel = Input.MouseWheel.y;
         if ( MathF.Abs( wheel ) > 0.001f )
             OnScrollZoom?.Invoke( wheel );
     }
