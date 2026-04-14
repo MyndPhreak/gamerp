@@ -120,9 +120,39 @@ public sealed class CharacterCreationManager : Component
 		var camPos = center + camDir * CameraDistance;
 
 		_camera.GameObject.WorldPosition = camPos;
-		
+
 		var baseLookRtn = Rotation.LookAt( center - camPos );
 		_camera.GameObject.WorldRotation = baseLookRtn * Rotation.From( CameraPitch, 0f, 0f );
+	}
+
+	private void UpdatePlayerFacing()
+	{
+		if ( _rpPlayer == null || !_rpPlayer.IsValid() || _camera == null ) return;
+
+		var playerPos = _rpPlayer.GameObject.WorldPosition;
+		var camPos = _camera.GameObject.WorldPosition;
+
+		// Horizontal direction from player to camera
+		var toCamera = new Vector3( camPos.x - playerPos.x, camPos.y - playerPos.y, 0f );
+		if ( toCamera.LengthSquared < 0.01f ) return;
+		toCamera = toCamera.Normal;
+
+		// Player's natural forward (horizontal only)
+		var fwd = _basePlayerRotation.Forward;
+		var naturalForward = new Vector3( fwd.x, fwd.y, 0f ).Normal;
+
+		// dot >= cos(60°) means camera is within 60° of the player's natural front
+		var dot = Vector3.Dot( naturalForward, toCamera );
+		if ( dot >= 0.5f )
+		{
+			// Face the camera (yaw only — keep player upright)
+			_rpPlayer.GameObject.WorldRotation = Rotation.LookAt( toCamera, Vector3.Up );
+		}
+		else
+		{
+			// Camera is to the side or behind — restore natural forward
+			_rpPlayer.GameObject.WorldRotation = _basePlayerRotation;
+		}
 	}
 
 	private void OpenClosetStep()
@@ -277,5 +307,6 @@ public sealed class CharacterCreationManager : Component
 		// Re-apply camera placement every frame — PlayerController.OnUpdate repositions
 		// the camera each tick, so we must override it here (OnPreRender wins the race).
 		SetupCamera();
+		UpdatePlayerFacing();
 	}
 }
