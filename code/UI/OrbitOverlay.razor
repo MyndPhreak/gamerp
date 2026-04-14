@@ -1,0 +1,61 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+
+@namespace GameRP.UI
+@inherits PanelComponent
+
+<root class="orbit-overlay @(_isDragging ? "is-dragging" : "")"
+      @onmousedown="@OnMouseDown"
+      @onmousemove="@OnMouseMove"
+      @onmouseup="@OnMouseUp"
+      @onmouseleave="@OnMouseLeave">
+</root>
+
+@code {
+    public bool IsActive { get; set; }
+    public Action<float, float> OnOrbitDelta { get; set; }
+    public Action<float> OnScrollZoom { get; set; }
+
+    private bool _isDragging;
+    private Vector2 _lastMousePos;
+
+    private void OnMouseDown( MousePanelEvent e )
+    {
+        if ( !IsActive ) return;
+        if ( e.Button != MouseButtons.Right ) return;
+        _isDragging = true;
+        _lastMousePos = Mouse.Position;
+        StateHasChanged();
+    }
+
+    private void OnMouseMove( MousePanelEvent e )
+    {
+        if ( !IsActive || !_isDragging ) return;
+        var current = Mouse.Position;
+        var delta = current - _lastMousePos;
+        _lastMousePos = current;
+        if ( delta.LengthSquared > 0.001f )
+            OnOrbitDelta?.Invoke( delta.x, delta.y );
+    }
+
+    private void OnMouseUp( MousePanelEvent e )
+    {
+        if ( !_isDragging ) return;
+        _isDragging = false;
+        StateHasChanged();
+    }
+
+    private void OnMouseLeave( MousePanelEvent e )
+    {
+        if ( !_isDragging ) return;
+        _isDragging = false;
+        StateHasChanged();
+    }
+
+    protected override void OnMouseWheel( float delta )
+    {
+        if ( !IsActive ) return;
+        OnScrollZoom?.Invoke( delta );
+    }
+}
