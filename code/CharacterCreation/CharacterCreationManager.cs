@@ -83,6 +83,7 @@ public sealed class CharacterCreationManager : Component
 		{
 			_orbitOverlay.OnOrbitDelta = HandleOrbitDelta;
 			_orbitOverlay.OnScrollZoom = HandleScrollZoom;
+			_orbitOverlay.OnHeightDelta = HandleHeightDelta;
 			_orbitOverlay.IsActive = true;
 		}
 
@@ -182,6 +183,12 @@ public sealed class CharacterCreationManager : Component
 			CameraDistance + delta * ZoomSensitivity,
 			MinCameraDistance,
 			MaxCameraDistance );
+	}
+
+	private void HandleHeightDelta( float dy )
+	{
+		// Drag up (negative dy) raises the camera pivot
+		CameraHeightOffset -= dy * OrbitSensitivity;
 	}
 
 	private void OpenClosetStep()

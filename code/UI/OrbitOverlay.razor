@@ -12,9 +12,12 @@
     public bool IsActive { get; set; }
     public Action<float, float> OnOrbitDelta { get; set; }
     public Action<float> OnScrollZoom { get; set; }
+    public Action<float> OnHeightDelta { get; set; }
 
     private bool _isDragging;
     private Vector2 _lastMousePos;
+    private bool _isHeightDragging;
+    private float _lastHeightY;
 
     protected override void OnUpdate()
     {
@@ -25,7 +28,7 @@
         if ( MathF.Abs( wheel ) > 0.001f )
             OnScrollZoom?.Invoke( wheel );
 
-        // Right-click orbit via game input — avoids panel button string ambiguity
+        // Right-click orbit
         if ( Input.Pressed( "attack2" ) )
         {
             _isDragging = true;
@@ -45,6 +48,26 @@
             _lastMousePos = current;
             if ( delta.LengthSquared > 0.001f )
                 OnOrbitDelta?.Invoke( delta.x, delta.y );
+        }
+
+        // Middle-click drag — adjust camera height offset
+        if ( Input.Pressed( "mouse3" ) )
+        {
+            _isHeightDragging = true;
+            _lastHeightY = Mouse.Position.y;
+        }
+        else if ( Input.Released( "mouse3" ) )
+        {
+            _isHeightDragging = false;
+        }
+
+        if ( _isHeightDragging )
+        {
+            var currentY = Mouse.Position.y;
+            var dy = currentY - _lastHeightY;
+            _lastHeightY = currentY;
+            if ( MathF.Abs( dy ) > 0.001f )
+                OnHeightDelta?.Invoke( dy );
         }
     }
 }
